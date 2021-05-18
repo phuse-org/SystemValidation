@@ -1,0 +1,151 @@
+---
+title: "R Environment "
+author: "Eli Miller"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    df_print: default
+    toc: yes
+params:
+  tag: latest
+  file_name: r-ver
+  repo: rocker
+  val_dir: afterrun
+---
+
+# Introduction
+
+## License
+
+Copyright 2021 ???
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Validation Information
+
+The process for these qualifications is largely inspired by the R-IQ-OQ process defined by [Marc Schwartz](https://github.com/marcschwartz/R-IQ-OQ). This has been updated to utilize RMarkdown and is designed to run on Docker images.
+
+## Other Resources
+
+https://www.r-project.org/doc/R-FDA.pdf
+
+## Container Information
+This validation is from ``r paste0(params$repo, "/", params$file_name, ":", params$tag)``
+
+# R Environment Information
+
+## Installation Path
+```{r home}
+R.home()
+.libPaths()
+```
+
+## R Version Information
+```{r R_Version}
+R.version
+```
+
+## R Session Information
+```{r sessionInfo}
+sessionInfo()
+```
+
+## Platform Information
+```{r platform}
+.Platform
+```
+
+## Installed Packages
+```{r installed_packages, results='asis'}
+ips <- installed.packages()
+knitr::kable(ips[, c("Version", "Priority", "License", "MD5sum", "NeedsCompilation", "Built")])
+```
+
+## Host Information
+```{r host}
+.Machine
+```
+
+## Installation Configuration
+```{r install_configs}
+capabilities()
+```
+
+## Search Path
+```{r search}
+search()
+```
+
+# Base R Qualification Tests
+
+## Installation Tests
+```{r basic,  results='hide', warning=FALSE, error=FALSE, message=FALSE}
+IQ_result <- readLines(paste0(val_dir, "results/IQ_log.txt"))
+ifelse(IQ_result == "0", "Pass", "Fail")
+```
+
+## Operational Tests
+
+### Examples
+```{r}
+examples_result <- readLines(paste0(val_dir, "results/examplesResult.txt"))
+ifelse(examples_result == "0", "Pass", "Fail")
+```
+
+### Vignettes
+```{r}
+vignettes_result <- readLines(paste0(val_dir, "results/vignettesResult.txt"))
+ifelse(vignettes_result == "0", "Pass", "Fail")
+```
+
+### Tests
+```{r}
+test_result <- readLines(paste0(val_dir, "results/testResult.txt")) 
+ifelse(test_result == "0", "Pass", "Fail")
+```
+
+# Installed Packages
+
+```{r tests2,  results='hide', warning=FALSE, error=FALSE, message=FALSE}
+load(paste0(val_dir, "outputs/ips"))
+knitr::kable(ips[, c("Version", "Priority", "License", "MD5sum", "NeedsCompilation", "Built")])
+```
+
+# Qualification Results
+
+```{r pass_table}
+
+load(paste0(val_dir, "/outputs/ips"))
+ips <- ips[is.na(ips[,"Priority"]), "Package"]
+
+installed_test <- data.frame()
+for(package in ips) {
+  package_examples <- ifelse(readLines(paste0(val_dir, "/results/", package, "examples.txt")) == "0", "Pass", "Fail")
+  package_tests <- ifelse(readLines(paste0(val_dir, "/results/", package, "tests.txt")) == "0", "Pass", "Fail")
+  package_vignettes <- ifelse(readLines(paste0(val_dir, "/results/", package, "vignettes.txt")) == "0", "Pass", "Fail")
+  installed_test <- rbind(installed_test, data.frame(Test = package_tests, Examples = package_examples, Vignettes = package_vignettes))
+}
+
+df <- data.frame(
+  IQ = ifelse(IQ_result == 0, "Pass", "Fail"),
+  OQ_Tests = ifelse(test_result == 0, "Pass", "Fail"),
+  OQ_Examples = ifelse(examples_result == 0, "Pass", "Fail"),
+  OQ_Vignettes = ifelse(vignettes_result == 0, "Pass", "Fail"),
+  Installed_Tests = ifelse(all(installed_test[,"Test"] == "Pass"), "Pass", "Fail"),
+  Installed_Examples = ifelse(all(installed_test[,"Examples"] == "Pass"), "Pass", "Fail"),
+  Installed_Vignettes = ifelse(all(installed_test[,"Vignettes"] == "Pass"), "Pass", "Fail")
+)
+
+knitr::kable(df)
+
+```
+
+## Package Qualifications
+
+```{r packages, results='asis'}
+knitr::kable(installed_test)
+```

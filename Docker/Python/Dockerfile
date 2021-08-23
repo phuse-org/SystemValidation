@@ -1,10 +1,10 @@
-FROM ubuntu:20.04
+FROM ubuntu:20.04 as base
 
 LABEL version="1.0" \ 
       name="Showcase_Container_Python" \
       maintainer="Manolo Corte" \
       description="Base image containing ubuntu, python and a virtual environment" \
-      build-date="07/08/2021"
+      build-date="23/08/2021"
 
 
 
@@ -28,7 +28,7 @@ USER root
             && :
 
         
-    
+FROM base as build  
 
 WORKDIR /home/workspace
         
@@ -37,32 +37,27 @@ WORKDIR /home/workspace
 
        RUN python3.8  -m venv venv
 
+       #Block to copy app / install dependencies
+       #Installing example packages 
+        COPY ./requirements.txt .
+        RUN pip3 install -r requirements.txt
+
+
+FROM build as validation
+
+WORKDIR /home/workspace/validation_utils
+
     #Copying Base Image Validation 
 
-       #Copy ubuntu:20.04.txt . 
+    RUN pip freeze > packagesInstalled.txt
+    COPY ./scripts/* /home/workspace/validation_utils/
+    #COPY ./scripts/val_container.sh   /home/workspace/validation_utils/
+    RUN : \
+      && chmod 777 val_python.sh \ 
+      && chmod 777 val_container.sh \
+      && : 
+
 
         ENTRYPOINT : \ 
-                && echo \
-                && echo \
-                && echo Container Initializing, please stand by. . . \
-                && sleep 2  \
-                && echo \
-                && echo \
-                && echo Listing Hardware Specs \
-                && echo ===========================================   \
-                && lspci \
-                && sleep 1 \
-                && echo Listing Software Specs \
-                && echo ===========================================   \
-                && echo OS Version: \
-                && cat /etc/os-release \ 
-                && sleep 1
-                && echo \ 
-                && echo Kernel Version: \
-                && uname -r \
-                && echo \ 
-                && sleep 1 \
-                && echo Python Version: \
-                && python --version
                 && tail -f /dev/null  \ 
-                && : 
+                && :  

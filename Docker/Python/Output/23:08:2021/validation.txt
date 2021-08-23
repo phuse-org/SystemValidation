@@ -1,0 +1,466 @@
+=========================================== 
+R Validation Group 
+This is a WIP script which calls 
+the other modules 
+=========================================== 
+=========================================== 
+Validating base image
+20.04: Pulling from library/ubuntu
+Digest: sha256:82becede498899ec668628e7cb0ad87b6e1c371cb8a1e597d83a47fac21d6af3
+Status: Image is up to date for ubuntu:20.04
+docker.io/library/ubuntu:20.04
+[
+    {
+        "Id": "sha256:1318b700e415001198d1bf66d260b07f67ca8a552b61b0da02b3832c778f221b",
+        "RepoTags": [
+            "ubuntu:20.04"
+        ],
+        "RepoDigests": [
+            "ubuntu@sha256:82becede498899ec668628e7cb0ad87b6e1c371cb8a1e597d83a47fac21d6af3"
+        ],
+        "Parent": "",
+        "Comment": "",
+        "Created": "2021-07-26T21:21:40.307832875Z",
+        "Container": "c956fe828128e93f86f7628bff7449517519f8ed8dc87285077108eefb8d16ac",
+        "ContainerConfig": {
+            "Hostname": "c956fe828128",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            ],
+            "Cmd": [
+                "/bin/sh",
+                "-c",
+                "#(nop) ",
+                "CMD [\"bash\"]"
+            ],
+            "Image": "sha256:93c06ad94bc63e5c8fb978d605468c4507f82d92b9ba0dad33c9a80b137163cd",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "OnBuild": null,
+            "Labels": {}
+        },
+        "DockerVersion": "20.10.7",
+        "Author": "",
+        "Config": {
+            "Hostname": "",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            ],
+            "Cmd": [
+                "bash"
+            ],
+            "Image": "sha256:93c06ad94bc63e5c8fb978d605468c4507f82d92b9ba0dad33c9a80b137163cd",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "OnBuild": null,
+            "Labels": null
+        },
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 72776763,
+        "VirtualSize": 72776763,
+        "GraphDriver": {
+            "Data": {
+                "MergedDir": "/var/lib/docker/overlay2/ce89e29acb10478b613ea01302434183241264fe7c5029cdb95695bc16ea5a09/merged",
+                "UpperDir": "/var/lib/docker/overlay2/ce89e29acb10478b613ea01302434183241264fe7c5029cdb95695bc16ea5a09/diff",
+                "WorkDir": "/var/lib/docker/overlay2/ce89e29acb10478b613ea01302434183241264fe7c5029cdb95695bc16ea5a09/work"
+            },
+            "Name": "overlay2"
+        },
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:7555a8182c42c7737a384cfe03a3c7329f646a3bf389c4bcd75379fc85e6c144"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "0001-01-01T00:00:00Z"
+        }
+    }
+]
+
+
+=========================================== 
++++++++++++++++++++++++++++++++++++++++++++
+=========================================== 
+Validating image
+[
+    {
+        "Id": "sha256:042653499a74d7b80ea6c0fcf207b2212af5fbaa409c5542424ba84f85dbe7f8",
+        "RepoTags": [
+            "python_image:latest"
+        ],
+        "RepoDigests": [],
+        "Parent": "",
+        "Comment": "buildkit.dockerfile.v0",
+        "Created": "2021-08-23T10:19:11.748266871Z",
+        "Container": "",
+        "ContainerConfig": {
+            "Hostname": "",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": null,
+            "Cmd": null,
+            "Image": "",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "OnBuild": null,
+            "Labels": null
+        },
+        "DockerVersion": "",
+        "Author": "",
+        "Config": {
+            "Hostname": "",
+            "Domainname": "",
+            "User": "root",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            ],
+            "Cmd": null,
+            "Image": "",
+            "Volumes": null,
+            "WorkingDir": "/home/workspace/validation_utils",
+            "Entrypoint": [
+                "/bin/sh",
+                "-c",
+                ":                 && tail -f /dev/null                  && :"
+            ],
+            "OnBuild": null,
+            "Labels": {
+                "build-date": "07/08/2021",
+                "description": "Base image containing ubuntu, python and a virtual environment",
+                "maintainer": "Manolo Corte",
+                "name": "Showcase_Container_Python",
+                "version": "1.0"
+            }
+        },
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 431016843,
+        "VirtualSize": 431016843,
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/h1j0zl0khe4z8j25yaykgwz71/diff:/var/lib/docker/overlay2/h4gbrqbp6f8jhyd9ifx7hr2ac/diff:/var/lib/docker/overlay2/wh3hjbqnjdx57c4w9spvfat15/diff:/var/lib/docker/overlay2/7ncqfv8cx681ql757aveb1ctk/diff:/var/lib/docker/overlay2/t43arddoeg0wppd41yfc02rp1/diff:/var/lib/docker/overlay2/0pk3flmzoarcvdud5d7nhxw5r/diff:/var/lib/docker/overlay2/v8gqq0uj4aeirtjgildzfo68i/diff:/var/lib/docker/overlay2/q2ynkbfl53f73qrhw343m8wuo/diff:/var/lib/docker/overlay2/ce89e29acb10478b613ea01302434183241264fe7c5029cdb95695bc16ea5a09/diff",
+                "MergedDir": "/var/lib/docker/overlay2/ivj6ssj5985kjtcj4cp4tsajk/merged",
+                "UpperDir": "/var/lib/docker/overlay2/ivj6ssj5985kjtcj4cp4tsajk/diff",
+                "WorkDir": "/var/lib/docker/overlay2/ivj6ssj5985kjtcj4cp4tsajk/work"
+            },
+            "Name": "overlay2"
+        },
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:7555a8182c42c7737a384cfe03a3c7329f646a3bf389c4bcd75379fc85e6c144",
+                "sha256:dd35dfcca1ee6a268f5bb275d7ed31994498d76ebf0289f1795ee26b588d028f",
+                "sha256:8919a96bce7cfff0c89d700b50733e89fea200ce1d4a11c4619bd6758aca4f92",
+                "sha256:33daad32eea496faf42a8e0cbfff11eeae5a67137296b60eef188b5a38bc4c87",
+                "sha256:e0ebe903ccbc16d2583c853de8f089fe1d38d12e15bc96946c8a17fbd7b86fce",
+                "sha256:bcd5400d73114ce08ae804b8b8a53637df2b7c510e8be0080572585400dec9c2",
+                "sha256:1993a91b7f219dced3dec56575a88a5dabec84371023535799af6a3a688c5f54",
+                "sha256:d7ab6421a9e3c1c8c4c88ab1d4c082300ab4a54e65dd62744bd9d82ebd10aef7",
+                "sha256:c492ff462dbbe52a6a0af6f2ab7c33a5460c66eb091c01d0b2adeb6032a3dafa",
+                "sha256:0cec6c69cd59f08f45e0a4cfa2038bd3c7b4b081bcb59a57b527dd2ae0d85226"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "2021-08-23T10:19:11.767432084Z"
+        }
+    }
+]
+
+
+=========================================== 
++++++++++++++++++++++++++++++++++++++++++++
+=========================================== 
+Validating container from the outside
+[
+    {
+        "Id": "dcbc1371176e06931e5f3d6d85849c1e1d395f9b25c26713be2788cda5faf776",
+        "Created": "2021-08-23T10:06:57.528369357Z",
+        "Path": "/bin/sh",
+        "Args": [
+            "-c",
+            ":                 \u0026\u0026 tail -f /dev/null                  \u0026\u0026 :"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 8206,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2021-08-23T10:06:57.821787779Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:2f8a5c4e6e90f56b2401fa16b4334e40ed85606f5c77f8719f8d9ebea0601688",
+        "ResolvConfPath": "/var/lib/docker/containers/dcbc1371176e06931e5f3d6d85849c1e1d395f9b25c26713be2788cda5faf776/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/dcbc1371176e06931e5f3d6d85849c1e1d395f9b25c26713be2788cda5faf776/hostname",
+        "HostsPath": "/var/lib/docker/containers/dcbc1371176e06931e5f3d6d85849c1e1d395f9b25c26713be2788cda5faf776/hosts",
+        "LogPath": "/var/lib/docker/containers/dcbc1371176e06931e5f3d6d85849c1e1d395f9b25c26713be2788cda5faf776/dcbc1371176e06931e5f3d6d85849c1e1d395f9b25c26713be2788cda5faf776-json.log",
+        "Name": "/python_container",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "default",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "host",
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "KernelMemory": 0,
+            "KernelMemoryTCP": 0,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": false,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/asound",
+                "/proc/acpi",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/15fcc28d693aaf696292d070f3a76a46413117cdaaac4db0218728d61c4a5e47-init/diff:/var/lib/docker/overlay2/z4g0fs8h717cfu4qvcsn87fks/diff:/var/lib/docker/overlay2/0fsa8nbdykpmrwq5cliifl2sa/diff:/var/lib/docker/overlay2/t4ymep37rv8yux8sqwhc6ew77/diff:/var/lib/docker/overlay2/dldop6n7fvd6mntfipp85r5o5/diff:/var/lib/docker/overlay2/jznzy2qngmbdm9wluixejnri2/diff:/var/lib/docker/overlay2/ngmnhdojds72ahht23hwknd82/diff:/var/lib/docker/overlay2/gctgy3r9cx2sa2hfcox6y9wx5/diff:/var/lib/docker/overlay2/mc1el4erkz3x1gkqjcs22t7yh/diff:/var/lib/docker/overlay2/mbt8hioohf0lgtbo5h7t9i9ab/diff:/var/lib/docker/overlay2/ce89e29acb10478b613ea01302434183241264fe7c5029cdb95695bc16ea5a09/diff",
+                "MergedDir": "/var/lib/docker/overlay2/15fcc28d693aaf696292d070f3a76a46413117cdaaac4db0218728d61c4a5e47/merged",
+                "UpperDir": "/var/lib/docker/overlay2/15fcc28d693aaf696292d070f3a76a46413117cdaaac4db0218728d61c4a5e47/diff",
+                "WorkDir": "/var/lib/docker/overlay2/15fcc28d693aaf696292d070f3a76a46413117cdaaac4db0218728d61c4a5e47/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "dcbc1371176e",
+            "Domainname": "",
+            "User": "root",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            ],
+            "Cmd": null,
+            "Image": "python_image",
+            "Volumes": null,
+            "WorkingDir": "/home/workspace/validation_utils",
+            "Entrypoint": [
+                "/bin/sh",
+                "-c",
+                ":                 \u0026\u0026 tail -f /dev/null                  \u0026\u0026 :"
+            ],
+            "OnBuild": null,
+            "Labels": {
+                "build-date": "07/08/2021",
+                "description": "Base image containing ubuntu, python and a virtual environment",
+                "maintainer": "Manolo Corte",
+                "name": "Showcase_Container_Python",
+                "version": "1.0"
+            }
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "705db7eae03fdaf6314fe7c4b082eb189bb4bfe57c94ffd0b708c88a30b6eb4d",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {},
+            "SandboxKey": "/var/run/docker/netns/705db7eae03f",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "de4ba9b602f4a4faf016339efd13d91fc81f56df29f2cfe38ac89937b838215b",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.3",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:03",
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "212a87f5a5ab7f87f05c135ae4f759ea3861dcfaf233afcabe876f837fa5f185",
+                    "EndpointID": "de4ba9b602f4a4faf016339efd13d91fc81f56df29f2cfe38ac89937b838215b",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.3",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:03",
+                    "DriverOpts": null
+                }
+            }
+        }
+    }
+]
+
+=========================================== 
++++++++++++++++++++++++++++++++++++++++++++
+=========================================== 
+R Validation Group 
+This is a WIP script used to validate the container itself 
+=========================================== 
+
+Internal Container Validation
+===========================================
+
+Listing Hardware Specs
+-----------------------
+00:00.0 Host bridge: Network Appliance Corporation Device 1275
+00:01.0 Ethernet controller: Red Hat, Inc. Virtio network device
+00:02.0 SCSI storage controller: Red Hat, Inc. Virtio block device
+00:03.0 Ethernet controller: Red Hat, Inc. Device 103f
+00:04.0 Network and computing encryption device: Red Hat, Inc. Virtio RNG
+00:1f.0 ISA bridge: Intel Corporation 82371SB PIIX3 ISA [Natoma/Triton II]
+Listing Software Specs
+-----------------------
+OS Version:
+NAME="Ubuntu"
+VERSION="20.04.3 LTS (Focal Fossa)"
+ID=ubuntu
+ID_LIKE=debian
+PRETTY_NAME="Ubuntu 20.04.3 LTS"
+VERSION_ID="20.04"
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+VERSION_CODENAME=focal
+UBUNTU_CODENAME=focal
+
+Kernel Version:
+5.10.25-linuxkit
+
+=========================================== 
+R Validation Group 
+This is a WIP script to validate Python inside the container
+=========================================== 
+Python Version:
+./val_python.sh: 8: python: not found
+
+---------
+
+Python packages:
+
+
+
+Validation suite finished
+=========================================== 

@@ -1,0 +1,2496 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "cli"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('cli')
+Warning: package ‘cli’ was built under R version 4.0.5
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("ansi-styles")
+> ### * ansi-styles
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi-styles
+> ### Title: ANSI colored text
+> ### Aliases: ansi-styles bg_black bg_blue bg_cyan bg_green bg_magenta
+> ###   bg_red bg_white bg_yellow bg_none col_black col_blue col_cyan
+> ###   col_green col_magenta col_red col_white col_yellow col_grey
+> ###   col_silver col_none style_dim style_blurred style_bold style_hidden
+> ###   style_inverse style_italic style_reset style_strikethrough
+> ###   style_underline style_no_bold style_no_blurred style_no_dim
+> ###   style_no_italic style_no_underline style_no_inverse style_no_hidden
+> ###   style_no_strikethrough style_no_color style_no_bg_color
+> 
+> ### ** Examples
+> 
+> col_blue("Hello ", "world!")
+<ansi_string>
+[1] Hello world!
+> cat(col_blue("Hello ", "world!"))
+Hello world!> 
+> cat("... to highlight the", col_red("search term"),
++     "in a block of text\n")
+... to highlight the search term in a block of text
+> 
+> ## Style stack properly
+> cat(col_green(
++  "I am a green line ",
++  col_blue(style_underline(style_bold("with a blue substring"))),
++  " that becomes green again!"
++ ))
+I am a green line with a blue substring that becomes green again!> 
+> error <- combine_ansi_styles("red", "bold")
+> warn <- combine_ansi_styles("magenta", "underline")
+> note <- col_cyan
+> cat(error("Error: subscript out of bounds!\n"))
+Error: subscript out of bounds!
+> cat(warn("Warning: shorter argument was recycled.\n"))
+Warning: shorter argument was recycled.
+> cat(note("Note: no such directory.\n"))
+Note: no such directory.
+> 
+> # style_no_* functions, note that the color is not removed
+> style_italic(col_green(paste0(
++   "italic before, ",
++   style_no_italic("normal here, "),
++   "italic after"
++ )))
+<ansi_string>
+[1] italic before, normal here, italic after
+> 
+> # avoiding  color for substring
+> style_italic(col_red(paste(
++   "red before",
++   col_none("not red between"),
++   "red after"
++ )))
+<ansi_string>
+[1] red before not red between red after
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_align")
+> ### * ansi_align
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_align
+> ### Title: Align an ANSI colored string
+> ### Aliases: ansi_align
+> 
+> ### ** Examples
+> 
+> ansi_align(col_red("foobar"), 20, "left")
+<ansi_string>
+[1] foobar              
+> ansi_align(col_red("foobar"), 20, "center")
+<ansi_string>
+[1]        foobar       
+> ansi_align(col_red("foobar"), 20, "right")
+<ansi_string>
+[1]               foobar
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_columns")
+> ### * ansi_columns
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_columns
+> ### Title: Format a character vector in multiple columns
+> ### Aliases: ansi_columns
+> 
+> ### ** Examples
+> 
+> fmt <- ansi_columns(
++   paste(col_red("foo"), 1:10),
++   width = 50,
++   fill = "rows",
++   max_cols=10,
++   align = "center",
++   sep = "   "
++ )
+> fmt
+<ansi_string>
+[1]  foo 1     foo 2     foo 3     foo 4     foo 5    
+[2]  foo 6     foo 7     foo 8     foo 9     foo 10   
+> ansi_nchar(fmt, type = "width")
+[1] 50 50
+> boxx(fmt, padding = c(0,1,0,1), header = col_green("foobar"))
+┌ foobar ────────────────────────────────────────────┐
+│  foo 1     foo 2     foo 3     foo 4     foo 5     │
+│  foo 6     foo 7     foo 8     foo 9     foo 10    │
+└────────────────────────────────────────────────────┘
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_has_any")
+> ### * ansi_has_any
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_has_any
+> ### Title: Check if a string has some ANSI styling
+> ### Aliases: ansi_has_any
+> 
+> ### ** Examples
+> 
+> ## The second one has style if ANSI colors are supported
+> ansi_has_any("foobar")
+[1] FALSE
+> ansi_has_any(col_red("foobar"))
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_nchar")
+> ### * ansi_nchar
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_nchar
+> ### Title: Count number of characters in an ANSI colored string
+> ### Aliases: ansi_nchar
+> 
+> ### ** Examples
+> 
+> str <- paste(
++   col_red("red"),
++   "default",
++   col_green("green")
++ )
+> 
+> cat(str, "\n")
+red default green 
+> nchar(str)
+[1] 17
+> ansi_nchar(str)
+[1] 17
+> nchar(ansi_strip(str))
+[1] 17
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_strip")
+> ### * ansi_strip
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_strip
+> ### Title: Remove ANSI escape sequences from a string
+> ### Aliases: ansi_strip
+> 
+> ### ** Examples
+> 
+> ansi_strip(col_red("foobar")) == "foobar"
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_strsplit")
+> ### * ansi_strsplit
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_strsplit
+> ### Title: Split an ANSI colored string
+> ### Aliases: ansi_strsplit
+> 
+> ### ** Examples
+> 
+> str <- paste0(
++   col_red("I am red---"),
++   col_green("and I am green-"),
++   style_underline("I underlined")
++ )
+> 
+> cat(str, "\n")
+I am red---and I am green-I underlined 
+> 
+> # split at dashes, keep color
+> cat(ansi_strsplit(str, "[-]+")[[1]], sep = "\n")
+I am red
+and I am green
+I underlined
+> strsplit(ansi_strip(str), "[-]+")
+[[1]]
+[1] "I am red"       "and I am green" "I underlined"  
+
+> 
+> # split to characters, keep color
+> cat(ansi_strsplit(str, "")[[1]], "\n", sep = " ")
+I   a m   r e d - - - a n d   I   a m   g r e e n - I   u n d e r l i n e d 
+> strsplit(ansi_strip(str), "")
+[[1]]
+ [1] "I" " " "a" "m" " " "r" "e" "d" "-" "-" "-" "a" "n" "d" " " "I" " " "a" "m"
+[20] " " "g" "r" "e" "e" "n" "-" "I" " " "u" "n" "d" "e" "r" "l" "i" "n" "e" "d"
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_strtrim")
+> ### * ansi_strtrim
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_strtrim
+> ### Title: Truncate an ANSI string
+> ### Aliases: ansi_strtrim
+> 
+> ### ** Examples
+> 
+> text <- cli::col_red(cli:::lorem_ipsum())
+> ansi_strtrim(c(text, "foobar"), 40)
+<ansi_string>
+[1] Lorem ad ipsum veniam esse nisi deserun…
+[2] foobar                                  
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_strwrap")
+> ### * ansi_strwrap
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_strwrap
+> ### Title: Wrap an ANSI styled string to a certain width
+> ### Aliases: ansi_strwrap
+> 
+> ### ** Examples
+> 
+> text <- cli:::lorem_ipsum()
+> # Highlight some words, that start with 's'
+> rexp <- gregexpr("\\b([sS][a-zA-Z]+)\\b", text)
+> regmatches(text, rexp) <- lapply(regmatches(text, rexp), col_red)
+> cat(text)
+Lorem ad ipsum veniam esse nisi deserunt duis. Qui incididunt elit elit mollit sint nulla consectetur aute commodo do elit laboris minim et. Laboris ipsum mollit voluptate et non do incididunt eiusmod. Anim consectetur mollit laborum occaecat eiusmod excepteur. Ullamco non tempor esse anim tempor magna non.> 
+> wrp <- ansi_strwrap(text, width = 40)
+> cat(wrp, sep = "\n")
+Lorem ad ipsum veniam esse nisi
+deserunt duis. Qui incididunt elit elit
+mollit sint nulla consectetur aute
+commodo do elit laboris minim et.
+Laboris ipsum mollit voluptate et non
+do incididunt eiusmod. Anim consectetur
+mollit laborum occaecat eiusmod
+excepteur. Ullamco non tempor esse anim
+tempor magna non.
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_substr")
+> ### * ansi_substr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_substr
+> ### Title: Substring(s) of an ANSI colored string
+> ### Aliases: ansi_substr
+> 
+> ### ** Examples
+> 
+> str <- paste(
++   col_red("red"),
++   "default",
++   col_green("green")
++ )
+> 
+> cat(str, "\n")
+red default green 
+> cat(ansi_substr(str, 1, 5), "\n")
+red d 
+> cat(ansi_substr(str, 1, 15), "\n")
+red default gre 
+> cat(ansi_substr(str, 3, 7), "\n")
+d def 
+> 
+> substr(ansi_strip(str), 1, 5)
+[1] "red d"
+> substr(ansi_strip(str), 1, 15)
+[1] "red default gre"
+> substr(ansi_strip(str), 3, 7)
+[1] "d def"
+> 
+> str2 <- paste(
++   "another",
++   col_red("multi-", style_underline("style")),
++   "text"
++ )
+> 
+> cat(str2, "\n")
+another multi-style text 
+> cat(ansi_substr(c(str, str2), c(3,5), c(7, 18)), sep = "\n")
+d def
+her multi-styl
+> substr(ansi_strip(c(str, str2)), c(3,5), c(7, 18))
+[1] "d def"          "her multi-styl"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_substring")
+> ### * ansi_substring
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_substring
+> ### Title: Substring(s) of an ANSI colored string
+> ### Aliases: ansi_substring
+> 
+> ### ** Examples
+> 
+> str <- paste(
++   col_red("red"),
++   "default",
++   col_green("green")
++ )
+> 
+> cat(str, "\n")
+red default green 
+> cat(ansi_substring(str, 1, 5), "\n")
+red d 
+> cat(ansi_substring(str, 1, 15), "\n")
+red default gre 
+> cat(ansi_substring(str, 3, 7), "\n")
+d def 
+> 
+> substring(ansi_strip(str), 1, 5)
+[1] "red d"
+> substring(ansi_strip(str), 1, 15)
+[1] "red default gre"
+> substring(ansi_strip(str), 3, 7)
+[1] "d def"
+> 
+> str2 <- paste(
++   "another",
++   col_red("multi-", style_underline("style")),
++   "text"
++ )
+> 
+> cat(str2, "\n")
+another multi-style text 
+> cat(ansi_substring(str2, c(3,5), c(7, 18)), sep = "\n")
+other
+her multi-styl
+> substring(ansi_strip(str2), c(3,5), c(7, 18))
+[1] "other"          "her multi-styl"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_toupper")
+> ### * ansi_toupper
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_toupper
+> ### Title: ANSI character translation and case folding
+> ### Aliases: ansi_toupper ansi_tolower ansi_chartr
+> 
+> ### ** Examples
+> 
+> ansi_toupper(col_red("Uppercase"))
+<ansi_string>
+[1] UPPERCASE
+> 
+> ansi_tolower(col_red("LowerCase"))
+<ansi_string>
+[1] lowercase
+> 
+> x <- paste0(col_green("MiXeD"), col_red(" cAsE 123"))
+> ansi_chartr("iXs", "why", x)
+<ansi_string>
+[1] MwheD cAyE 123
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ansi_trimws")
+> ### * ansi_trimws
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ansi_trimws
+> ### Title: Remove leading and/or trailing whitespace from an ANSI string
+> ### Aliases: ansi_trimws
+> 
+> ### ** Examples
+> 
+> trimws(paste0("   ", col_red("I am red"), "   "))
+[1] "I am red"
+> ansi_trimws(paste0("   ", col_red("I am red"), "   "))
+<ansi_string>
+[1] I am red
+> trimws(col_red("   I am red   "))
+<ansi_string>
+[1] I am red
+> ansi_trimws(col_red("   I am red   "))
+<ansi_string>
+[1] I am red
+> 
+> 
+> 
+> cleanEx()
+> nameEx("boxx")
+> ### * boxx
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: list_border_styles
+> ### Title: Draw a banner-like box in the console
+> ### Aliases: list_border_styles boxx
+> 
+> ### ** Examples
+> 
+> ## Simple box
+> boxx("Hello there!")
+┌──────────────────┐
+│                  │
+│   Hello there!   │
+│                  │
+└──────────────────┘
+> 
+> ## All border styles
+> list_border_styles()
+[1] "single"        "double"        "round"         "single-double"
+[5] "double-single" "classic"       "none"         
+> 
+> ## Change border style
+> boxx("Hello there!", border_style = "double")
+╔══════════════════╗
+║                  ║
+║   Hello there!   ║
+║                  ║
+╚══════════════════╝
+> 
+> ## Multiple lines
+> boxx(c("Hello", "there!"), padding = 1)
+┌────────────┐
+│            │
+│   Hello    │
+│   there!   │
+│            │
+└────────────┘
+> 
+> ## Padding
+> boxx("Hello there!", padding = 1)
+┌──────────────────┐
+│                  │
+│   Hello there!   │
+│                  │
+└──────────────────┘
+> boxx("Hello there!", padding = c(1, 5, 1, 5))
+┌──────────────────────┐
+│                      │
+│     Hello there!     │
+│                      │
+└──────────────────────┘
+> 
+> ## Margin
+> boxx("Hello there!", margin = 1)
+
+   ┌──────────────────┐
+   │                  │
+   │   Hello there!   │
+   │                  │
+   └──────────────────┘
+
+> boxx("Hello there!", margin = c(1, 5, 1, 5))
+
+     ┌──────────────────┐
+     │                  │
+     │   Hello there!   │
+     │                  │
+     └──────────────────┘
+
+> boxx("Hello there!", padding = 1, margin = c(1, 5, 1, 5))
+
+     ┌──────────────────┐
+     │                  │
+     │   Hello there!   │
+     │                  │
+     └──────────────────┘
+
+> 
+> ## Floating
+> boxx("Hello there!", padding = 1, float = "center")
+                               ┌──────────────────┐
+                               │                  │
+                               │   Hello there!   │
+                               │                  │
+                               └──────────────────┘
+> boxx("Hello there!", padding = 1, float = "right")
+                                                            ┌──────────────────┐
+                                                            │                  │
+                                                            │   Hello there!   │
+                                                            │                  │
+                                                            └──────────────────┘
+> 
+> ## Text color
+> boxx(col_cyan("Hello there!"), padding = 1, float = "center")
+                               ┌──────────────────┐
+                               │                  │
+                               │   Hello there!   │
+                               │                  │
+                               └──────────────────┘
+> 
+> ## Backgorund color
+> boxx("Hello there!", padding = 1, background_col = "brown")
+┌──────────────────┐
+│                  │
+│   Hello there!   │
+│                  │
+└──────────────────┘
+> boxx("Hello there!", padding = 1, background_col = bg_red)
+┌──────────────────┐
+│                  │
+│   Hello there!   │
+│                  │
+└──────────────────┘
+> 
+> ## Border color
+> boxx("Hello there!", padding = 1, border_col = "green")
+┌──────────────────┐
+│                  │
+│   Hello there!   │
+│                  │
+└──────────────────┘
+> boxx("Hello there!", padding = 1, border_col = col_red)
+┌──────────────────┐
+│                  │
+│   Hello there!   │
+│                  │
+└──────────────────┘
+> 
+> ## Label alignment
+> boxx(c("Hi", "there", "you!"), padding = 1, align = "left")
+┌───────────┐
+│           │
+│   Hi      │
+│   there   │
+│   you!    │
+│           │
+└───────────┘
+> boxx(c("Hi", "there", "you!"), padding = 1, align = "center")
+┌───────────┐
+│           │
+│     Hi    │
+│   there   │
+│    you!   │
+│           │
+└───────────┘
+> boxx(c("Hi", "there", "you!"), padding = 1, align = "right")
+┌───────────┐
+│           │
+│      Hi   │
+│   there   │
+│    you!   │
+│           │
+└───────────┘
+> 
+> ## A very customized box
+> star <- symbol$star
+> label <- c(paste(star, "Hello", star), "  there!")
+> boxx(
++   col_white(label),
++   border_style="round",
++   padding = 1,
++   float = "center",
++   border_col = "tomato3",
++   background_col="darkolivegreen"
++ )
+                                ╭───────────────╮
+                                │               │
+                                │   ★ Hello ★   │
+                                │     there!    │
+                                │               │
+                                ╰───────────────╯
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cat_line")
+> ### * cat_line
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cat_line
+> ### Title: 'cat()' helpers
+> ### Aliases: cat_line cat_bullet cat_boxx cat_rule cat_print
+> 
+> ### ** Examples
+> 
+> cat_line("This is ", "a ", "line of text.", col = "red")
+This is a line of text.
+> cat_bullet(letters[1:5])
+• a
+• b
+• c
+• d
+• e
+> cat_bullet(letters[1:5], bullet = "tick", bullet_col = "green")
+✔ a
+✔ b
+✔ c
+✔ d
+✔ e
+> cat_rule()
+────────────────────────────────────────────────────────────────────────────────
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli")
+> ### * cli
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli
+> ### Title: Compose multiple cli functions
+> ### Aliases: cli
+> 
+> ### ** Examples
+> 
+> cli({
++   cli_h1("Title")
++   cli_h2("Subtitle")
++   cli_ul(c("this", "that", "end"))
++ })
+
+── Title ───────────────────────────────────────────────────────────────────────
+
+── Subtitle ──
+
+• this
+• that
+• end
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_abort")
+> ### * cli_abort
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_abort
+> ### Title: Signal an error, warning or message with a cli formatted message
+> ### Aliases: cli_abort cli_warn cli_inform
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D n <- "boo"
+> ##D cli_abort(c(
+> ##D         "{.var n} must be a numeric vector",
+> ##D   "x" = "You've supplied a {.cls {class(n)}} vector."
+> ##D ))
+> ##D 
+> ##D len <- 26
+> ##D idx <- 100
+> ##D cli_abort(c(
+> ##D         "Must index an existing element:",
+> ##D   "i" = "There {?is/are} {len} element{?s}.",
+> ##D   "x" = "You've tried to subset element {idx}."
+> ##D ))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_alert")
+> ### * cli_alert
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_alert
+> ### Title: CLI alerts
+> ### Aliases: cli_alert cli_alert_success cli_alert_danger cli_alert_warning
+> ###   cli_alert_info
+> 
+> ### ** Examples
+> 
+> 
+> cli_alert("Cannot lock package library.")
+→ Cannot lock package library.
+> cli_alert_success("Package {.pkg cli} installed successfully.")
+✔ Package cli installed successfully.
+> cli_alert_danger("Could not download {.pkg cli}.")
+✖ Could not download cli.
+> cli_alert_warning("Internet seems to be unreacheable.")
+! Internet seems to be unreacheable.
+> cli_alert_info("Downloaded 1.45MiB of data")
+ℹ Downloaded 1.45MiB of data
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_blockquote")
+> ### * cli_blockquote
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_blockquote
+> ### Title: CLI block quote
+> ### Aliases: cli_blockquote
+> 
+> ### ** Examples
+> 
+> cli_blockquote(cli:::lorem_ipsum(), citation = "Nobody, ever")
+
+    “Lorem ad ipsum veniam esse nisi deserunt duis. Qui incididunt
+    elit elit mollit sint nulla consectetur aute commodo do elit
+    laboris minim et. Laboris ipsum mollit voluptate et non do
+    incididunt eiusmod. Anim consectetur mollit laborum occaecat
+    eiusmod excepteur. Ullamco non tempor esse anim tempor magna non.”
+    — Nobody, ever
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_bullets")
+> ### * cli_bullets
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_bullets
+> ### Title: List of items
+> ### Aliases: cli_bullets
+> 
+> ### ** Examples
+> 
+> cli_bullets(c(
++         "noindent",
++   " " = "indent",
++   "*" = "bullet",
++   ">" = "arrow",
++   "v" = "success",
++   "x" = "danger",
++   "!" = "warning",
++   "i" = "info"
++ ))
+noindent
+  indent
+• bullet
+→ arrow
+✔ success
+✖ danger
+! warning
+ℹ info
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_code")
+> ### * cli_code
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_code
+> ### Title: A block of code
+> ### Aliases: cli_code
+> 
+> ### ** Examples
+> 
+> cli_code(format(cli::cli_blockquote))
+function (quote, citation = NULL, id = NULL, class = NULL, .envir = parent.frame()) 
+{
+    cli__message("blockquote", list(quote = glue_cmd(quote, .envir = .envir), 
+        citation = glue_cmd(citation, .envir = .envir), id = id, 
+        class = class))
+}
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_debug_doc")
+> ### * cli_debug_doc
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_debug_doc
+> ### Title: Debug cli internals
+> ### Aliases: cli_debug_doc
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D cli_debug_doc()
+> ##D 
+> ##D olid <- cli_ol()
+> ##D cli_li()
+> ##D cli_debug_doc()
+> ##D cli_debug_doc()[]
+> ##D 
+> ##D cli_end(olid)
+> ##D cli_debug_doc()
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_div")
+> ### * cli_div
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_div
+> ### Title: Generic CLI container
+> ### Aliases: cli_div
+> 
+> ### ** Examples
+> 
+> ## div with custom theme
+> d <- cli_div(theme = list(h1 = list(color = "blue",
++                                     "font-weight" = "bold")))
+> cli_h1("Custom title")
+
+Custom title
+> cli_end(d)
+> 
+> ## Close automatically
+> div <- function() {
++   cli_div(class = "tmp", theme = list(.tmp = list(color = "yellow")))
++   cli_text("This is yellow")
++ }
+> div()
+This is yellow
+> cli_text("This is not yellow any more")
+This is not yellow any more
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_dl")
+> ### * cli_dl
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_dl
+> ### Title: Definition list
+> ### Aliases: cli_dl
+> 
+> ### ** Examples
+> 
+> ## Specifying the items at the beginning
+> cli_dl(c(foo = "one", bar = "two", baz = "three"))
+foo: one
+bar: two
+baz: three
+> 
+> ## Adding items one by one
+> cli_dl()
+> cli_li(c(foo = "one"))
+foo: one
+> cli_li(c(bar = "two"))
+bar: two
+> cli_li(c(baz = "three"))
+baz: three
+> cli_end()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_end")
+> ### * cli_end
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_end
+> ### Title: Close a CLI container
+> ### Aliases: cli_end
+> 
+> ### ** Examples
+> 
+> ## If id is omitted
+> cli_par()
+> cli_text("First paragraph")
+First paragraph
+> cli_end()
+
+> cli_par()
+> cli_text("Second paragraph")
+Second paragraph
+> cli_end()
+
+> 
+> 
+> 
+> graphics::par(get("par.postscript", pos = 'CheckExEnv'))
+> cleanEx()
+> nameEx("cli_format")
+> ### * cli_format
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_format
+> ### Title: Format a value for printing
+> ### Aliases: cli_format cli_format.default cli_format.character
+> ###   cli_format.numeric
+> 
+> ### ** Examples
+> 
+> things <- c(rep("this", 3), "that")
+> cli_format(things)
+[1] "\"this\"" "\"this\"" "\"this\"" "\"that\""
+> cli_text("{.val {things}}")
+"this", "this", "this", and "that"
+> 
+> nums <- 1:5 / 7
+> cli_format(nums, style = list(digits = 2))
+[1] 0.14 0.29 0.43 0.57 0.71
+> cli_text("{.val {nums}}")
+0.142857142857143, 0.285714285714286, 0.428571428571429, 0.571428571428571, and
+0.714285714285714
+> divid <- cli_div(theme = list(.val = list(digits = 3)))
+> cli_text("{.val {nums}}")
+0.143, 0.286, 0.429, 0.571, and 0.714
+> cli_end(divid)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_format_method")
+> ### * cli_format_method
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_format_method
+> ### Title: Create a format method for an object using cli tools
+> ### Aliases: cli_format_method
+> 
+> ### ** Examples
+> 
+> 
+> # Let's create format and print methods for a new S3 class that
+> # represents the an installed R package: `r_package`
+> 
+> # An `r_package` will contain the DESCRIPTION metadata of the package
+> # and also its installation path.
+> new_r_package <- function(pkg) {
++   tryCatch(
++     desc <- packageDescription(pkg),
++     warning = function(e) stop("Cannot find R package `", pkg, "`")
++   )
++   file <- dirname(attr(desc, "file"))
++   if (basename(file) != pkg) file <- dirname(file)
++   structure(
++     list(desc = unclass(desc), lib = dirname(file)),
++     class = "r_package"
++   )
++ }
+> 
+> format.r_package <- function(x, ...) {
++   cli_format_method({
++     cli_h1("{.pkg {x$desc$Package}} {cli::symbol$line} {x$desc$Title}")
++     cli_text("{x$desc$Description}")
++     cli_ul(c(
++       "Version: {x$desc$Version}",
++       if (!is.null(x$desc$Maintainer)) "Maintainer: {x$desc$Maintainer}",
++       "License: {x$desc$License}"
++     ))
++     if (!is.na(x$desc$URL)) cli_text("See more at {.url {x$desc$URL}}")
++   })
++ }
+> 
+> # Now the print method is easy:
+> print.r_package <- function(x, ...) {
++   cat(format(x, ...), sep = "\n")
++ }
+> 
+> # Try it out
+> new_r_package("cli")
+
+── cli ─ Helpers for Developing Command Line Interfaces ────────────────────────
+A suite of tools to build attractive command line interfaces ('CLIs'), from
+semantic elements: headings, lists, alerts, paragraphs, etc. Supports custom
+themes via a 'CSS'-like language. It also contains a number of lower level
+'CLI' elements: rules, boxes, trees, and 'Unicode' symbols with 'ASCII'
+alternatives. It support ANSI colors and text styles as well.
+• Version: 3.0.1
+• Maintainer: Gábor Csárdi <csardi.gabor@gmail.com>
+• License: MIT + file LICENSE
+See more at <https://cli.r-lib.org, https://github.com/r-lib/cli#readme>
+> 
+> # The formatting of the output depends on the current theme:
+> opt <- options(cli.theme = simple_theme())
+> print(new_r_package("cli"))
+
+── cli ─ Helpers for Developing Command Line Interfaces ────────────────────────
+A suite of tools to build attractive command line interfaces ('CLIs'), from
+semantic elements: headings, lists, alerts, paragraphs, etc. Supports custom
+themes via a 'CSS'-like language. It also contains a number of lower level
+'CLI' elements: rules, boxes, trees, and 'Unicode' symbols with 'ASCII'
+alternatives. It support ANSI colors and text styles as well.
+• Version: 3.0.1
+• Maintainer: Gábor Csárdi <csardi.gabor@gmail.com>
+• License: MIT + file LICENSE
+See more at <https://cli.r-lib.org, https://github.com/r-lib/cli#readme>
+> options(opt)  # <- restore theme
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_h1")
+> ### * cli_h1
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_h1
+> ### Title: CLI headings
+> ### Aliases: cli_h1 cli_h2 cli_h3
+> 
+> ### ** Examples
+> 
+> cli_h1("Main title")
+
+── Main title ──────────────────────────────────────────────────────────────────
+> cli_h2("Subtitle")
+
+── Subtitle ──
+
+> cli_text("And some regular text....")
+And some regular text....
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_li")
+> ### * cli_li
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_li
+> ### Title: CLI list item(s)
+> ### Aliases: cli_li
+> 
+> ### ** Examples
+> 
+> ## Adding items one by one
+> cli_ul()
+> cli_li("one")
+• one
+> cli_li("two")
+• two
+> cli_li("three")
+• three
+> cli_end()
+> 
+> ## Complex item, added gradually.
+> cli_ul()
+> cli_li()
+> cli_verbatim("Beginning of the {.emph first} item")
+  Beginning of the {.emph first} item
+> cli_text("Still the first item")
+  Still the first item
+> cli_end()
+> cli_li("Second item")
+  • Second item
+> cli_end()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_ol")
+> ### * cli_ol
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_ol
+> ### Title: Ordered CLI list
+> ### Aliases: cli_ol
+> 
+> ### ** Examples
+> 
+> ## Specifying the items at the beginning
+> cli_ol(c("one", "two", "three"))
+  1. one
+  2. two
+  3. three
+> 
+> ## Adding items one by one
+> cli_ol()
+> cli_li("one")
+  1. one
+> cli_li("two")
+  2. two
+> cli_li("three")
+  3. three
+> cli_end()
+> 
+> ## Nested lists
+> cli_div(theme = list(ol = list("margin-left" = 2)))
+> cli_ul()
+> cli_li("one")
+  • one
+> cli_ol(c("foo", "bar", "foobar"))
+      1. foo
+      2. bar
+      3. foobar
+> cli_li("two")
+  • two
+> cli_end()
+> cli_end()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_par")
+> ### * cli_par
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_par
+> ### Title: CLI paragraph
+> ### Aliases: cli_par
+> 
+> ### ** Examples
+> 
+> id <- cli_par()
+> cli_text("First paragraph")
+First paragraph
+> cli_end(id)
+
+> id <- cli_par()
+> cli_text("Second paragraph")
+Second paragraph
+> cli_end(id)
+
+> 
+> 
+> 
+> graphics::par(get("par.postscript", pos = 'CheckExEnv'))
+> cleanEx()
+> nameEx("cli_process_start")
+> ### * cli_process_start
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_process_start
+> ### Title: Indicate the start and termination of some computation in the
+> ###   status bar
+> ### Aliases: cli_process_start cli_process_done cli_process_failed
+> 
+> ### ** Examples
+> 
+> 
+> ## Failure by default
+> fun <- function() {
++   cli_process_start("Calculating")
++   if (interactive()) Sys.sleep(1)
++   if (runif(1) < 0.5) stop("Failed")
++   cli_process_done()
++ }
+> tryCatch(fun(), error = function(err) err)
+ℹ Calculating
+✖ Calculating ... failed
+
+<simpleError in fun(): Failed>
+> 
+> ## Success by default
+> fun2 <- function() {
++   cli_process_start("Calculating", on_exit = "done")
++   tryCatch({
++     if (interactive()) Sys.sleep(1)
++     if (runif(1) < 0.5) stop("Failed")
++   }, error = function(err) cli_process_failed())
++ }
+> fun2()
+ℹ Calculating
+✖ Calculating ... failed
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_progress_bar")
+> ### * cli_progress_bar
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_progress_bar
+> ### Title: cli progress bars
+> ### Aliases: cli_progress_bar __cli_update_due cli_tick_reset
+> ###   ccli_tick_reset ticking cli_progress_update cli_progress_done
+> 
+> ### ** Examples
+> 
+> ## Don't show: 
+> if (cli:::should_run_progress_examples()) (if (getRversion() >= "3.4") withAutoprint else force)({ # examplesIf
++ ## End(Don't show)
++ clean <- function() {
++   cli_progress_bar("Cleaning data", total = 100)
++   for (i in 1:100) {
++     Sys.sleep(5/100)
++     cli_progress_update()
++   }
++ }
++ clean()
++ ## Don't show: 
++ }) # examplesIf
+> clean <- function() {
++     cli_progress_bar("Cleaning data", total = 100)
++     for (i in 1:100) {
++         Sys.sleep(5/100)
++         cli_progress_update()
++     }
++ }
+> clean()
+Cleaning data ■■■■■■■■■■■■■■■                   47% | ETA:  3s
+Cleaning data ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
+> ## End(Don't show)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_progress_styles")
+> ### * cli_progress_styles
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_progress_styles
+> ### Title: List of built-in cli progress styles
+> ### Aliases: cli_progress_styles
+> 
+> ### ** Examples
+> 
+> cli_progress_styles()
+$classic
+$classic$complete
+[1] "#"
+
+$classic$incomplete
+[1] " "
+
+
+$squares
+$squares$complete
+[1] "■"
+
+$squares$incomplete
+[1] " "
+
+
+$dot
+$dot$complete
+<ansi_string>
+[1] ─
+
+$dot$incomplete
+<ansi_string>
+[1] ─
+
+$dot$current
+<ansi_string>
+[1] ●
+
+
+$fillsquares
+$fillsquares$complete
+[1] "■"
+
+$fillsquares$incomplete
+<ansi_string>
+[1] □
+
+
+$bar
+$bar$complete
+[1] "█"
+
+$bar$incomplete
+<ansi_string>
+[1] █
+
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_rule")
+> ### * cli_rule
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_rule
+> ### Title: CLI horizontal rule
+> ### Aliases: cli_rule
+> 
+> ### ** Examples
+> 
+> cli_rule()
+────────────────────────────────────────────────────────────────────────────────
+> cli_text(packageDescription("cli")$Description)
+A suite of tools to build attractive command line interfaces ('CLIs'), from
+semantic elements: headings, lists, alerts, paragraphs, etc. Supports custom
+themes via a 'CSS'-like language. It also contains a number of lower level
+'CLI' elements: rules, boxes, trees, and 'Unicode' symbols with 'ASCII'
+alternatives. It support ANSI colors and text styles as well.
+> cli_rule()
+────────────────────────────────────────────────────────────────────────────────
+> 
+> # Theming
+> d <- cli_div(theme = list(rule = list(
++   color = "blue",
++   "background-color" = "darkgrey",
++   "line-type" = "double")))
+> cli_rule("Left", right = "Right")
+══ Left ═══════════════════════════════════════════════════════════════ Right ══
+> cli_end(d)
+> 
+> # Interpolation
+> cli_rule(left = "One plus one is {1+1}")
+── One plus one is 2 ───────────────────────────────────────────────────────────
+> cli_rule(left = "Package {.pkg mypackage}")
+── Package mypackage ───────────────────────────────────────────────────────────
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_sitrep")
+> ### * cli_sitrep
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_sitrep
+> ### Title: cli situation report
+> ### Aliases: cli_sitrep
+> 
+> ### ** Examples
+> 
+> cli_sitrep()
+- cli_unicode_option : NULL
+- symbol_charset     : UTF-8
+- console_utf8       : TRUE
+- latex_active       : FALSE
+- num_colors         : 1
+- console_width      : 80
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_text")
+> ### * cli_text
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_text
+> ### Title: CLI text
+> ### Aliases: cli_text
+> 
+> ### ** Examples
+> 
+> cli_text("Hello world!")
+Hello world!
+> cli_text(packageDescription("cli")$Description)
+A suite of tools to build attractive command line interfaces ('CLIs'), from
+semantic elements: headings, lists, alerts, paragraphs, etc. Supports custom
+themes via a 'CSS'-like language. It also contains a number of lower level
+'CLI' elements: rules, boxes, trees, and 'Unicode' symbols with 'ASCII'
+alternatives. It support ANSI colors and text styles as well.
+> 
+> ## Arguments are concatenated
+> cli_text("this", "that")
+thisthat
+> 
+> ## Command substitution
+> greeting <- "Hello"
+> subject <- "world"
+> cli_text("{greeting} {subject}!")
+Hello world!
+> 
+> ## Inline theming
+> cli_text("The {.fn cli_text} function in the {.pkg cli} package")
+The `cli_text()` function in the cli package
+> 
+> ## Use within container elements
+> ul <- cli_ul()
+> cli_li()
+> cli_text("{.emph First} item")
+  First item
+> cli_li()
+> cli_text("{.emph Second} item")
+  Second item
+> cli_end(ul)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_ul")
+> ### * cli_ul
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_ul
+> ### Title: Unordered CLI list
+> ### Aliases: cli_ul
+> 
+> ### ** Examples
+> 
+> ## Specifying the items at the beginning
+> cli_ul(c("one", "two", "three"))
+  • one
+  • two
+  • three
+> 
+> ## Adding items one by one
+> cli_ul()
+> cli_li("one")
+  • one
+> cli_li("two")
+  • two
+> cli_li("three")
+  • three
+> cli_end()
+> 
+> ## Complex item, added gradually.
+> cli_ul()
+> cli_li()
+> cli_verbatim("Beginning of the {.emph first} item")
+  Beginning of the {.emph first} item
+> cli_text("Still the first item")
+  Still the first item
+> cli_end()
+> cli_li("Second item")
+  • Second item
+> cli_end()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_vec")
+> ### * cli_vec
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_vec
+> ### Title: Add custom cli style to a vector
+> ### Aliases: cli_vec
+> 
+> ### ** Examples
+> 
+> v <- cli_vec(
++   c("foo", "bar", "foobar"),
++   style = list(vec_sep = " & ", vec_last = " & ")
++ )
+> cli_text("My list: {v}.")
+My list: foo & bar & foobar.
+> 
+> # custom truncation
+> x <- cli_vec(names(mtcars), list(vec_trunc = 3))
+> cli_text("Column names: {x}.")
+Column names: mpg, cyl, disp, ….
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cli_verbatim")
+> ### * cli_verbatim
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cli_verbatim
+> ### Title: CLI verbatim text
+> ### Aliases: cli_verbatim
+> 
+> ### ** Examples
+> 
+> cli_verbatim("This has\nthree", "lines")
+This has
+three
+lines
+> 
+> 
+> 
+> cleanEx()
+> nameEx("combine_ansi_styles")
+> ### * combine_ansi_styles
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: combine_ansi_styles
+> ### Title: Combine two or more ANSI styles
+> ### Aliases: combine_ansi_styles
+> 
+> ### ** Examples
+> 
+> ## Use style names
+> alert <- combine_ansi_styles("bold", "red4")
+> cat(alert("Warning!"), "\n")
+Warning! 
+> 
+> ## Or style functions
+> alert <- combine_ansi_styles(style_bold, col_red, bg_cyan)
+> cat(alert("Warning!"), "\n")
+Warning! 
+> 
+> ## Combine a composite style
+> alert <- combine_ansi_styles(
++   "bold",
++   combine_ansi_styles("red", bg_cyan))
+> cat(alert("Warning!"), "\n")
+Warning! 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("console_width")
+> ### * console_width
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: console_width
+> ### Title: Determine the width of the console
+> ### Aliases: console_width
+> 
+> ### ** Examples
+> 
+> console_width()
+[1] 80
+> 
+> 
+> 
+> cleanEx()
+> nameEx("containers")
+> ### * containers
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: containers
+> ### Title: CLI containers
+> ### Aliases: containers
+> 
+> ### ** Examples
+> 
+> ## div with custom theme
+> d <- cli_div(theme = list(h1 = list(color = "blue",
++                                     "font-weight" = "bold")))
+> cli_h1("Custom title")
+
+Custom title
+> cli_end(d)
+> 
+> ## Close automatically
+> div <- function() {
++   cli_div(class = "tmp", theme = list(.tmp = list(color = "yellow")))
++   cli_text("This is yellow")
++ }
+> div()
+This is yellow
+> cli_text("This is not yellow any more")
+This is not yellow any more
+> 
+> 
+> 
+> cleanEx()
+> nameEx("demo_spinners")
+> ### * demo_spinners
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: demo_spinners
+> ### Title: Show a demo of some (by default all) spinners
+> ### Aliases: demo_spinners
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D   demo_spinners(sample(list_spinners(), 10))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("format_error")
+> ### * format_error
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: format_error
+> ### Title: Format an error, warning or diagnostic message
+> ### Aliases: format_error format_warning format_message
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D n <- "boo"
+> ##D stop(format_error(c(
+> ##D         "{.var n} must be a numeric vector",
+> ##D   "x" = "You've supplied a {.cls {class(n)}} vector."
+> ##D )))
+> ##D 
+> ##D len <- 26
+> ##D idx <- 100
+> ##D stop(format_error(c(
+> ##D         "Must index an existing element:",
+> ##D   "i" = "There {?is/are} {len} element{?s}.",
+> ##D   "x" = "You've tried to subset element {idx}."
+> ##D )))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("format_inline")
+> ### * format_inline
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: format_inline
+> ### Title: Format and returns a line of text
+> ### Aliases: format_inline
+> 
+> ### ** Examples
+> 
+> format_inline("This is a message for {.emph later}.")
+[1] "This is a message for later."
+> 
+> 
+> 
+> cleanEx()
+> nameEx("get_spinner")
+> ### * get_spinner
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: get_spinner
+> ### Title: Character vector to put a spinner on the screen
+> ### Aliases: get_spinner
+> 
+> ### ** Examples
+> 
+> get_spinner()
+$name
+[1] "dots"
+
+$interval
+[1] 80
+
+$frames
+ [1] "⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏"
+
+> get_spinner("shark")
+$name
+[1] "shark"
+
+$interval
+[1] 120
+
+$frames
+ [1] "▐|\\____________▌" "▐_|\\___________▌" "▐__|\\__________▌"
+ [4] "▐___|\\_________▌" "▐____|\\________▌" "▐_____|\\_______▌"
+ [7] "▐______|\\______▌" "▐_______|\\_____▌" "▐________|\\____▌"
+[10] "▐_________|\\___▌" "▐__________|\\__▌" "▐___________|\\_▌"
+[13] "▐____________|\\▌" "▐____________/|▌"  "▐___________/|_▌" 
+[16] "▐__________/|__▌"  "▐_________/|___▌"  "▐________/|____▌" 
+[19] "▐_______/|_____▌"  "▐______/|______▌"  "▐_____/|_______▌" 
+[22] "▐____/|________▌"  "▐___/|_________▌"  "▐__/|__________▌" 
+[25] "▐_/|___________▌"  "▐/|____________▌" 
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("inline-markup")
+> ### * inline-markup
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: inline-markup
+> ### Title: CLI inline markup
+> ### Aliases: inline-markup
+> 
+> ### ** Examples
+> 
+> ## Some inline markup examples
+> cli_ul()
+> cli_li("{.emph Emphasized} text")
+  • Emphasized text
+> cli_li("{.strong Strong} importance")
+  • Strong importance
+> cli_li("A piece of code: {.code sum(a) / length(a)}")
+  • A piece of code: `sum(a) / length(a)`
+> cli_li("A package name: {.pkg cli}")
+  • A package name: cli
+> cli_li("A function name: {.fn cli_text}")
+  • A function name: `cli_text()`
+> cli_li("A keyboard key: press {.kbd ENTER}")
+  • A keyboard key: press [ENTER]
+> cli_li("A file name: {.file /usr/bin/env}")
+  • A file name: '/usr/bin/env'
+> cli_li("An email address: {.email bugs.bunny@acme.com}")
+  • An email address: 'bugs.bunny@acme.com'
+> cli_li("A URL: {.url https://acme.com}")
+  • A URL: <https://acme.com>
+> cli_li("An environment variable: {.envvar R_LIBS}")
+  • An environment variable: `R_LIBS`
+> cli_end()
+> 
+> ## Adding a new class
+> cli_div(theme = list(
++   span.myclass = list(color = "lightgrey"),
++   "span.myclass" = list(before = "["),
++   "span.myclass" = list(after = "]")))
+> cli_text("This is {.myclass in brackets}.")
+This is [in brackets].
+> cli_end()
+> 
+> ## Collapsing
+> pkgs <- c("pkg1", "pkg2", "pkg3")
+> cli_text("Packages: {pkgs}.")
+Packages: pkg1, pkg2, and pkg3.
+> cli_text("Packages: {.pkg {pkgs}}")
+Packages: pkg1, pkg2, and pkg3
+> 
+> ## Custom truncation, style set via cli_vec
+> nms <- cli_vec(names(mtcars), list(vec_trunc = 5))
+> cli_text("Column names: {nms}.")
+Column names: mpg, cyl, disp, hp, drat, ….
+> 
+> ## Classes are collapsed differently by default
+> x <- Sys.time()
+> cli_text("Hey {.var x} has class {.cls {class(x)}}")
+Hey `x` has class <POSIXct/POSIXt>
+> 
+> ## Escaping
+> msg <- "Error in if (ncol(dat$y)) {: argument is of length zero"
+> cli_alert_warning("{msg}")
+! Error in if (ncol(dat$y)) {: argument is of length zero
+> 
+> cli_alert_warning("A warning with {{ braces }}")
+! A warning with { braces }
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_ansi_tty")
+> ### * is_ansi_tty
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_ansi_tty
+> ### Title: Detect if a stream support ANSI escape characters
+> ### Aliases: is_ansi_tty
+> 
+> ### ** Examples
+> 
+> is_ansi_tty()
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_dynamic_tty")
+> ### * is_dynamic_tty
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_dynamic_tty
+> ### Title: Detect whether a stream supports \\r (Carriage return)
+> ### Aliases: is_dynamic_tty
+> 
+> ### ** Examples
+> 
+> is_dynamic_tty()
+[1] FALSE
+> is_dynamic_tty(stdout())
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("list_spinners")
+> ### * list_spinners
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: list_spinners
+> ### Title: List all available spinners
+> ### Aliases: list_spinners
+> 
+> ### ** Examples
+> 
+> list_spinners()
+ [1] "dots"                "dots2"               "dots3"              
+ [4] "dots4"               "dots5"               "dots6"              
+ [7] "dots7"               "dots8"               "dots9"              
+[10] "dots10"              "dots11"              "dots12"             
+[13] "line"                "line2"               "pipe"               
+[16] "simpleDots"          "simpleDotsScrolling" "star"               
+[19] "star2"               "flip"                "hamburger"          
+[22] "growVertical"        "growHorizontal"      "balloon"            
+[25] "balloon2"            "noise"               "bounce"             
+[28] "boxBounce"           "boxBounce2"          "triangle"           
+[31] "arc"                 "circle"              "squareCorners"      
+[34] "circleQuarters"      "circleHalves"        "squish"             
+[37] "toggle"              "toggle2"             "toggle3"            
+[40] "toggle4"             "toggle5"             "toggle6"            
+[43] "toggle7"             "toggle8"             "toggle9"            
+[46] "toggle10"            "toggle11"            "toggle12"           
+[49] "toggle13"            "arrow"               "arrow2"             
+[52] "arrow3"              "bouncingBar"         "bouncingBall"       
+[55] "smiley"              "monkey"              "hearts"             
+[58] "clock"               "earth"               "moon"               
+[61] "runner"              "pong"                "shark"              
+[64] "dqpb"               
+> get_spinner(list_spinners()[1])
+$name
+[1] "dots"
+
+$interval
+[1] 80
+
+$frames
+ [1] "⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏"
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("make_ansi_style")
+> ### * make_ansi_style
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: make_ansi_style
+> ### Title: Create a new ANSI style
+> ### Aliases: make_ansi_style
+> 
+> ### ** Examples
+> 
+> make_ansi_style("orange")
+<ansi_style>
+Example output
+> make_ansi_style("#123456")
+<ansi_style>
+Example output
+> make_ansi_style("orange", bg = TRUE)
+<ansi_style>
+Example output
+> 
+> orange <- make_ansi_style("orange")
+> orange("foobar")
+<ansi_string>
+[1] foobar
+> cat(orange("foobar"))
+foobar> 
+> 
+> 
+> cleanEx()
+> nameEx("num_ansi_colors")
+> ### * num_ansi_colors
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: num_ansi_colors
+> ### Title: Detect the number of ANSI colors to use
+> ### Aliases: num_ansi_colors
+> 
+> ### ** Examples
+> 
+> num_ansi_colors()
+[1] 1
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pluralize")
+> ### * pluralize
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pluralize
+> ### Title: String templating with pluralization
+> ### Aliases: pluralize
+> 
+> ### ** Examples
+> 
+> # Regular plurals
+> nfile <- 0; pluralize("Found {nfile} file{?s}.")
+Found 0 files.
+> nfile <- 1; pluralize("Found {nfile} file{?s}.")
+Found 1 file.
+> nfile <- 2; pluralize("Found {nfile} file{?s}.")
+Found 2 files.
+> 
+> # Irregular plurals
+> ndir <- 1; pluralize("Found {ndir} director{?y/ies}.")
+Found 1 directory.
+> ndir <- 5; pluralize("Found {ndir} director{?y/ies}.")
+Found 5 directories.
+> 
+> # Use 'no' instead of zero
+> nfile <- 0; pluralize("Found {no(nfile)} file{?s}.")
+Found no files.
+> nfile <- 1; pluralize("Found {no(nfile)} file{?s}.")
+Found 1 file.
+> nfile <- 2; pluralize("Found {no(nfile)} file{?s}.")
+Found 2 files.
+> 
+> # Use the length of character vectors
+> pkgs <- "pkg1"
+> pluralize("Will remove the {pkgs} package{?s}.")
+Will remove the pkg1 package.
+> pkgs <- c("pkg1", "pkg2", "pkg3")
+> pluralize("Will remove the {pkgs} package{?s}.")
+Will remove the pkg1, pkg2, and pkg3 packages.
+> 
+> pkgs <- character()
+> pluralize("Will remove {?no/the/the} {pkgs} package{?s}.")
+
+> pkgs <- c("pkg1", "pkg2", "pkg3")
+> pluralize("Will remove {?no/the/the} {pkgs} package{?s}.")
+Will remove the pkg1, pkg2, and pkg3 packages.
+> 
+> # Multiple quantities
+> nfiles <- 3; ndirs <- 1
+> pluralize("Found {nfiles} file{?s} and {ndirs} director{?y/ies}")
+Found 3 files and 1 directory
+> 
+> # Explicit quantities
+> nupd <- 3; ntotal <- 10
+> cli_text("{nupd}/{ntotal} {qty(nupd)} file{?s} {?needs/need} updates")
+3/10 files need updates
+> 
+> 
+> 
+> cleanEx()
+> nameEx("progress-variables")
+> ### * progress-variables
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: progress-variables
+> ### Title: Progress bar variables
+> ### Aliases: progress-variables pb_bar pb_current pb_current_bytes
+> ###   pb_elapsed pb_elapsed_clock pb_elapsed_raw pb_eta pb_eta_raw
+> ###   pb_eta_str pb_extra pb_id pb_name pb_percent pb_pid pb_rate
+> ###   pb_rate_raw pb_rate_bytes pb_spin pb_status pb_timestamp pb_total
+> ###   pb_total_bytes
+> 
+> ### ** Examples
+> 
+> # pb_bar and pb_percent
+> cli_progress_demo(
++   format = "Progress bar: {cli::pb_bar} {cli::pb_percent}",
++   total = 100
++ )
+Progress bar: ■■■■■■■■■■■■■■■■                  50%
+> 
+> # pb_current and pb_total
+> cli_progress_demo(
++   format = "[{cli::pb_current}/{cli::pb_total}]",
++   total = 248
++ )
+[50/248]
+> 
+> # pb_current_bytes, pb_total_bytes
+> cli_progress_demo(
++   format = "[{cli::pb_current_bytes}/{cli::pb_total_bytes}]",
++   total = 102800,
++   at = seq(0, 102800, by = 1024)
++ )
+[0.0 kB/103 kB]
+[1.0 kB/103 kB]
+[2.0 kB/103 kB]
+[3.1 kB/103 kB]
+[4.1 kB/103 kB]
+[5.1 kB/103 kB]
+[6.1 kB/103 kB]
+[7.2 kB/103 kB]
+[8.2 kB/103 kB]
+[9.2 kB/103 kB]
+[ 10 kB/103 kB]
+[ 11 kB/103 kB]
+[ 12 kB/103 kB]
+[ 13 kB/103 kB]
+[ 14 kB/103 kB]
+[ 15 kB/103 kB]
+[ 16 kB/103 kB]
+[ 17 kB/103 kB]
+[ 18 kB/103 kB]
+[ 19 kB/103 kB]
+[ 20 kB/103 kB]
+[ 22 kB/103 kB]
+[ 23 kB/103 kB]
+[ 24 kB/103 kB]
+[ 25 kB/103 kB]
+[ 26 kB/103 kB]
+[ 27 kB/103 kB]
+[ 28 kB/103 kB]
+[ 29 kB/103 kB]
+[ 30 kB/103 kB]
+[ 31 kB/103 kB]
+[ 32 kB/103 kB]
+[ 33 kB/103 kB]
+[ 34 kB/103 kB]
+[ 35 kB/103 kB]
+[ 36 kB/103 kB]
+[ 37 kB/103 kB]
+[ 38 kB/103 kB]
+[ 39 kB/103 kB]
+[ 40 kB/103 kB]
+[ 41 kB/103 kB]
+[ 42 kB/103 kB]
+[ 43 kB/103 kB]
+[ 44 kB/103 kB]
+[ 45 kB/103 kB]
+[ 46 kB/103 kB]
+[ 47 kB/103 kB]
+[ 48 kB/103 kB]
+[ 49 kB/103 kB]
+[ 50 kB/103 kB]
+[ 51 kB/103 kB]
+[ 52 kB/103 kB]
+[ 53 kB/103 kB]
+[ 54 kB/103 kB]
+[ 55 kB/103 kB]
+[ 56 kB/103 kB]
+[ 57 kB/103 kB]
+[ 58 kB/103 kB]
+[ 59 kB/103 kB]
+[ 60 kB/103 kB]
+[ 61 kB/103 kB]
+[ 62 kB/103 kB]
+[ 63 kB/103 kB]
+[ 65 kB/103 kB]
+[ 66 kB/103 kB]
+[ 67 kB/103 kB]
+[ 68 kB/103 kB]
+[ 69 kB/103 kB]
+[ 70 kB/103 kB]
+[ 71 kB/103 kB]
+[ 72 kB/103 kB]
+[ 73 kB/103 kB]
+[ 74 kB/103 kB]
+[ 75 kB/103 kB]
+[ 76 kB/103 kB]
+[ 77 kB/103 kB]
+[ 78 kB/103 kB]
+[ 79 kB/103 kB]
+[ 80 kB/103 kB]
+[ 81 kB/103 kB]
+[ 82 kB/103 kB]
+[ 83 kB/103 kB]
+[ 84 kB/103 kB]
+[ 85 kB/103 kB]
+[ 86 kB/103 kB]
+[ 87 kB/103 kB]
+[ 88 kB/103 kB]
+[ 89 kB/103 kB]
+[ 90 kB/103 kB]
+[ 91 kB/103 kB]
+[ 92 kB/103 kB]
+[ 93 kB/103 kB]
+[ 94 kB/103 kB]
+[ 95 kB/103 kB]
+[ 96 kB/103 kB]
+[ 97 kB/103 kB]
+[ 98 kB/103 kB]
+[ 99 kB/103 kB]
+[100 kB/103 kB]
+[101 kB/103 kB]
+[102 kB/103 kB]
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rule")
+> ### * rule
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rule
+> ### Title: Make a rule with one or two text labels
+> ### Aliases: rule
+> 
+> ### ** Examples
+> 
+> 
+> ## Simple rule
+> rule()
+────────────────────────────────────────────────────────────────────────────────
+> 
+> ## Double rule
+> rule(line = 2)
+════════════════════════════════════════════════════════════════════════════════
+> 
+> ## Bars
+> rule(line = "bar2")
+▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂
+> rule(line = "bar5")
+▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅
+> 
+> ## Left label
+> rule(left = "Results")
+── Results ─────────────────────────────────────────────────────────────────────
+> 
+> ## Centered label
+> rule(center = " * RESULTS * ")
+─────────────────────────────────  * RESULTS *  ────────────────────────────────
+> 
+> ## Colored labels
+> rule(center = col_red(" * RESULTS * "))
+─────────────────────────────────  * RESULTS *  ────────────────────────────────
+> 
+> ## Colored line
+> rule(center = col_red(" * RESULTS * "), line_col = "red")
+─────────────────────────────────  * RESULTS *  ────────────────────────────────
+> 
+> ## Custom line
+> rule(center = "TITLE", line = "~")
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TITLE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> 
+> ## More custom line
+> rule(center = "TITLE", line = col_blue("~-"))
+~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~ TITLE ~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+> 
+> ## Even more custom line
+> rule(center = bg_red(" ", symbol$star, "TITLE",
++   symbol$star, " "),
++   line = "\u2582",
++   line_col = "orange")
+▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂  ★TITLE★  ▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂
+> 
+> 
+> 
+> cleanEx()
+> nameEx("simple_theme")
+> ### * simple_theme
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: simple_theme
+> ### Title: A simple CLI theme
+> ### Aliases: simple_theme
+> 
+> ### ** Examples
+> 
+> cli_div(theme = cli::simple_theme())
+> 
+> cli_h1("Heading 1")
+
+── Heading 1 ───────────────────────────────────────────────────────────────────
+> cli_h2("Heading 2")
+
+─ Heading 2 ──
+> cli_h3("Heading 3")
+
+Heading 3
+> 
+> cli_alert_danger("Danger alert")
+✖ Danger alert
+> cli_alert_warning("Warning alert")
+! Warning alert
+> cli_alert_info("Info alert")
+ℹ Info alert
+> cli_alert_success("Success alert")
+✔ Success alert
+> cli_alert("Alert for starting a process or computation",
++   class = "alert-start")
+→ Alert for starting a process or computation
+> 
+> cli_text("Packages and versions: {.pkg cli} {.version 1.0.0}.")
+Packages and versions: cli 1.0.0.
+> cli_text("Time intervals: {.timestamp 3.4s}")
+Time intervals: [3.4s]
+> 
+> cli_text("{.emph Emphasis} and  {.strong strong emphasis}")
+Emphasis and strong emphasis
+> 
+> cli_text("This is a piece of code: {.code sum(x) / length(x)}")
+This is a piece of code: `sum(x) / length(x)`
+> cli_text("Function names: {.fn cli::simple_theme}")
+Function names: `cli::simple_theme()
+> 
+> cli_text("Files: {.file /usr/bin/env}")
+Files: /usr/bin/env
+> cli_text("URLs: {.url https://r-project.org}")
+URLs: <https://r-project.org>
+> 
+> cli_h2("Longer code chunk")
+
+─ Longer code chunk ──
+> cli_par(class = "code R")
+> cli_verbatim(
++   '# window functions are useful for grouped mutates',
++   'mtcars %>%',
++   '  group_by(cyl) %>%',
++   '  mutate(rank = min_rank(desc(mpg)))')
+# window functions are useful for grouped mutates
+mtcars %>%
+  group_by(cyl) %>%
+  mutate(rank = min_rank(desc(mpg)))
+> cli_end()
+
+> 
+> cli_h2("Even longer code chunk")
+─ Even longer code chunk ──
+> cli_par(class = "code R")
+> cli_verbatim(format(ls))
+function (name, pos = -1L, envir = as.environment(pos), all.names = FALSE, 
+    pattern, sorted = TRUE) 
+{
+    if (!missing(name)) {
+        pos <- tryCatch(name, error = function(e) e)
+        if (inherits(pos, "error")) {
+            name <- substitute(name)
+            if (!is.character(name)) 
+                name <- deparse(name)
+            warning(gettextf("%s converted to character string", 
+                sQuote(name)), domain = NA)
+            pos <- name
+        }
+    }
+    all.names <- .Internal(ls(envir, all.names, sorted))
+    if (!missing(pattern)) {
+        if ((ll <- length(grep("[", pattern, fixed = TRUE))) && 
+            ll != length(grep("]", pattern, fixed = TRUE))) {
+            if (pattern == "[") {
+                pattern <- "\\["
+                warning("replaced regular expression pattern '[' by  '\\\\['")
+            }
+            else if (length(grep("[^\\\\]\\[<-", pattern))) {
+                pattern <- sub("\\[<-", "\\\\\\[<-", pattern)
+                warning("replaced '[<-' by '\\\\[<-' in regular expression pattern")
+            }
+        }
+        grep(pattern, all.names, value = TRUE)
+    }
+    else all.names
+}
+> cli_end()
+
+> 
+> cli_end()
+> 
+> 
+> 
+> graphics::par(get("par.postscript", pos = 'CheckExEnv'))
+> cleanEx()
+> nameEx("spark_bar")
+> ### * spark_bar
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: spark_bar
+> ### Title: Draw a sparkline bar graph with unicode block characters
+> ### Aliases: spark_bar
+> 
+> ### ** Examples
+> 
+> x <- seq(0, 1, length = 6)
+> spark_bar(x)
+[1] "▁▂▄▅▇█"
+attr(,"class")
+[1] "cli_spark_bar" "cli_spark"    
+> spark_bar(sample(x))
+[1] "▁▅▄█▂▇"
+attr(,"class")
+[1] "cli_spark_bar" "cli_spark"    
+> 
+> spark_bar(seq(0, 1, length = 8))
+[1] "▁▂▃▄▅▆▇█"
+attr(,"class")
+[1] "cli_spark_bar" "cli_spark"    
+> 
+> # NAs are left out
+> spark_bar(c(0, NA, 0.5, NA, 1))
+[1] "▁ ▄ █"
+attr(,"class")
+[1] "cli_spark_bar" "cli_spark"    
+> 
+> 
+> 
+> cleanEx()
+> nameEx("spark_line")
+> ### * spark_line
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: spark_line
+> ### Title: Draw a sparkline line graph with Braille characters.
+> ### Aliases: spark_line
+> 
+> ### ** Examples
+> 
+> x <- seq(0, 1, length = 10)
+> spark_line(x)
+[1] "⣀⡠⠔⠊⠉"
+attr(,"class")
+[1] "cli_spark_line" "cli_spark"     
+> 
+> 
+> 
+> cleanEx()
+> nameEx("style_hyperlink")
+> ### * style_hyperlink
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: style_hyperlink
+> ### Title: Terminal Hyperlinks
+> ### Aliases: style_hyperlink ansi_has_hyperlink_support
+> 
+> ### ** Examples
+> 
+> cat("This is an", style_hyperlink("R", "https://r-project.org"), "link.\n")
+This is an R link.
+> ansi_has_hyperlink_support()
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("symbol")
+> ### * symbol
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: symbol
+> ### Title: Various handy symbols to use in a command line UI
+> ### Aliases: symbol list_symbols
+> 
+> ### ** Examples
+> 
+> cat(symbol$tick, " SUCCESS\n", symbol$cross, " FAILURE\n", sep = "")
+✔ SUCCESS
+✖ FAILURE
+> 
+> ## All symbols
+> cat(paste(format(names(symbol), width = 20),
++   unlist(symbol)), sep = "\n")
+tick                 ✔
+cross                ✖
+star                 ★
+square               ▇
+square_small         ◻
+square_small_filled  ◼
+circle               ◯
+circle_filled        ◉
+circle_dotted        ◌
+circle_double        ◎
+circle_circle        ⓞ
+circle_cross         ⓧ
+circle_pipe          Ⓘ
+circle_question_mark ?⃝
+bullet               •
+dot                  ․
+line                 ─
+double_line          ═
+ellipsis             …
+continue             …
+pointer              ❯
+info                 ℹ
+warning              ⚠
+menu                 ☰
+smiley               ☺
+mustache             ෴
+heart                ♥
+arrow_up             ↑
+arrow_down           ↓
+arrow_left           ←
+arrow_right          →
+radio_on             ◉
+radio_off            ◯
+checkbox_on          ☒
+checkbox_off         ☐
+checkbox_circle_on   ⓧ
+checkbox_circle_off  Ⓘ
+fancy_question_mark  ❓
+neq                  ≠
+geq                  ≥
+leq                  ≤
+times                ×
+upper_block_1        ▔
+upper_block_4        ▀
+lower_block_1        ▁
+lower_block_2        ▂
+lower_block_3        ▃
+lower_block_4        ▄
+lower_block_5        ▅
+lower_block_6        ▆
+lower_block_7        ▇
+lower_block_8        █
+full_block           █
+sup_0                ⁰
+sup_1                ¹
+sup_2                ²
+sup_3                ³
+sup_4                ⁴
+sup_5                ⁵
+sup_6                ⁶
+sup_7                ⁷
+sup_8                ⁸
+sup_9                ⁹
+sup_minus            ⁻
+sup_plus             ⁺
+play                 ▶
+stop                 ■
+record               ●
+figure_dash          ‒
+en_dash              –
+em_dash              —
+dquote_left          “
+dquote_right         ”
+squote_left          ‘
+squote_right         ’
+> 
+> 
+> 
+> cleanEx()
+> nameEx("test_that_cli")
+> ### * test_that_cli
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: test_that_cli
+> ### Title: Test cli output with testthat
+> ### Aliases: test_that_cli
+> 
+> ### ** Examples
+> 
+> # testthat cannot record or compare snapshots when you run these
+> # examples interactively, so you might want to copy them into a test
+> # file
+> 
+> # Default configurations
+> cli::test_that_cli("success", {
++   testthat::local_edition(3)
++   testthat::expect_snapshot({
++     cli::cli_alert_success("wow")
++   })
++ })
+Error in loadNamespace(name) : there is no package called ‘testthat’
+Calls: <Anonymous> ... loadNamespace -> withRestarts -> withOneRestart -> doWithOneRestart
+Execution halted

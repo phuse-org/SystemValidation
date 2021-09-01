@@ -1,0 +1,131 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## tests of offsets, and prediction from them.
+> 
+> load("anorexia.rda") # copied from package MASS
+> 
+> ## via formula
+> fit1 <- lm(Postwt ~ Prewt + Treat + offset(Prewt), data = anorexia)
+> summary(fit1)
+
+Call:
+lm(formula = Postwt ~ Prewt + Treat + offset(Prewt), data = anorexia)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-14.1083  -4.2773  -0.5484   5.4838  15.2922 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  49.7711    13.3910   3.717 0.000410 ***
+Prewt        -0.5655     0.1612  -3.509 0.000803 ***
+TreatCont    -4.0971     1.8935  -2.164 0.033999 *  
+TreatFT       4.5631     2.1333   2.139 0.036035 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 6.978 on 68 degrees of freedom
+Multiple R-squared:  0.2777,	Adjusted R-squared:  0.2458 
+F-statistic: 8.713 on 3 and 68 DF,  p-value: 5.719e-05
+
+> pred <- fitted(fit1)
+> stopifnot(all.equal(predict(fit1, anorexia), pred))
+> 
+> ## via argument
+> fit2 <- lm(Postwt ~ Prewt + Treat, data = anorexia, offset=Prewt)
+> summary(fit2)
+
+Call:
+lm(formula = Postwt ~ Prewt + Treat, data = anorexia, offset = Prewt)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-14.1083  -4.2773  -0.5484   5.4838  15.2922 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  49.7711    13.3910   3.717 0.000410 ***
+Prewt        -0.5655     0.1612  -3.509 0.000803 ***
+TreatCont    -4.0971     1.8935  -2.164 0.033999 *  
+TreatFT       4.5631     2.1333   2.139 0.036035 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 6.978 on 68 degrees of freedom
+Multiple R-squared:  0.2777,	Adjusted R-squared:  0.2458 
+F-statistic: 8.713 on 3 and 68 DF,  p-value: 5.719e-05
+
+> stopifnot(all.equal(predict(fit2, anorexia), pred))
+> 
+> ## now spili into two parts
+> anorexia$o1 <- 0.9*anorexia$Prewt
+> anorexia$o2 <- 0.1*anorexia$Prewt
+> fit3 <- lm(Postwt ~ Prewt + Treat + offset(o1) + offset(o2), data = anorexia)
+> summary(fit3)
+
+Call:
+lm(formula = Postwt ~ Prewt + Treat + offset(o1) + offset(o2), 
+    data = anorexia)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-14.1083  -4.2773  -0.5484   5.4838  15.2922 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  49.7711    13.3910   3.717 0.000410 ***
+Prewt        -0.5655     0.1612  -3.509 0.000803 ***
+TreatCont    -4.0971     1.8935  -2.164 0.033999 *  
+TreatFT       4.5631     2.1333   2.139 0.036035 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 6.978 on 68 degrees of freedom
+Multiple R-squared:  0.2777,	Adjusted R-squared:  0.2458 
+F-statistic: 8.713 on 3 and 68 DF,  p-value: 5.719e-05
+
+> stopifnot(all.equal(predict(fit3, anorexia), pred))
+> 
+> fit4 <- lm(Postwt ~ Prewt + Treat + offset(o1), data = anorexia, offset = o2)
+> summary(fit4)
+
+Call:
+lm(formula = Postwt ~ Prewt + Treat + offset(o1), data = anorexia, 
+    offset = o2)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-14.1083  -4.2773  -0.5484   5.4838  15.2922 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  49.7711    13.3910   3.717 0.000410 ***
+Prewt        -0.5655     0.1612  -3.509 0.000803 ***
+TreatCont    -4.0971     1.8935  -2.164 0.033999 *  
+TreatFT       4.5631     2.1333   2.139 0.036035 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 6.978 on 68 degrees of freedom
+Multiple R-squared:  0.2777,	Adjusted R-squared:  0.2458 
+F-statistic: 8.713 on 3 and 68 DF,  p-value: 5.719e-05
+
+> stopifnot(all.equal(predict(fit4, anorexia), pred))
+> 
+> ## using more than one offset failed in R 2.8.1
+> 

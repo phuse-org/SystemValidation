@@ -1,0 +1,120 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "fastmap"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('fastmap')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("fastmap")
+> ### * fastmap
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: fastmap
+> ### Title: Create a fastmap object
+> ### Aliases: fastmap
+> 
+> ### ** Examples
+> 
+> # Create the fastmap object
+> m <- fastmap()
+> 
+> # Set some key-value pairs
+> m$set("x", 100)
+> m$set("letters", c("a", "b", "c"))
+> m$mset(numbers = c(10, 20, 30), nothing = NULL)
+> 
+> # Get values using keys
+> m$get("x")
+[1] 100
+> m$get("numbers")
+[1] 10 20 30
+> m$mget(c("letters", "numbers"))
+$letters
+[1] "a" "b" "c"
+
+$numbers
+[1] 10 20 30
+
+> 
+> # Missing keys return NULL by default, but this can be customized
+> m$get("xyz")
+NULL
+> 
+> # Check for existence of keys
+> m$has("x")
+[1] TRUE
+> m$has("nothing")
+[1] TRUE
+> m$has("xyz")
+[1] FALSE
+> 
+> # Remove one or more items
+> m$remove(c("letters", "x"))
+> 
+> # Return number of items
+> m$size()
+[1] 2
+> 
+> # Get all keys
+> m$keys()
+[1] "nothing" "numbers"
+> 
+> # Return named list that represents all key-value pairs
+> str(m$as_list())
+List of 2
+ $ nothing: NULL
+ $ numbers: num [1:3] 10 20 30
+> 
+> # Clear the map
+> m$reset()
+> 
+> 
+> # Specify missing value when get() is called
+> m <- fastmap()
+> m$get("x", missing = key_missing())
+<Key Missing>
+> #> <Key Missing>
+> 
+> # Specify the default missing value
+> m <- fastmap(missing_default = key_missing())
+> m$get("x")
+<Key Missing>
+> #> <Key Missing>
+> 
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.099 0.013 0.113 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

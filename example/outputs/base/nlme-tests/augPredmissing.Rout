@@ -1,0 +1,242 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(nlme)
+> data(Orthodont)
+> # add a column with an NA that is not used in the fit
+> Orthodont$Others = runif(nrow(Orthodont))
+> is.na(Orthodont$Others[3]) = TRUE
+> fm1 = lme(Orthodont, random = ~1)
+> augPred(fm1, length.out = 2, level = c(0,1))
+                  age .groups distance           .type
+1                   8     M01 26.00000        original
+2                  10     M01 25.00000        original
+3                  12     M01 29.00000        original
+4                  14     M01 31.00000        original
+5                   8     M02 21.50000        original
+6                  10     M02 22.50000        original
+7                  12     M02 23.00000        original
+8                  14     M02 26.50000        original
+9                   8     M03 23.00000        original
+10                 10     M03 22.50000        original
+11                 12     M03 24.00000        original
+12                 14     M03 27.50000        original
+13                  8     M04 25.50000        original
+14                 10     M04 27.50000        original
+15                 12     M04 26.50000        original
+16                 14     M04 27.00000        original
+17                  8     M05 20.00000        original
+18                 10     M05 23.50000        original
+19                 12     M05 22.50000        original
+20                 14     M05 26.00000        original
+21                  8     M06 24.50000        original
+22                 10     M06 25.50000        original
+23                 12     M06 27.00000        original
+24                 14     M06 28.50000        original
+25                  8     M07 22.00000        original
+26                 10     M07 22.00000        original
+27                 12     M07 24.50000        original
+28                 14     M07 26.50000        original
+29                  8     M08 24.00000        original
+30                 10     M08 21.50000        original
+31                 12     M08 24.50000        original
+32                 14     M08 25.50000        original
+33                  8     M09 23.00000        original
+34                 10     M09 20.50000        original
+35                 12     M09 31.00000        original
+36                 14     M09 26.00000        original
+37                  8     M10 27.50000        original
+38                 10     M10 28.00000        original
+39                 12     M10 31.00000        original
+40                 14     M10 31.50000        original
+41                  8     M11 23.00000        original
+42                 10     M11 23.00000        original
+43                 12     M11 23.50000        original
+44                 14     M11 25.00000        original
+45                  8     M12 21.50000        original
+46                 10     M12 23.50000        original
+47                 12     M12 24.00000        original
+48                 14     M12 28.00000        original
+49                  8     M13 17.00000        original
+50                 10     M13 24.50000        original
+51                 12     M13 26.00000        original
+52                 14     M13 29.50000        original
+53                  8     M14 22.50000        original
+54                 10     M14 25.50000        original
+55                 12     M14 25.50000        original
+56                 14     M14 26.00000        original
+57                  8     M15 23.00000        original
+58                 10     M15 24.50000        original
+59                 12     M15 26.00000        original
+60                 14     M15 30.00000        original
+61                  8     M16 22.00000        original
+62                 10     M16 21.50000        original
+63                 12     M16 23.50000        original
+64                 14     M16 25.00000        original
+65                  8     F01 21.00000        original
+66                 10     F01 20.00000        original
+67                 12     F01 21.50000        original
+68                 14     F01 23.00000        original
+69                  8     F02 21.00000        original
+70                 10     F02 21.50000        original
+71                 12     F02 24.00000        original
+72                 14     F02 25.50000        original
+73                  8     F03 20.50000        original
+74                 10     F03 24.00000        original
+75                 12     F03 24.50000        original
+76                 14     F03 26.00000        original
+77                  8     F04 23.50000        original
+78                 10     F04 24.50000        original
+79                 12     F04 25.00000        original
+80                 14     F04 26.50000        original
+81                  8     F05 21.50000        original
+82                 10     F05 23.00000        original
+83                 12     F05 22.50000        original
+84                 14     F05 23.50000        original
+85                  8     F06 20.00000        original
+86                 10     F06 21.00000        original
+87                 12     F06 21.00000        original
+88                 14     F06 22.50000        original
+89                  8     F07 21.50000        original
+90                 10     F07 22.50000        original
+91                 12     F07 23.00000        original
+92                 14     F07 25.00000        original
+93                  8     F08 23.00000        original
+94                 10     F08 23.00000        original
+95                 12     F08 23.50000        original
+96                 14     F08 24.00000        original
+97                  8     F09 20.00000        original
+98                 10     F09 21.00000        original
+99                 12     F09 22.00000        original
+100                14     F09 21.50000        original
+101                 8     F10 16.50000        original
+102                10     F10 19.00000        original
+103                12     F10 19.00000        original
+104                14     F10 19.50000        original
+105                 8     F11 24.50000        original
+106                10     F11 25.00000        original
+107                12     F11 28.00000        original
+108                14     F11 28.00000        original
+predict.fixed1      8     M01 22.04259   predict.fixed
+predict.fixed2     14     M01 26.00370   predict.fixed
+predict.fixed3      8     M02 22.04259   predict.fixed
+predict.fixed4     14     M02 26.00370   predict.fixed
+predict.fixed5      8     M03 22.04259   predict.fixed
+predict.fixed6     14     M03 26.00370   predict.fixed
+predict.fixed7      8     M04 22.04259   predict.fixed
+predict.fixed8     14     M04 26.00370   predict.fixed
+predict.fixed9      8     M05 22.04259   predict.fixed
+predict.fixed10    14     M05 26.00370   predict.fixed
+predict.fixed11     8     M06 22.04259   predict.fixed
+predict.fixed12    14     M06 26.00370   predict.fixed
+predict.fixed13     8     M07 22.04259   predict.fixed
+predict.fixed14    14     M07 26.00370   predict.fixed
+predict.fixed15     8     M08 22.04259   predict.fixed
+predict.fixed16    14     M08 26.00370   predict.fixed
+predict.fixed17     8     M09 22.04259   predict.fixed
+predict.fixed18    14     M09 26.00370   predict.fixed
+predict.fixed19     8     M10 22.04259   predict.fixed
+predict.fixed20    14     M10 26.00370   predict.fixed
+predict.fixed21     8     M11 22.04259   predict.fixed
+predict.fixed22    14     M11 26.00370   predict.fixed
+predict.fixed23     8     M12 22.04259   predict.fixed
+predict.fixed24    14     M12 26.00370   predict.fixed
+predict.fixed25     8     M13 22.04259   predict.fixed
+predict.fixed26    14     M13 26.00370   predict.fixed
+predict.fixed27     8     M14 22.04259   predict.fixed
+predict.fixed28    14     M14 26.00370   predict.fixed
+predict.fixed29     8     M15 22.04259   predict.fixed
+predict.fixed30    14     M15 26.00370   predict.fixed
+predict.fixed31     8     M16 22.04259   predict.fixed
+predict.fixed32    14     M16 26.00370   predict.fixed
+predict.fixed33     8     F01 22.04259   predict.fixed
+predict.fixed34    14     F01 26.00370   predict.fixed
+predict.fixed35     8     F02 22.04259   predict.fixed
+predict.fixed36    14     F02 26.00370   predict.fixed
+predict.fixed37     8     F03 22.04259   predict.fixed
+predict.fixed38    14     F03 26.00370   predict.fixed
+predict.fixed39     8     F04 22.04259   predict.fixed
+predict.fixed40    14     F04 26.00370   predict.fixed
+predict.fixed41     8     F05 22.04259   predict.fixed
+predict.fixed42    14     F05 26.00370   predict.fixed
+predict.fixed43     8     F06 22.04259   predict.fixed
+predict.fixed44    14     F06 26.00370   predict.fixed
+predict.fixed45     8     F07 22.04259   predict.fixed
+predict.fixed46    14     F07 26.00370   predict.fixed
+predict.fixed47     8     F08 22.04259   predict.fixed
+predict.fixed48    14     F08 26.00370   predict.fixed
+predict.fixed49     8     F09 22.04259   predict.fixed
+predict.fixed50    14     F09 26.00370   predict.fixed
+predict.fixed51     8     F10 22.04259   predict.fixed
+predict.fixed52    14     F10 26.00370   predict.fixed
+predict.fixed53     8     F11 22.04259   predict.fixed
+predict.fixed54    14     F11 26.00370   predict.fixed
+predict.Subject1    8     M01 25.38635 predict.Subject
+predict.Subject2   14     M01 29.34746 predict.Subject
+predict.Subject3    8     M02 21.46107 predict.Subject
+predict.Subject4   14     M02 25.42218 predict.Subject
+predict.Subject5    8     M03 22.24613 predict.Subject
+predict.Subject6   14     M03 26.20724 predict.Subject
+predict.Subject7    8     M04 24.37699 predict.Subject
+predict.Subject8   14     M04 28.33810 predict.Subject
+predict.Subject9    8     M05 21.12462 predict.Subject
+predict.Subject10  14     M05 25.08573 predict.Subject
+predict.Subject11   8     M06 24.15269 predict.Subject
+predict.Subject12  14     M06 28.11380 predict.Subject
+predict.Subject13   8     M07 21.79752 predict.Subject
+predict.Subject14  14     M07 25.75863 predict.Subject
+predict.Subject15   8     M08 21.90967 predict.Subject
+predict.Subject16  14     M08 25.87078 predict.Subject
+predict.Subject17   8     M09 23.03118 predict.Subject
+predict.Subject18  14     M09 26.99229 predict.Subject
+predict.Subject19   8     M10 26.95646 predict.Subject
+predict.Subject20  14     M10 30.91757 predict.Subject
+predict.Subject21   8     M11 21.68537 predict.Subject
+predict.Subject22  14     M11 25.64648 predict.Subject
+predict.Subject23   8     M12 22.24613 predict.Subject
+predict.Subject24  14     M12 26.20724 predict.Subject
+predict.Subject25   8     M13 22.24613 predict.Subject
+predict.Subject26  14     M13 26.20724 predict.Subject
+predict.Subject27   8     M14 22.80688 predict.Subject
+predict.Subject28  14     M14 26.76799 predict.Subject
+predict.Subject29   8     M15 23.70409 predict.Subject
+predict.Subject30  14     M15 27.66520 predict.Subject
+predict.Subject31   8     M16 21.12462 predict.Subject
+predict.Subject32  14     M16 25.08573 predict.Subject
+predict.Subject33   8     F01 19.66666 predict.Subject
+predict.Subject34  14     F01 23.62777 predict.Subject
+predict.Subject35   8     F02 21.12462 predict.Subject
+predict.Subject36  14     F02 25.08573 predict.Subject
+predict.Subject37   8     F03 21.79752 predict.Subject
+predict.Subject38  14     F03 25.75863 predict.Subject
+predict.Subject39   8     F04 22.80688 predict.Subject
+predict.Subject40  14     F04 26.76799 predict.Subject
+predict.Subject41   8     F05 20.78816 predict.Subject
+predict.Subject42  14     F05 24.74928 predict.Subject
+predict.Subject43   8     F06 19.44235 predict.Subject
+predict.Subject44  14     F06 23.40347 predict.Subject
+predict.Subject45   8     F07 21.12462 predict.Subject
+predict.Subject46  14     F07 25.08573 predict.Subject
+predict.Subject47   8     F08 21.46107 predict.Subject
+predict.Subject48  14     F08 25.42218 predict.Subject
+predict.Subject49   8     F09 19.44235 predict.Subject
+predict.Subject50  14     F09 23.40347 predict.Subject
+predict.Subject51   8     F10 17.08719 predict.Subject
+predict.Subject52  14     F10 21.04830 predict.Subject
+predict.Subject53   8     F11 24.15269 predict.Subject
+predict.Subject54  14     F11 28.11380 predict.Subject
+> 

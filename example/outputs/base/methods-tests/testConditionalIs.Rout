@@ -1,0 +1,60 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> setClass("maybe")
+> 
+> setClass("A", representation(x = "numeric"))
+> 
+> setIs("A", "maybe",
++       test = function(object)length(object@x) >= 1 && object@x[[1]] > 0,
++       coerce = function(from)from,
++       replace = function(from, value)
++       stop("meaningless to replace the \"maybe\" part of an object"))
+> 
+> aa <- new("A", x=1)
+> 
+> setGeneric("ff", function(x)"default ff")
+[1] "ff"
+> ## test that the setGeneric() call created the generic & default
+> stopifnot(is(ff, "standardGeneric"),
++           identical(body(getMethod("ff","ANY")), "default ff"))
+> 
+> ffMaybe <- function(x) "ff maybe method"
+> setMethod("ff", "maybe", ffMaybe)
+> 
+> aa2 <- new("A", x = -1) # condition not TRUE
+> stopifnot(identical(ff(aa),  "default ff"),
++ 	  identical(ff(aa2), "default ff"))# failed in R 2.11.0
+> 
+> ## a method to test the condition
+> setMethod("ff", "A",
++ 	  function(x) {
++ 	      if(is(x, "maybe"))
++ 		  ffMaybe(x)
++ 	      else
++ 		  callNextMethod()
++ 	  })
+> stopifnot(identical(ff(aa), "ff maybe method"),
++           identical(ff(aa2), "default ff"))
+> 
+> removeClass("A")
+[1] TRUE
+> removeClass("maybe")
+[1] TRUE
+> removeGeneric("ff")
+[1] TRUE
+> 

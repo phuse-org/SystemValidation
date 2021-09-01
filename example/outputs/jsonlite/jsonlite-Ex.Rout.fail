@@ -1,0 +1,876 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "jsonlite"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('jsonlite')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("base64")
+> ### * base64
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: base64
+> ### Title: Encode/decode base64
+> ### Aliases: base64 base64_dec base64_enc
+> 
+> ### ** Examples
+> 
+> str <- base64_enc(serialize(iris, NULL))
+> out <- unserialize(base64_dec(str))
+> stopifnot(identical(out, iris))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("flatten")
+> ### * flatten
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: flatten
+> ### Title: Flatten nested data frames
+> ### Aliases: flatten
+> 
+> ### ** Examples
+> 
+> options(stringsAsFactors=FALSE)
+> x <- data.frame(driver = c("Bowser", "Peach"), occupation = c("Koopa", "Princess"))
+> x$vehicle <- data.frame(model = c("Piranha Prowler", "Royal Racer"))
+> x$vehicle$stats <- data.frame(speed = c(55, 34), weight = c(67, 24), drift = c(35, 32))
+> str(x)
+'data.frame':	2 obs. of  3 variables:
+ $ driver    : chr  "Bowser" "Peach"
+ $ occupation: chr  "Koopa" "Princess"
+ $ vehicle   :'data.frame':	2 obs. of  2 variables:
+  ..$ model: chr  "Piranha Prowler" "Royal Racer"
+  ..$ stats:'data.frame':	2 obs. of  3 variables:
+  .. ..$ speed : num  55 34
+  .. ..$ weight: num  67 24
+  .. ..$ drift : num  35 32
+> str(flatten(x))
+'data.frame':	2 obs. of  6 variables:
+ $ driver              : chr  "Bowser" "Peach"
+ $ occupation          : chr  "Koopa" "Princess"
+ $ vehicle.model       : chr  "Piranha Prowler" "Royal Racer"
+ $ vehicle.stats.speed : num  55 34
+ $ vehicle.stats.weight: num  67 24
+ $ vehicle.stats.drift : num  35 32
+> str(flatten(x, recursive = FALSE))
+'data.frame':	2 obs. of  4 variables:
+ $ driver       : chr  "Bowser" "Peach"
+ $ occupation   : chr  "Koopa" "Princess"
+ $ vehicle.model: chr  "Piranha Prowler" "Royal Racer"
+ $ vehicle.stats:'data.frame':	2 obs. of  3 variables:
+  ..$ speed : num  55 34
+  ..$ weight: num  67 24
+  ..$ drift : num  35 32
+> 
+> ## Not run: 
+> ##D data1 <- fromJSON("https://api.github.com/users/hadley/repos")
+> ##D colnames(data1)
+> ##D colnames(data1$owner)
+> ##D colnames(flatten(data1))
+> ##D 
+> ##D # or for short:
+> ##D data2 <- fromJSON("https://api.github.com/users/hadley/repos", flatten = TRUE)
+> ##D colnames(data2)
+> ## End(Not run)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("fromJSON")
+> ### * fromJSON
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: toJSON, fromJSON
+> ### Title: Convert R objects to/from JSON
+> ### Aliases: 'toJSON, fromJSON' fromJSON toJSON jsonlite
+> 
+> ### ** Examples
+> 
+> # Stringify some data
+> jsoncars <- toJSON(mtcars, pretty=TRUE)
+> cat(jsoncars)
+[
+  {
+    "mpg": 21,
+    "cyl": 6,
+    "disp": 160,
+    "hp": 110,
+    "drat": 3.9,
+    "wt": 2.62,
+    "qsec": 16.46,
+    "vs": 0,
+    "am": 1,
+    "gear": 4,
+    "carb": 4,
+    "_row": "Mazda RX4"
+  },
+  {
+    "mpg": 21,
+    "cyl": 6,
+    "disp": 160,
+    "hp": 110,
+    "drat": 3.9,
+    "wt": 2.875,
+    "qsec": 17.02,
+    "vs": 0,
+    "am": 1,
+    "gear": 4,
+    "carb": 4,
+    "_row": "Mazda RX4 Wag"
+  },
+  {
+    "mpg": 22.8,
+    "cyl": 4,
+    "disp": 108,
+    "hp": 93,
+    "drat": 3.85,
+    "wt": 2.32,
+    "qsec": 18.61,
+    "vs": 1,
+    "am": 1,
+    "gear": 4,
+    "carb": 1,
+    "_row": "Datsun 710"
+  },
+  {
+    "mpg": 21.4,
+    "cyl": 6,
+    "disp": 258,
+    "hp": 110,
+    "drat": 3.08,
+    "wt": 3.215,
+    "qsec": 19.44,
+    "vs": 1,
+    "am": 0,
+    "gear": 3,
+    "carb": 1,
+    "_row": "Hornet 4 Drive"
+  },
+  {
+    "mpg": 18.7,
+    "cyl": 8,
+    "disp": 360,
+    "hp": 175,
+    "drat": 3.15,
+    "wt": 3.44,
+    "qsec": 17.02,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 2,
+    "_row": "Hornet Sportabout"
+  },
+  {
+    "mpg": 18.1,
+    "cyl": 6,
+    "disp": 225,
+    "hp": 105,
+    "drat": 2.76,
+    "wt": 3.46,
+    "qsec": 20.22,
+    "vs": 1,
+    "am": 0,
+    "gear": 3,
+    "carb": 1,
+    "_row": "Valiant"
+  },
+  {
+    "mpg": 14.3,
+    "cyl": 8,
+    "disp": 360,
+    "hp": 245,
+    "drat": 3.21,
+    "wt": 3.57,
+    "qsec": 15.84,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 4,
+    "_row": "Duster 360"
+  },
+  {
+    "mpg": 24.4,
+    "cyl": 4,
+    "disp": 146.7,
+    "hp": 62,
+    "drat": 3.69,
+    "wt": 3.19,
+    "qsec": 20,
+    "vs": 1,
+    "am": 0,
+    "gear": 4,
+    "carb": 2,
+    "_row": "Merc 240D"
+  },
+  {
+    "mpg": 22.8,
+    "cyl": 4,
+    "disp": 140.8,
+    "hp": 95,
+    "drat": 3.92,
+    "wt": 3.15,
+    "qsec": 22.9,
+    "vs": 1,
+    "am": 0,
+    "gear": 4,
+    "carb": 2,
+    "_row": "Merc 230"
+  },
+  {
+    "mpg": 19.2,
+    "cyl": 6,
+    "disp": 167.6,
+    "hp": 123,
+    "drat": 3.92,
+    "wt": 3.44,
+    "qsec": 18.3,
+    "vs": 1,
+    "am": 0,
+    "gear": 4,
+    "carb": 4,
+    "_row": "Merc 280"
+  },
+  {
+    "mpg": 17.8,
+    "cyl": 6,
+    "disp": 167.6,
+    "hp": 123,
+    "drat": 3.92,
+    "wt": 3.44,
+    "qsec": 18.9,
+    "vs": 1,
+    "am": 0,
+    "gear": 4,
+    "carb": 4,
+    "_row": "Merc 280C"
+  },
+  {
+    "mpg": 16.4,
+    "cyl": 8,
+    "disp": 275.8,
+    "hp": 180,
+    "drat": 3.07,
+    "wt": 4.07,
+    "qsec": 17.4,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 3,
+    "_row": "Merc 450SE"
+  },
+  {
+    "mpg": 17.3,
+    "cyl": 8,
+    "disp": 275.8,
+    "hp": 180,
+    "drat": 3.07,
+    "wt": 3.73,
+    "qsec": 17.6,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 3,
+    "_row": "Merc 450SL"
+  },
+  {
+    "mpg": 15.2,
+    "cyl": 8,
+    "disp": 275.8,
+    "hp": 180,
+    "drat": 3.07,
+    "wt": 3.78,
+    "qsec": 18,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 3,
+    "_row": "Merc 450SLC"
+  },
+  {
+    "mpg": 10.4,
+    "cyl": 8,
+    "disp": 472,
+    "hp": 205,
+    "drat": 2.93,
+    "wt": 5.25,
+    "qsec": 17.98,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 4,
+    "_row": "Cadillac Fleetwood"
+  },
+  {
+    "mpg": 10.4,
+    "cyl": 8,
+    "disp": 460,
+    "hp": 215,
+    "drat": 3,
+    "wt": 5.424,
+    "qsec": 17.82,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 4,
+    "_row": "Lincoln Continental"
+  },
+  {
+    "mpg": 14.7,
+    "cyl": 8,
+    "disp": 440,
+    "hp": 230,
+    "drat": 3.23,
+    "wt": 5.345,
+    "qsec": 17.42,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 4,
+    "_row": "Chrysler Imperial"
+  },
+  {
+    "mpg": 32.4,
+    "cyl": 4,
+    "disp": 78.7,
+    "hp": 66,
+    "drat": 4.08,
+    "wt": 2.2,
+    "qsec": 19.47,
+    "vs": 1,
+    "am": 1,
+    "gear": 4,
+    "carb": 1,
+    "_row": "Fiat 128"
+  },
+  {
+    "mpg": 30.4,
+    "cyl": 4,
+    "disp": 75.7,
+    "hp": 52,
+    "drat": 4.93,
+    "wt": 1.615,
+    "qsec": 18.52,
+    "vs": 1,
+    "am": 1,
+    "gear": 4,
+    "carb": 2,
+    "_row": "Honda Civic"
+  },
+  {
+    "mpg": 33.9,
+    "cyl": 4,
+    "disp": 71.1,
+    "hp": 65,
+    "drat": 4.22,
+    "wt": 1.835,
+    "qsec": 19.9,
+    "vs": 1,
+    "am": 1,
+    "gear": 4,
+    "carb": 1,
+    "_row": "Toyota Corolla"
+  },
+  {
+    "mpg": 21.5,
+    "cyl": 4,
+    "disp": 120.1,
+    "hp": 97,
+    "drat": 3.7,
+    "wt": 2.465,
+    "qsec": 20.01,
+    "vs": 1,
+    "am": 0,
+    "gear": 3,
+    "carb": 1,
+    "_row": "Toyota Corona"
+  },
+  {
+    "mpg": 15.5,
+    "cyl": 8,
+    "disp": 318,
+    "hp": 150,
+    "drat": 2.76,
+    "wt": 3.52,
+    "qsec": 16.87,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 2,
+    "_row": "Dodge Challenger"
+  },
+  {
+    "mpg": 15.2,
+    "cyl": 8,
+    "disp": 304,
+    "hp": 150,
+    "drat": 3.15,
+    "wt": 3.435,
+    "qsec": 17.3,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 2,
+    "_row": "AMC Javelin"
+  },
+  {
+    "mpg": 13.3,
+    "cyl": 8,
+    "disp": 350,
+    "hp": 245,
+    "drat": 3.73,
+    "wt": 3.84,
+    "qsec": 15.41,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 4,
+    "_row": "Camaro Z28"
+  },
+  {
+    "mpg": 19.2,
+    "cyl": 8,
+    "disp": 400,
+    "hp": 175,
+    "drat": 3.08,
+    "wt": 3.845,
+    "qsec": 17.05,
+    "vs": 0,
+    "am": 0,
+    "gear": 3,
+    "carb": 2,
+    "_row": "Pontiac Firebird"
+  },
+  {
+    "mpg": 27.3,
+    "cyl": 4,
+    "disp": 79,
+    "hp": 66,
+    "drat": 4.08,
+    "wt": 1.935,
+    "qsec": 18.9,
+    "vs": 1,
+    "am": 1,
+    "gear": 4,
+    "carb": 1,
+    "_row": "Fiat X1-9"
+  },
+  {
+    "mpg": 26,
+    "cyl": 4,
+    "disp": 120.3,
+    "hp": 91,
+    "drat": 4.43,
+    "wt": 2.14,
+    "qsec": 16.7,
+    "vs": 0,
+    "am": 1,
+    "gear": 5,
+    "carb": 2,
+    "_row": "Porsche 914-2"
+  },
+  {
+    "mpg": 30.4,
+    "cyl": 4,
+    "disp": 95.1,
+    "hp": 113,
+    "drat": 3.77,
+    "wt": 1.513,
+    "qsec": 16.9,
+    "vs": 1,
+    "am": 1,
+    "gear": 5,
+    "carb": 2,
+    "_row": "Lotus Europa"
+  },
+  {
+    "mpg": 15.8,
+    "cyl": 8,
+    "disp": 351,
+    "hp": 264,
+    "drat": 4.22,
+    "wt": 3.17,
+    "qsec": 14.5,
+    "vs": 0,
+    "am": 1,
+    "gear": 5,
+    "carb": 4,
+    "_row": "Ford Pantera L"
+  },
+  {
+    "mpg": 19.7,
+    "cyl": 6,
+    "disp": 145,
+    "hp": 175,
+    "drat": 3.62,
+    "wt": 2.77,
+    "qsec": 15.5,
+    "vs": 0,
+    "am": 1,
+    "gear": 5,
+    "carb": 6,
+    "_row": "Ferrari Dino"
+  },
+  {
+    "mpg": 15,
+    "cyl": 8,
+    "disp": 301,
+    "hp": 335,
+    "drat": 3.54,
+    "wt": 3.57,
+    "qsec": 14.6,
+    "vs": 0,
+    "am": 1,
+    "gear": 5,
+    "carb": 8,
+    "_row": "Maserati Bora"
+  },
+  {
+    "mpg": 21.4,
+    "cyl": 4,
+    "disp": 121,
+    "hp": 109,
+    "drat": 4.11,
+    "wt": 2.78,
+    "qsec": 18.6,
+    "vs": 1,
+    "am": 1,
+    "gear": 4,
+    "carb": 2,
+    "_row": "Volvo 142E"
+  }
+]> 
+> # Parse it back
+> fromJSON(jsoncars)
+                     mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+Mazda RX4           21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
+Mazda RX4 Wag       21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
+Datsun 710          22.8   4 108.0  93 3.85 2.320 18.61  1  1    4    1
+Hornet 4 Drive      21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1
+Hornet Sportabout   18.7   8 360.0 175 3.15 3.440 17.02  0  0    3    2
+Valiant             18.1   6 225.0 105 2.76 3.460 20.22  1  0    3    1
+Duster 360          14.3   8 360.0 245 3.21 3.570 15.84  0  0    3    4
+Merc 240D           24.4   4 146.7  62 3.69 3.190 20.00  1  0    4    2
+Merc 230            22.8   4 140.8  95 3.92 3.150 22.90  1  0    4    2
+Merc 280            19.2   6 167.6 123 3.92 3.440 18.30  1  0    4    4
+Merc 280C           17.8   6 167.6 123 3.92 3.440 18.90  1  0    4    4
+Merc 450SE          16.4   8 275.8 180 3.07 4.070 17.40  0  0    3    3
+Merc 450SL          17.3   8 275.8 180 3.07 3.730 17.60  0  0    3    3
+Merc 450SLC         15.2   8 275.8 180 3.07 3.780 18.00  0  0    3    3
+Cadillac Fleetwood  10.4   8 472.0 205 2.93 5.250 17.98  0  0    3    4
+Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4
+Chrysler Imperial   14.7   8 440.0 230 3.23 5.345 17.42  0  0    3    4
+Fiat 128            32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+Honda Civic         30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
+Toyota Corolla      33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
+Toyota Corona       21.5   4 120.1  97 3.70 2.465 20.01  1  0    3    1
+Dodge Challenger    15.5   8 318.0 150 2.76 3.520 16.87  0  0    3    2
+AMC Javelin         15.2   8 304.0 150 3.15 3.435 17.30  0  0    3    2
+Camaro Z28          13.3   8 350.0 245 3.73 3.840 15.41  0  0    3    4
+Pontiac Firebird    19.2   8 400.0 175 3.08 3.845 17.05  0  0    3    2
+Fiat X1-9           27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+Porsche 914-2       26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+Lotus Europa        30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
+Ford Pantera L      15.8   8 351.0 264 4.22 3.170 14.50  0  1    5    4
+Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6
+Maserati Bora       15.0   8 301.0 335 3.54 3.570 14.60  0  1    5    8
+Volvo 142E          21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2
+> 
+> # Parse escaped unicode
+> fromJSON('{"city" : "Z\\u00FCrich"}')
+$city
+[1] "Zürich"
+
+> 
+> # Decimal vs significant digits
+> toJSON(pi, digits=3)
+[3.142] 
+> toJSON(pi, digits=I(3))
+[3.14] 
+> 
+> ## Not run: 
+> ##D #retrieve data frame
+> ##D data1 <- fromJSON("https://api.github.com/users/hadley/orgs")
+> ##D names(data1)
+> ##D data1$login
+> ##D 
+> ##D # Nested data frames:
+> ##D data2 <- fromJSON("https://api.github.com/users/hadley/repos")
+> ##D names(data2)
+> ##D names(data2$owner)
+> ##D data2$owner$login
+> ##D 
+> ##D # Flatten the data into a regular non-nested dataframe
+> ##D names(flatten(data2))
+> ##D 
+> ##D # Flatten directly (more efficient):
+> ##D data3 <- fromJSON("https://api.github.com/users/hadley/repos", flatten = TRUE)
+> ##D identical(data3, flatten(data2))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("prettify")
+> ### * prettify
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: prettify, minify
+> ### Title: Prettify or minify a JSON string
+> ### Aliases: 'prettify, minify' prettify minify
+> 
+> ### ** Examples
+> 
+> myjson <- toJSON(cars)
+> cat(myjson)
+[{"speed":4,"dist":2},{"speed":4,"dist":10},{"speed":7,"dist":4},{"speed":7,"dist":22},{"speed":8,"dist":16},{"speed":9,"dist":10},{"speed":10,"dist":18},{"speed":10,"dist":26},{"speed":10,"dist":34},{"speed":11,"dist":17},{"speed":11,"dist":28},{"speed":12,"dist":14},{"speed":12,"dist":20},{"speed":12,"dist":24},{"speed":12,"dist":28},{"speed":13,"dist":26},{"speed":13,"dist":34},{"speed":13,"dist":34},{"speed":13,"dist":46},{"speed":14,"dist":26},{"speed":14,"dist":36},{"speed":14,"dist":60},{"speed":14,"dist":80},{"speed":15,"dist":20},{"speed":15,"dist":26},{"speed":15,"dist":54},{"speed":16,"dist":32},{"speed":16,"dist":40},{"speed":17,"dist":32},{"speed":17,"dist":40},{"speed":17,"dist":50},{"speed":18,"dist":42},{"speed":18,"dist":56},{"speed":18,"dist":76},{"speed":18,"dist":84},{"speed":19,"dist":36},{"speed":19,"dist":46},{"speed":19,"dist":68},{"speed":20,"dist":32},{"speed":20,"dist":48},{"speed":20,"dist":52},{"speed":20,"dist":56},{"speed":20,"dist":64},{"speed":22,"dist":66},{"speed":23,"dist":54},{"speed":24,"dist":70},{"speed":24,"dist":92},{"speed":24,"dist":93},{"speed":24,"dist":120},{"speed":25,"dist":85}]> prettify(myjson)
+[
+    {
+        "speed": 4,
+        "dist": 2
+    },
+    {
+        "speed": 4,
+        "dist": 10
+    },
+    {
+        "speed": 7,
+        "dist": 4
+    },
+    {
+        "speed": 7,
+        "dist": 22
+    },
+    {
+        "speed": 8,
+        "dist": 16
+    },
+    {
+        "speed": 9,
+        "dist": 10
+    },
+    {
+        "speed": 10,
+        "dist": 18
+    },
+    {
+        "speed": 10,
+        "dist": 26
+    },
+    {
+        "speed": 10,
+        "dist": 34
+    },
+    {
+        "speed": 11,
+        "dist": 17
+    },
+    {
+        "speed": 11,
+        "dist": 28
+    },
+    {
+        "speed": 12,
+        "dist": 14
+    },
+    {
+        "speed": 12,
+        "dist": 20
+    },
+    {
+        "speed": 12,
+        "dist": 24
+    },
+    {
+        "speed": 12,
+        "dist": 28
+    },
+    {
+        "speed": 13,
+        "dist": 26
+    },
+    {
+        "speed": 13,
+        "dist": 34
+    },
+    {
+        "speed": 13,
+        "dist": 34
+    },
+    {
+        "speed": 13,
+        "dist": 46
+    },
+    {
+        "speed": 14,
+        "dist": 26
+    },
+    {
+        "speed": 14,
+        "dist": 36
+    },
+    {
+        "speed": 14,
+        "dist": 60
+    },
+    {
+        "speed": 14,
+        "dist": 80
+    },
+    {
+        "speed": 15,
+        "dist": 20
+    },
+    {
+        "speed": 15,
+        "dist": 26
+    },
+    {
+        "speed": 15,
+        "dist": 54
+    },
+    {
+        "speed": 16,
+        "dist": 32
+    },
+    {
+        "speed": 16,
+        "dist": 40
+    },
+    {
+        "speed": 17,
+        "dist": 32
+    },
+    {
+        "speed": 17,
+        "dist": 40
+    },
+    {
+        "speed": 17,
+        "dist": 50
+    },
+    {
+        "speed": 18,
+        "dist": 42
+    },
+    {
+        "speed": 18,
+        "dist": 56
+    },
+    {
+        "speed": 18,
+        "dist": 76
+    },
+    {
+        "speed": 18,
+        "dist": 84
+    },
+    {
+        "speed": 19,
+        "dist": 36
+    },
+    {
+        "speed": 19,
+        "dist": 46
+    },
+    {
+        "speed": 19,
+        "dist": 68
+    },
+    {
+        "speed": 20,
+        "dist": 32
+    },
+    {
+        "speed": 20,
+        "dist": 48
+    },
+    {
+        "speed": 20,
+        "dist": 52
+    },
+    {
+        "speed": 20,
+        "dist": 56
+    },
+    {
+        "speed": 20,
+        "dist": 64
+    },
+    {
+        "speed": 22,
+        "dist": 66
+    },
+    {
+        "speed": 23,
+        "dist": 54
+    },
+    {
+        "speed": 24,
+        "dist": 70
+    },
+    {
+        "speed": 24,
+        "dist": 92
+    },
+    {
+        "speed": 24,
+        "dist": 93
+    },
+    {
+        "speed": 24,
+        "dist": 120
+    },
+    {
+        "speed": 25,
+        "dist": 85
+    }
+]
+ 
+> minify(myjson)
+[{"speed":4,"dist":2},{"speed":4,"dist":10},{"speed":7,"dist":4},{"speed":7,"dist":22},{"speed":8,"dist":16},{"speed":9,"dist":10},{"speed":10,"dist":18},{"speed":10,"dist":26},{"speed":10,"dist":34},{"speed":11,"dist":17},{"speed":11,"dist":28},{"speed":12,"dist":14},{"speed":12,"dist":20},{"speed":12,"dist":24},{"speed":12,"dist":28},{"speed":13,"dist":26},{"speed":13,"dist":34},{"speed":13,"dist":34},{"speed":13,"dist":46},{"speed":14,"dist":26},{"speed":14,"dist":36},{"speed":14,"dist":60},{"speed":14,"dist":80},{"speed":15,"dist":20},{"speed":15,"dist":26},{"speed":15,"dist":54},{"speed":16,"dist":32},{"speed":16,"dist":40},{"speed":17,"dist":32},{"speed":17,"dist":40},{"speed":17,"dist":50},{"speed":18,"dist":42},{"speed":18,"dist":56},{"speed":18,"dist":76},{"speed":18,"dist":84},{"speed":19,"dist":36},{"speed":19,"dist":46},{"speed":19,"dist":68},{"speed":20,"dist":32},{"speed":20,"dist":48},{"speed":20,"dist":52},{"speed":20,"dist":56},{"speed":20,"dist":64},{"speed":22,"dist":66},{"speed":23,"dist":54},{"speed":24,"dist":70},{"speed":24,"dist":92},{"speed":24,"dist":93},{"speed":24,"dist":120},{"speed":25,"dist":85}] 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rbind_pages")
+> ### * rbind_pages
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rbind_pages
+> ### Title: Combine pages into a single data frame
+> ### Aliases: rbind_pages
+> 
+> ### ** Examples
+> 
+> # Basic example
+> x <- data.frame(foo = rnorm(3), bar = c(TRUE, FALSE, TRUE))
+> y <- data.frame(foo = rnorm(2), col = c("blue", "red"))
+> rbind_pages(list(x, y))
+Error: Required package plyr not found. Please run: install.packages('plyr')
+Execution halted

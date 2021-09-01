@@ -1,0 +1,94 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "base64enc"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('base64enc')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("base64")
+> ### * base64
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: base64
+> ### Title: Encode/decode data into/from base64 encoding
+> ### Aliases: base64 base64encode base64decode
+> ### Keywords: manip
+> 
+> ### ** Examples
+> 
+>   base64encode(1:100)
+[1] "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl9gYWJjZA=="
+>   base64encode(1:100, 70)
+[1] "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIz"
+[2] "NDU2Nzg5Ojs8PT4/QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl9gYWJjZA=="
+>   base64encode(1:100, 70, "\n")
+[1] "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIz\nNDU2Nzg5Ojs8PT4/QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl9gYWJjZA=="
+>   x <- charToRaw("the decoded content, otherwise the number of bytes")
+>   y <- base64decode(base64encode(x))
+>   stopifnot(identical(x, y))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("dataURI")
+> ### * dataURI
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: dataURI
+> ### Title: Create a data URI string
+> ### Aliases: dataURI
+> ### Keywords: manip
+> 
+> ### ** Examples
+> 
+>   dataURI(as.raw(1:10)) # default is base64
+[1] "data:;base64,AQIDBAUGBwgJCg=="
+>   dataURI(as.raw(1:10), encoding=NULL) # URI
+[1] "data:,%01%02%03%04%05%06%07%08%09%0A"
+>   if (require("png", quietly=TRUE)) {
++     # let's say you have an image - e.g. from dev.capture(TRUE)
++     img <- matrix(1:16/16, 4)
++     dataURI(writePNG(img), "image/png")
++     # or straight from a file
++     dataURI(file=system.file("img", "Rlogo.png", package="png"), mime="image/png")
++   }
+Warning in library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘png’
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.095 0.008 0.104 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

@@ -1,0 +1,460 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "markdown"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('markdown')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("markdownExtensions")
+> ### * markdownExtensions
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: markdownExtensions
+> ### Title: Markdown extensions
+> ### Aliases: markdownExtensions
+> 
+> ### ** Examples
+> 
+> # List all available extensions:
+> markdownExtensions()
+[1] "no_intra_emphasis" "tables"            "fenced_code"      
+[4] "autolink"          "strikethrough"     "lax_spacing"      
+[7] "space_headers"     "superscript"       "latex_math"       
+> 
+> # To turn on all markdown extensions globally:
+> options(markdown.extensions = markdownExtensions())
+> 
+> # To turn off all markdown extensions globally:
+> options(markdown.extensions = NULL)
+> 
+> # The following examples are short, so we set the HTML option 'fragment_only'
+> 
+> options(markdown.HTML.options = "fragment_only")
+> 
+> # no_intra_emphasis example
+> cat(markdownToHTML(text = "foo_bar_function", extensions = c()))
+<p>foo<em>bar</em>function</p>
+> cat(markdownToHTML(text = "foo_bar_function", extensions = c("no_intra_emphasis")))
+<p>foo_bar_function</p>
+> 
+> # tables example (need 4 spaces at beginning of line here)
+> cat(markdownToHTML(text = "
++     First Header  | Second Header
++     ------------- | -------------
++     Content Cell  | Content Cell
++     Content Cell  | Content Cell
++ ", 
++     extensions = c()))
+<pre><code>First Header  | Second Header
+------------- | -------------
+Content Cell  | Content Cell
+Content Cell  | Content Cell
+</code></pre>
+> 
+> # but not here
+> cat(markdownToHTML(text = "
++ First Header  | Second Header
++ ------------- | -------------
++ Content Cell  | Content Cell
++ Content Cell  | Content Cell
++ ", 
++     extensions = c("tables")))
+<table><thead>
+<tr>
+<th>First Header</th>
+<th>Second Header</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Content Cell</td>
+<td>Content Cell</td>
+</tr>
+<tr>
+<td>Content Cell</td>
+<td>Content Cell</td>
+</tr>
+</tbody></table>
+> 
+> # fenced_code example (need at least three leading ~ or `)
+> fenced_block <- function(text, x = "`", n = 3) {
++     fence <- paste(rep(x, n), collapse = "")
++     paste(fence, text, fence, sep = "")
++ }
+> cat(markdownToHTML(text = fenced_block("
++ preformatted text here without having to indent
++ first line.
++ "), 
++     extensions = c()))
+<p><code>
+preformatted text here without having to indent
+first line.
+</code></p>
+> 
+> cat(markdownToHTML(text = fenced_block("
++ preformatted text here without having to indent
++ first line.
++ "), 
++     extensions = c("fenced_code")))
+<pre><code>preformatted text here without having to indent
+first line.
+</code></pre>
+> 
+> # autolink example
+> cat(markdownToHTML(text = "https://www.r-project.org/", extensions = c()))
+<p>https://www.r-project.org/</p>
+> cat(markdownToHTML(text = "https://www.r-project.org/", extensions = c("autolink")))
+<p><a href="https://www.r-project.org/">https://www.r-project.org/</a></p>
+> 
+> # strikethrough example
+> cat(markdownToHTML(text = "~~awesome~~", extensions = c()))
+<p>~~awesome~~</p>
+> cat(markdownToHTML(text = "~~awesome~~", extensions = c("strikethrough")))
+<p><del>awesome</del></p>
+> 
+> # lax_spacing
+> cat(markdownToHTML(text = "
++ Embedding html without surrounding with empty newline.
++ <div>_markdown_</div>
++ extra text.
++ ", 
++     extensions = c("")))
+<p>Embedding html without surrounding with empty newline.
+<div><em>markdown</em></div>
+extra text.</p>
+> cat(markdownToHTML(text = "
++ Embedding html without surrounding with empty newline.
++ <div>_markdown_</div>
++ extra text.
++ ", 
++     extensions = c("lax_spacing")))
+<p>Embedding html without surrounding with empty newline.</p>
+
+<div>_markdown_</div>
+
+<p>extra text.</p>
+> 
+> # space_headers example
+> cat(markdownToHTML(text = "#A Header\neven though there is no space between # and A", 
++     extensions = c("")))
+<h1>A Header</h1>
+
+<p>even though there is no space between # and A</p>
+> cat(markdownToHTML(text = "#Not A Header\nbecause there is no space between # and N", 
++     extensions = c("space_headers")))
+<p>#Not A Header
+because there is no space between # and N</p>
+> 
+> # superscript example
+> cat(markdownToHTML(text = "2^10", extensions = c()))
+<p>2^10</p>
+> cat(markdownToHTML(text = "2^10", extensions = c("superscript")))
+<p>2<sup>10</sup></p>
+> 
+> 
+> 
+> cleanEx()
+> nameEx("markdownHTMLOptions")
+> ### * markdownHTMLOptions
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: markdownHTMLOptions
+> ### Title: Markdown HTML rendering options
+> ### Aliases: markdownHTMLOptions
+> 
+> ### ** Examples
+> 
+> # List all available extensions:
+> markdownHTMLOptions()
+ [1] "skip_html"      "skip_style"     "skip_images"    "skip_links"    
+ [5] "safelink"       "toc"            "escape"         "fragment_only" 
+ [9] "hard_wrap"      "use_xhtml"      "smartypants"    "base64_images" 
+[13] "mathjax"        "highlight_code"
+> 
+> # To turn on all HTML options globally:
+> options(markdown.HTML.options = markdownHTMLOptions())
+> 
+> # To turn off all HTML options globally:
+> options(markdown.HTML.options = NULL)
+> 
+> # To turn on package default HTML options globally:
+> options(markdown.HTML.options = markdownHTMLOptions(default = TRUE))
+> 
+> # HTML OPTIONS
+> 
+> # The following examples are short, so we allways add the HTML option 'fragment_only'
+> tOpt <- "fragment_only"
+> 
+> # skip_html example
+> mkd = '<style></style><img src="http://cran.rstudio.com/Rlogo.jpg"><a href="#">Hello</a>'
+> cat(markdownToHTML(text = mkd, options = c(tOpt)))
+<p><style></style><img src="http://cran.rstudio.com/Rlogo.jpg"><a href="#">Hello</a></p>
+> cat(markdownToHTML(text = mkd, options = c(tOpt, "skip_html")))
+<p>Hello</p>
+> 
+> # skip_style example
+> cat(markdownToHTML(text = mkd, options = c(tOpt)))
+<p><style></style><img src="http://cran.rstudio.com/Rlogo.jpg"><a href="#">Hello</a></p>
+> cat(markdownToHTML(text = mkd, options = c(tOpt, "skip_style")))
+<p><img src="http://cran.rstudio.com/Rlogo.jpg"><a href="#">Hello</a></p>
+> 
+> # skip_images example
+> cat(markdownToHTML(text = mkd, options = c(tOpt)))
+<p><style></style><img src="http://cran.rstudio.com/Rlogo.jpg"><a href="#">Hello</a></p>
+> cat(markdownToHTML(text = mkd, options = c(tOpt, "skip_images")))
+<p><style></style><a href="#">Hello</a></p>
+> 
+> # skip_links example
+> cat(markdownToHTML(text = mkd, options = c(tOpt)))
+<p><style></style><img src="http://cran.rstudio.com/Rlogo.jpg"><a href="#">Hello</a></p>
+> cat(markdownToHTML(text = mkd, options = c(tOpt, "skip_links")))
+<p><style></style><img src="http://cran.rstudio.com/Rlogo.jpg">Hello</p>
+> 
+> # safelink example
+> cat(markdownToHTML(text = '[foo](http://google.com "baz")', options = c(tOpt)))
+<p><a href="http://google.com" title="baz">foo</a></p>
+> cat(markdownToHTML(text = '[foo](http://google.com "baz")', options = c(tOpt, "safelink")))
+<p><a href="http://google.com" title="baz">foo</a></p>
+> 
+> # toc example
+> mkd <- paste(c("# Header 1", "p1", "## Header 2", "p2"), collapse = "\n")
+> 
+> cat(markdownToHTML(text = mkd, options = c(tOpt)))
+<h1>Header 1</h1>
+
+<p>p1</p>
+
+<h2>Header 2</h2>
+
+<p>p2</p>
+> cat(markdownToHTML(text = mkd, options = c(tOpt, "toc")))
+<div id="toc">
+<div id="toc_header">Table of Contents</div>
+<ul>
+<li>
+<a href="#toc_0">Header 1</a>
+<ul>
+<li>
+<a href="#toc_1">Header 2</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+
+<h1 id="toc_0">Header 1</h1>
+
+<p>p1</p>
+
+<h2 id="toc_1">Header 2</h2>
+
+<p>p2</p>
+> 
+> # hard_wrap example
+> cat(markdownToHTML(text = "foo\nbar\n", options = c(tOpt)))
+<p>foo
+bar</p>
+> cat(markdownToHTML(text = "foo\nbar\n", options = c(tOpt, "hard_wrap")))
+<p>foo<br>
+bar</p>
+> 
+> # use_xhtml example
+> cat(markdownToHTML(text = "foo\nbar\n", options = c(tOpt, "hard_wrap")))
+<p>foo<br>
+bar</p>
+> cat(markdownToHTML(text = "foo\nbar\n", options = c(tOpt, "hard_wrap", "use_xhtml")))
+<p>foo<br/>
+bar</p>
+> 
+> # escape example
+> mkd = '<style></style><img src="http://cran.rstudio.com/Rlogo.jpg"><a href="#">Hello</a>'
+> cat(markdownToHTML(text = mkd, options = c(tOpt, "skip_html")))
+<p>Hello</p>
+> # overrides all 'skip_*' options
+> cat(markdownToHTML(text = mkd, options = c(tOpt, "skip_html", "escape")))
+<p>&lt;style&gt;&lt;/style&gt;&lt;img src=&quot;http://cran.rstudio.com/Rlogo.jpg&quot;&gt;&lt;a href=&quot;#&quot;&gt;Hello&lt;/a&gt;</p>
+> 
+> # smartypants example
+> cat(markdownToHTML(text = "1/2 (c)", options = c(tOpt)))
+<p>1/2 (c)</p>
+> cat(markdownToHTML(text = "1/2 (c)", options = c(tOpt, "smartypants")))
+<p>&frac12; &copy;</p>
+> 
+> cat(smartypants(text = "1/2 (c)\n"))
+&frac12; &copy;
+> 
+> 
+> 
+> cleanEx()
+> nameEx("markdownToHTML")
+> ### * markdownToHTML
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: markdownToHTML
+> ### Title: Render markdown to HTML
+> ### Aliases: markdownToHTML
+> 
+> ### ** Examples
+> 
+> (markdownToHTML(text = "Hello World!", fragment.only = TRUE))
+[1] "<p>Hello World!</p>\n"
+> (markdownToHTML(file = NULL, text = "_text_ will override _file_", fragment.only = TRUE))
+[1] "<p><em>text</em> will override <em>file</em></p>\n"
+> # write HTML to an output file
+> markdownToHTML(text = "_Hello_, **World**!", output = tempfile())
+> 
+> 
+> 
+> cleanEx()
+> nameEx("registeredRenderers")
+> ### * registeredRenderers
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: registeredRenderers
+> ### Title: List of Registered Markdown Renderers
+> ### Aliases: registeredRenderers
+> 
+> ### ** Examples
+> 
+> # List all available renderers
+> registeredRenderers()
+character                                                                       
+   "HTML"        ""        ""        ""        ""        ""        ""        "" 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("renderMarkdown")
+> ### * renderMarkdown
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: renderMarkdown
+> ### Title: Render markdown to an HTML fragment
+> ### Aliases: renderMarkdown
+> 
+> ### ** Examples
+> 
+> (renderMarkdown(text = "Hello World!"))
+[1] "<p>Hello World!</p>\n"
+> # a few corner cases
+> (renderMarkdown(text = character(0)))
+character(0)
+> (renderMarkdown(text = ""))
+[1] ""
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rendererExists")
+> ### * rendererExists
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rendererExists
+> ### Title: Testing for existence of a markdown renderer
+> ### Aliases: rendererExists
+> 
+> ### ** Examples
+> 
+> rendererExists("HTML")
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rendererOutputType")
+> ### * rendererOutputType
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rendererOutputType
+> ### Title: Fetch the Renderer Output Type
+> ### Aliases: rendererOutputType
+> 
+> ### ** Examples
+> 
+> # List all available renderers
+> rendererOutputType("HTML")
+[1] "character"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rpubsUpload")
+> ### * rpubsUpload
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rpubsUpload
+> ### Title: Upload an HTML file to RPubs
+> ### Aliases: rpubsUpload
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # upload a document
+> ##D result <- rpubsUpload("My document title", "Document.html")
+> ##D if (!is.null(result$continueUrl)) 
+> ##D     browseURL(result$continueUrl) else stop(result$error)
+> ##D 
+> ##D # update the same document with a new title
+> ##D updateResult <- rpubsUpload("My updated title", "Document.html", result$id)
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("smartypants")
+> ### * smartypants
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: smartypants
+> ### Title: smartypants: ASCII punctuation to HTML entities
+> ### Aliases: smartypants
+> 
+> ### ** Examples
+> 
+> cat(smartypants(text = "1/2 (c)\n"))
+&frac12; &copy;
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.112 0.005 0.116 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

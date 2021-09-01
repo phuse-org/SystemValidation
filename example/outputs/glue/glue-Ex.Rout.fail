@@ -1,0 +1,249 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "glue"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('glue')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("glue")
+> ### * glue
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: glue
+> ### Title: Format and interpolate a string
+> ### Aliases: glue glue_data
+> 
+> ### ** Examples
+> 
+> name <- "Fred"
+> age <- 50
+> anniversary <- as.Date("1991-10-12")
+> glue('My name is {name},',
++   'my age next year is {age + 1},',
++   'my anniversary is {format(anniversary, "%A, %B %d, %Y")}.')
+My name is Fred,my age next year is 51,my anniversary is Saturday, October 12, 1991.
+> 
+> # single braces can be inserted by doubling them
+> glue("My name is {name}, not {{name}}.")
+My name is Fred, not {name}.
+> 
+> # Named arguments can be used to assign temporary variables.
+> glue('My name is {name},',
++   ' my age next year is {age + 1},',
++   ' my anniversary is {format(anniversary, "%A, %B %d, %Y")}.',
++   name = "Joe",
++   age = 40,
++   anniversary = as.Date("2001-10-12"))
+My name is Joe, my age next year is 41, my anniversary is Friday, October 12, 2001.
+> 
+> # `glue()` can also be used in user defined functions
+> intro <- function(name, profession, country){
++   glue("My name is {name}, a {profession}, from {country}")
++ }
+> intro("Shelmith", "Senior Data Analyst", "Kenya")
+My name is Shelmith, a Senior Data Analyst, from Kenya
+> intro("Cate", "Data Scientist", "Kenya")
+My name is Cate, a Data Scientist, from Kenya
+> 
+> # `glue_data()` is useful in magrittr pipes
+> library(magrittr)
+> mtcars %>% glue_data("{rownames(.)} has {hp} hp")
+Mazda RX4 has 110 hp
+Mazda RX4 Wag has 110 hp
+Datsun 710 has 93 hp
+Hornet 4 Drive has 110 hp
+Hornet Sportabout has 175 hp
+Valiant has 105 hp
+Duster 360 has 245 hp
+Merc 240D has 62 hp
+Merc 230 has 95 hp
+Merc 280 has 123 hp
+Merc 280C has 123 hp
+Merc 450SE has 180 hp
+Merc 450SL has 180 hp
+Merc 450SLC has 180 hp
+Cadillac Fleetwood has 205 hp
+Lincoln Continental has 215 hp
+Chrysler Imperial has 230 hp
+Fiat 128 has 66 hp
+Honda Civic has 52 hp
+Toyota Corolla has 65 hp
+Toyota Corona has 97 hp
+Dodge Challenger has 150 hp
+AMC Javelin has 150 hp
+Camaro Z28 has 245 hp
+Pontiac Firebird has 175 hp
+Fiat X1-9 has 66 hp
+Porsche 914-2 has 91 hp
+Lotus Europa has 113 hp
+Ford Pantera L has 264 hp
+Ferrari Dino has 175 hp
+Maserati Bora has 335 hp
+Volvo 142E has 109 hp
+> 
+> # Or within dplyr pipelines
+> library(dplyr)
+Warning: package ‘dplyr’ was built under R version 4.0.5
+
+Attaching package: ‘dplyr’
+
+The following object is masked from ‘package:glue’:
+
+    collapse
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> head(iris) %>%
++   mutate(description = glue("This {Species} has a petal length of {Petal.Length}"))
+  Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1          5.1         3.5          1.4         0.2  setosa
+2          4.9         3.0          1.4         0.2  setosa
+3          4.7         3.2          1.3         0.2  setosa
+4          4.6         3.1          1.5         0.2  setosa
+5          5.0         3.6          1.4         0.2  setosa
+6          5.4         3.9          1.7         0.4  setosa
+                            description
+1 This setosa has a petal length of 1.4
+2 This setosa has a petal length of 1.4
+3 This setosa has a petal length of 1.3
+4 This setosa has a petal length of 1.5
+5 This setosa has a petal length of 1.4
+6 This setosa has a petal length of 1.7
+> 
+> # Alternative delimiters can also be used if needed
+> one <- "1"
+> glue("The value of $e^{2\\pi i}$ is $<<one>>$.", .open = "<<", .close = ">>")
+The value of $e^{2\pi i}$ is $1$.
+> 
+> 
+> 
+> cleanEx()
+
+detaching ‘package:dplyr’, ‘package:magrittr’
+
+> nameEx("glue_col")
+> ### * glue_col
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: glue_col
+> ### Title: Construct strings with color
+> ### Aliases: glue_col glue_data_col
+> 
+> ### ** Examples
+> 
+> if (require(crayon)) {
++   glue_col("{blue foo bar}")
++ 
++   glue_col("{blue 1 + 1 = {1 + 1}}")
++ 
++   white_on_grey <- bgBlack $ white
++   glue_col("{white_on_grey
++     Roses are {red {colors()[[552]]}}
++     Violets are {blue {colors()[[26]]}}
++     `glue_col()` can show {red c}{yellow o}{green l}{cyan o}{blue r}{magenta s}
++     and {bold bold} and {underline underline} too!
++     }")
++ }
+Loading required package: crayon
+Roses are red
+Violets are blue
+`glue_col()` can show colors
+and bold and underline too!
+> 
+> 
+> 
+> cleanEx()
+
+detaching ‘package:crayon’
+
+> nameEx("glue_collapse")
+> ### * glue_collapse
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: glue_collapse
+> ### Title: Collapse a character vector
+> ### Aliases: glue_collapse
+> 
+> ### ** Examples
+> 
+> glue_collapse(glue("{1:10}"))
+12345678910
+> 
+> # Wide values can be truncated
+> glue_collapse(glue("{1:10}"), width = 5)
+12...
+> 
+> glue_collapse(1:4, ", ", last = " and ")
+1, 2, 3 and 4
+> #> 1, 2, 3 and 4
+> 
+> 
+> 
+> cleanEx()
+> nameEx("glue_safe")
+> ### * glue_safe
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: glue_safe
+> ### Title: Safely interpolate strings
+> ### Aliases: glue_safe glue_data_safe
+> 
+> ### ** Examples
+> 
+> "1 + 1" <- 5
+> # glue actually executes the code
+> glue("{1 + 1}")
+2
+> 
+> # glue_safe just looks up the value
+> glue_safe("{1 + 1}")
+5
+> 
+> rm("1 + 1")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("glue_sql")
+> ### * glue_sql
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: glue_sql
+> ### Title: Interpolate strings with SQL escaping
+> ### Aliases: glue_sql glue_data_sql
+> 
+> ### ** Examples
+> 
+> con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+Error in loadNamespace(name) : there is no package called ‘DBI’
+Calls: :: ... loadNamespace -> withRestarts -> withOneRestart -> doWithOneRestart
+Execution halted

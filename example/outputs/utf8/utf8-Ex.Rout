@@ -1,0 +1,249 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "utf8"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('utf8')
+Warning: package ‘utf8’ was built under R version 4.0.5
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("as_utf8")
+> ### * as_utf8
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_utf8
+> ### Title: UTF-8 Character Encoding
+> ### Aliases: as_utf8 utf8_valid
+> 
+> ### ** Examples
+> 
+> # the second element is encoded in latin-1, but declared as UTF-8
+> x <- c("fa\u00E7ile", "fa\xE7ile", "fa\xC3\xA7ile")
+> Encoding(x) <- c("UTF-8", "UTF-8", "bytes")
+> 
+> # attempt to convert to UTF-8 (fails)
+> ## Not run: as_utf8(x)
+> 
+> y <- x
+> Encoding(y[2]) <- "latin1" # mark the correct encoding
+> as_utf8(y) # succeeds
+[1] "façile" "façile" "façile"
+> 
+> # test for valid UTF-8
+> utf8_valid(x)
+[1]  TRUE FALSE  TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("output")
+> ### * output
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: output_utf8
+> ### Title: Output Capabilities
+> ### Aliases: output_ansi output_utf8
+> 
+> ### ** Examples
+> 
+> # test whether ANSI style escapes or UTF-8 output are supported
+> cat("ANSI:", output_ansi(), "\n")
+ANSI: FALSE 
+> cat("UTF8:", output_utf8(), "\n")
+UTF8: TRUE 
+> 
+> # switch to C locale
+> Sys.setlocale("LC_CTYPE", "C")
+[1] "C"
+> cat("ANSI:", output_ansi(), "\n")
+ANSI: FALSE 
+> cat("UTF8:", output_utf8(), "\n")
+UTF8: FALSE 
+> 
+> # switch to native locale
+> Sys.setlocale("LC_CTYPE", "")
+[1] "en_US.UTF-8"
+> 
+> tmp <- tempfile()
+> sink(tmp) # redirect output to a file
+> cat("ANSI:", output_ansi(), "\n")
+> cat("UTF8:", output_utf8(), "\n")
+> sink() # restore stdout
+> 
+> # inspect the output
+> readLines(tmp)
+[1] "ANSI: FALSE " "UTF8: TRUE " 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("utf8_encode")
+> ### * utf8_encode
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: utf8_encode
+> ### Title: Encode Character Object as for UTF-8 Printing
+> ### Aliases: utf8_encode
+> 
+> ### ** Examples
+> 
+> # the second element is encoded in latin-1, but declared as UTF-8
+> x <- c("fa\u00E7ile", "fa\xE7ile", "fa\xC3\xA7ile")
+> Encoding(x) <- c("UTF-8", "UTF-8", "bytes")
+> 
+> # encoding
+> utf8_encode(x)
+[1] "façile"          "fa\\xe7ile"      "fa\\xc3\\xa7ile"
+> 
+> # add style to the escapes
+> cat(utf8_encode("hello\nstyled\\world", escapes = "1"), "\n")
+hello[1m\n[0mstyled[1m\[0m\world 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("utf8_format")
+> ### * utf8_format
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: utf8_format
+> ### Title: UTF-8 Text Formatting
+> ### Aliases: utf8_format
+> 
+> ### ** Examples
+> 
+> # the second element is encoded in latin-1, but declared as UTF-8
+> x <- c("fa\u00E7ile", "fa\xE7ile", "fa\xC3\xA7ile")
+> Encoding(x) <- c("UTF-8", "UTF-8", "bytes")
+> 
+> # formatting
+> utf8_format(x, chars = 3)
+[1] "faç…"  "fa..." "fa..."
+> utf8_format(x, chars = 3, justify = "centre", width = 10)
+[1] "   faç…   " "  fa...   " "  fa...   "
+> utf8_format(x, chars = 3, justify = "right")
+[1] "…ile"       "...\\xe7ile" "...\\xa7ile"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("utf8_normalize")
+> ### * utf8_normalize
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: utf8_normalize
+> ### Title: Text Normalization
+> ### Aliases: utf8_normalize
+> 
+> ### ** Examples
+> 
+> angstrom <- c("\u00c5", "\u0041\u030a", "\u212b")
+> utf8_normalize(angstrom) == "\u00c5"
+[1] TRUE TRUE TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("utf8_print")
+> ### * utf8_print
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: utf8_print
+> ### Title: Print UTF-8 Text
+> ### Aliases: utf8_print
+> 
+> ### ** Examples
+> 
+> # printing (assumes that output is capable of displaying Unicode 10.0.0)
+> print(intToUtf8(0x1F600 + 0:79)) # with default R print function
+[1] "😀😁😂😃😄😅😆😇😈😉😊😋😌😍😎😏😐😑😒😓😔😕😖😗😘😙😚😛😜😝😞😟😠😡😢😣😤😥😦😧😨😩😪😫😬😭😮😯😰😱😲😳😴😵😶😷😸😹😺😻😼😽😾😿🙀🙁🙂🙃🙄🙅🙆🙇🙈🙉🙊🙋🙌🙍🙎🙏"
+> utf8_print(intToUtf8(0x1F600 + 0:79)) # with utf8_print, truncates line
+[1] "😀​😁​😂​😃​😄​😅​😆​😇​😈​😉​😊​😋​😌​😍​😎​😏​😐​😑​😒​😓​😔​😕​😖​😗​😘​😙​😚​😛​😜​😝​😞​😟​😠​😡​😢​😣​…"
+> utf8_print(intToUtf8(0x1F600 + 0:79), chars = 1000) # higher character limit
+[1] "😀​😁​😂​😃​😄​😅​😆​😇​😈​😉​😊​😋​😌​😍​😎​😏​😐​😑​😒​😓​😔​😕​😖​😗​😘​😙​😚​😛​😜​😝​😞​😟​😠​😡​😢​😣​😤​😥​😦​😧​😨​😩​😪​😫​😬​😭​😮​😯​😰​😱​😲​😳​😴​😵​😶​😷​😸​😹​😺​😻​😼​😽​😾​😿​🙀​🙁​🙂​🙃​🙄​🙅​🙆​🙇​🙈​🙉​🙊​🙋​🙌​🙍​🙎​🙏​"
+> 
+> # in C locale, output ASCII (same results on all platforms)
+> oldlocale <- Sys.getlocale("LC_CTYPE")
+> invisible(Sys.setlocale("LC_CTYPE", "C")) # switch to C locale
+> utf8_print(intToUtf8(0x1F600 + 0:79))
+[1] "\U0001f600\U0001f601\U0001f602\U0001f603\U0001f604\U0001f605\U0001f606..."
+> invisible(Sys.setlocale("LC_CTYPE", oldlocale)) # switch back to old locale
+> 
+> # Mac and Linux only: style the names
+> # see https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
+> utf8_print(matrix(as.character(1:20), 4, 5),
++            names = "1;4", rownames = "2;3")
+     [,1] [,2] [,3] [,4] [,5]
+[1,] "1"  "5"  "9"  "13" "17"
+[2,] "2"  "6"  "10" "14" "18"
+[3,] "3"  "7"  "11" "15" "19"
+[4,] "4"  "8"  "12" "16" "20"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("utf8_width")
+> ### * utf8_width
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: utf8_width
+> ### Title: Measure the Character String Width
+> ### Aliases: utf8_width
+> 
+> ### ** Examples
+> 
+> # the second element is encoded in latin-1, but declared as UTF-8
+> x <- c("fa\u00E7ile", "fa\xE7ile", "fa\xC3\xA7ile")
+> Encoding(x) <- c("UTF-8", "UTF-8", "bytes")
+> 
+> # get widths
+> utf8_width(x)
+[1]  6  9 13
+> utf8_width(x, encode = FALSE)
+[1]  6 NA NA
+> utf8_width('"')
+[1] 1
+> utf8_width('"', quote = TRUE)
+[1] 4
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.112 0.002 0.114 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

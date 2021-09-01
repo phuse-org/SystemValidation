@@ -1,0 +1,285 @@
+---
+title: "R Environment "
+author: "Eli Miller"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    df_print: default
+    toc: yes
+---
+
+# Introduction
+
+## License
+
+Copyright 2021 ???
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Other Resources
+
+https://www.r-project.org/doc/R-FDA.pdf
+
+# R Environment Information
+
+## Installation Path
+
+R home directory, location of R executables, and R package system library location.
+
+```{r home}
+readLines("outputs/Rhome.txt")
+readLines("outputs/libLoc.txt")
+```
+
+## R Version Information
+
+Detailed R version information, including major, minor, and patch number, release date, nickname, and the platform R was built on.
+
+```{r R_Version}
+readLines("outputs/RVersion.txt")
+```
+
+## R Session Information
+
+Information about the version of R, system information R was built under, matrix libraries, system locale configuration, and attached packages.
+
+```{r sessionInfo}
+readLines("outputs/sessionInfo.txt")
+```
+
+## Platform Information
+
+Description of the platform and architecture including, file separator, path separators, dynamic library extension, and OS type.
+
+```{r platform}
+readLines("outputs/platform.txt")
+```
+
+## Installed Packages
+
+The list of packages installed on the system, their version, license type, if they require compilation, and version of R they were built under.
+
+```{r installed_packages, results='asis'}
+load("outputs/ips")
+knitr::kable(ips[, c("Version", "Priority", "License", "NeedsCompilation", "Built")])
+```
+
+## Attached packages and R objects
+
+Lists of the packages that have been attached to the R Session.
+
+```{r search}
+readLines("outputs/searchPath.txt")
+```
+
+## Numerical Precision of Machine
+
+__double.eps__
+the smallest positive floating-point number x such that 1 + x != 1. It equals double.base ^ ulp.digits if either double.base is 2 or double.rounding is 0; otherwise, it is (double.base ^ double.ulp.digits) / 2. Normally 2.220446e-16.
+
+__double.neg.eps__
+a small positive floating-point number x such that 1 - x != 1. It equals double.base ^ double.neg.ulp.digits if double.base is 2 or double.rounding is 0; otherwise, it is (double.base ^ double.neg.ulp.digits) / 2. Normally 1.110223e-16. As double.neg.ulp.digits is bounded below by -(double.digits + 3), double.neg.eps may not be the smallest number that can alter 1 by subtraction.
+
+__double.xmin__
+the smallest non-zero normalized floating-point number, a power of the radix, i.e., double.base ^ double.min.exp. Normally 2.225074e-308.
+
+__double.xmax__
+the largest normalized floating-point number. Typically, it is equal to (1 - double.neg.eps) * double.base ^ double.max.exp, but on some machines it is only the second or third largest such number, being too small by 1 or 2 units in the last digit of the significand. Normally 1.797693e+308. Note that larger unnormalized numbers can occur.
+
+__double.base__
+the radix for the floating-point representation: normally 2.
+
+__double.digits__
+the number of base digits in the floating-point significand: normally 53.
+
+__double.rounding__
+the rounding action, one of
+0 if floating-point addition chops;
+1 if floating-point addition rounds, but not in the IEEE style;
+2 if floating-point addition rounds in the IEEE style;
+3 if floating-point addition chops, and there is partial underflow;
+4 if floating-point addition rounds, but not in the IEEE style, and there is partial underflow;
+5 if floating-point addition rounds in the IEEE style, and there is partial underflow.
+Normally 5.
+
+__double.guard__
+the number of guard digits for multiplication with truncating arithmetic. It is 1 if floating-point arithmetic truncates and more than double digits base-double.base digits participate in the post-normalization shift of the floating-point significand in multiplication, and 0 otherwise.
+Normally 0.
+
+__double.ulp.digits__
+the largest negative integer i such that 1 + double.base ^ i != 1, except that it is bounded below by -(double.digits + 3). Normally -52.
+
+__double.neg.ulp.digits__
+the largest negative integer i such that 1 - double.base ^ i != 1, except that it is bounded below by -(double.digits + 3). Normally -53.
+
+__double.exponent__
+the number of bits (decimal places if double.base is 10) reserved for the representation of the exponent (including the bias or sign) of a floating-point number. Normally 11.
+
+__double.min.exp__
+the largest in magnitude negative integer i such that double.base ^ i is positive and normalized. Normally -1022.
+
+__double.max.exp__
+the smallest positive power of double.base that overflows. Normally 1024.
+
+__integer.max__
+the largest integer which can be represented. Always 2^31 - 1 = 2147483647.
+
+__sizeof.long__
+the number of bytes in a C long type: 4 or 8 (most 64-bit systems, but not Windows).
+
+__sizeof.longlong__
+the number of bytes in a C long long type. Will be zero if there is no such type, otherwise usually 8.
+
+__sizeof.longdouble__
+the number of bytes in a C long double type. Will be zero if there is no such type (or its use was disabled when R was built), otherwise possibly 12 (most 32-bit builds) or 16 (most 64-bit builds).
+
+__sizeof.pointer__
+the number of bytes in a C SEXP type. Will be 4 on 32-bit builds and 8 on 64-bit builds of R.
+
+__longdouble.eps, longdouble.neg.eps, longdouble.digits, ...__
+when capabilities["long.double"] is true, there are 10 such "longdouble.<kind>" values, specifying the long double property corresponding to its "double.*" counterpart, above, see also ‘Note’.
+
+```{r host}
+readLines("outputs/machine.txt")
+```
+
+## Installation Configuration
+
+Information on what features have been enabled into this systems build of R.
+
+__jpeg__
+is the jpeg function operational?
+
+__png__
+is the png function operational?
+
+__tiff__
+is the tiff function operational?
+
+__tcltk__
+is the tcltk package operational? Note that to make use of Tk you will almost always need to check that "X11" is also available.
+
+__X11__
+are the X11 graphics device and the X11-based data editor available? This loads the X11 module if not already loaded, and checks that the default display can be contacted unless a X11 device has already been used.
+
+__aqua__
+is the quartz function operational? Only on some macOS builds, including CRAN binary distributions of R.
+
+Note that this is distinct from .Platform$GUI == "AQUA", which is true only when using the Mac R.app GUI console.
+
+__http/ftp__
+does the internal method for url and download.file support http:// and ftp:// URLs? Always TRUE as from R 3.3.0.
+
+__sockets__
+are make.socket and related functions available? Always TRUE as from R 3.3.0.
+
+__libxml__
+is there support for integrating libxml with the R event loop? Always TRUE as from R 3.3.0.
+
+__fifo__
+are FIFO connections supported?
+
+__cledit__
+is command-line editing available in the current R session? This is false in non-interactive sessions. It will be true for the command-line interface if readline support has been compiled in and --no-readline was not used when R was invoked. (If --interactive was used, command-line editing will not actually be available.)
+
+__iconv__
+is internationalization conversion via iconv supported? Always true in current R.
+
+__NLS__
+is there Natural Language Support (for message translations)?
+
+__profmem__
+is there support for memory profiling? See tracemem.
+
+__cairo__
+is there support for the svg, cairo_pdf and cairo_ps devices, and for type = "cairo" in the X11, bmp, jpeg, png, and tiff devices?
+
+__ICU__
+is ICU available for collation? See the help on Comparison and icuSetCollate: it is never used for a C locale.
+
+__long.double__
+does this build use a C long double type which is longer than double? Some platforms do not have such a type, and on others its use can be suppressed by the configure option --disable-long-double.
+
+Although not guaranteed, it is a reasonable assumption that if present long doubles will have at least as much range and accuracy as the ISO/IEC 60559 80-bit ‘extended precision’ format.
+
+__libcurl__
+is libcurl available in this build? Used by function curlGetHeaders and optionally by download.file and url. As from R 3.3.0 always true for Unix-alikes, and true for CRAN Windows builds.
+
+```{r install_configs}
+readLines("outputs/capabilities.txt")
+```
+
+# Base R Qualification Tests
+
+## Installation Tests
+```{r basic,  results='hide', warning=FALSE, error=FALSE, message=FALSE}
+IQ_result <- readLines("results/IQ_log.txt")
+ifelse(IQ_result == "0", "Pass", "Fail")
+```
+
+## Operational Tests
+
+### Examples
+```{r}
+examples_result <- readLines("results/examplesResult.txt")
+ifelse(examples_result == "0", "Pass", "Fail")
+```
+
+### Vignettes
+```{r}
+vignettes_result <- readLines("results/vignettesResult.txt")
+ifelse(vignettes_result == "0", "Pass", "Fail")
+```
+
+### Tests
+```{r}
+test_result <- readLines("results/testResult.txt")
+ifelse(test_result == "0", "Pass", "Fail")
+```
+
+# Installed Packages
+
+```{r tests2,  results='hide', warning=FALSE, error=FALSE, message=FALSE}
+knitr::kable(ips[, c("Version", "Priority", "License", "MD5sum", "NeedsCompilation", "Built")])
+```
+
+# Qualification Results
+
+The summaries of qualification tests.
+
+```{r pass_table}
+ips <- ips[is.na(ips[,"Priority"]), "Package"]
+
+installed_test <- data.frame()
+for(package in ips) {
+  package_examples <- ifelse(try(readLines(paste0("results/", package, "/examples.txt")), silent = TRUE) == "0", "Pass", "Fail")
+  package_tests <- ifelse(try(readLines(paste0("results/", package, "/tests.txt")), silent = TRUE) == "0", "Pass", "Fail")
+  package_vignettes <- ifelse(try(readLines(paste0("results/", package, "/vignettes.txt")), silent = TRUE) == "0", "Pass", "Fail")
+  installed_test <- rbind(installed_test, data.frame(Test = package_tests, Examples = package_examples, Vignettes = package_vignettes))
+}
+
+df <- data.frame(
+  IQ = ifelse(IQ_result == 0, "Pass", "Fail"),
+  OQ_Tests = ifelse(test_result == 0, "Pass", "Fail"),
+  OQ_Examples = ifelse(examples_result == 0, "Pass", "Fail"),
+  OQ_Vignettes = ifelse(vignettes_result == 0, "Pass", "Fail"),
+  Installed_Tests = ifelse(all(installed_test[,"Test"] == "Pass"), "Pass", "Fail"),
+  Installed_Examples = ifelse(all(installed_test[,"Examples"] == "Pass"), "Pass", "Fail"),
+  Installed_Vignettes = ifelse(all(installed_test[,"Vignettes"] == "Pass"), "Pass", "Fail")
+)
+
+knitr::kable(df)
+
+```
+
+## Package Qualifications
+
+Summaries of installed packages and their qualification results.
+
+```{r packages, results='asis'}
+knitr::kable(installed_test)
+```

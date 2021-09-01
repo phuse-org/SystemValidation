@@ -1,0 +1,28 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> set.seed(123)
+> N <- 9522
+> rM <- matrix(rnorm(N*4), N)
+> cvR <- try(MASS::cov.rob(rM, method = "mcd", nsamp = "exact"))
+Error in MASS::cov.rob(rM, method = "mcd", nsamp = "exact") : 
+  Too many combinations (6.52e+17) for nsamp = "exact"
+> cvR <- try(MASS::cov.rob(rM, method = "mcd", nsamp = 1e10))
+Error in MASS::cov.rob(rM, method = "mcd", nsamp = 1e+10) : 
+  Too many samples (1e+10)
+> 
+> 

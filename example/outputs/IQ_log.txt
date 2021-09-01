@@ -1,0 +1,81 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> dir.create("/home/val/results", showWarnings = FALSE)
+> dir.create("/home/val/outputs", showWarnings = FALSE)
+> 
+> IQResult <- tools::testInstalledBasic("basic")
+running strict specific tests
+  running code in ‘eval-etc.R’
+  comparing ‘eval-etc.Rout’ to ‘eval-etc.Rout.save’ ... OK
+  running code in ‘simple-true.R’
+  comparing ‘simple-true.Rout’ to ‘simple-true.Rout.save’ ... OK
+  running code in ‘arith-true.R’
+  comparing ‘arith-true.Rout’ to ‘arith-true.Rout.save’ ... OK
+  running code in ‘lm-tests.R’
+  comparing ‘lm-tests.Rout’ to ‘lm-tests.Rout.save’ ... OK
+  running code in ‘ok-errors.R’
+  comparing ‘ok-errors.Rout’ to ‘ok-errors.Rout.save’ ... OK
+  running code in ‘method-dispatch.R’
+  comparing ‘method-dispatch.Rout’ to ‘method-dispatch.Rout.save’ ... OK
+  running code in ‘array-subset.R’
+  running code in ‘any-all.R’
+  comparing ‘any-all.Rout’ to ‘any-all.Rout.save’ ... OK
+  running code in ‘d-p-q-r-tests.R’
+  comparing ‘d-p-q-r-tests.Rout’ to ‘d-p-q-r-tests.Rout.save’ ... OK
+running sloppy specific tests
+  running code in ‘complex.R’
+  comparing ‘complex.Rout’ to ‘complex.Rout.save’ ... OK
+  running code in ‘print-tests.R’
+  comparing ‘print-tests.Rout’ to ‘print-tests.Rout.save’ ... OK
+  running code in ‘lapack.R’
+  comparing ‘lapack.Rout’ to ‘lapack.Rout.save’ ... OK
+  running code in ‘datasets.R’
+  comparing ‘datasets.Rout’ to ‘datasets.Rout.save’ ... OK
+  running code in ‘datetime.R’
+  comparing ‘datetime.Rout’ to ‘datetime.Rout.save’ ... OK
+  running code in ‘iec60559.R’
+  comparing ‘iec60559.Rout’ to ‘iec60559.Rout.save’ ... OK
+running regression tests
+  running code in ‘reg-tests-1a.R’
+  running code in ‘reg-tests-1b.R’
+  running code in ‘reg-tests-1c.R’
+  running code in ‘reg-tests-2.R’
+  comparing ‘reg-tests-2.Rout’ to ‘reg-tests-2.Rout.save’ ... OK
+  running code in ‘reg-examples1.R’
+  running code in ‘reg-examples2.R’
+  running code in ‘reg-packages.R’
+  running code in ‘p-qbeta-strict-tst.R’
+  running code in ‘reg-IO.R’
+  comparing ‘reg-IO.Rout’ to ‘reg-IO.Rout.save’ ... OK
+  running code in ‘reg-IO2.R’
+  comparing ‘reg-IO2.Rout’ to ‘reg-IO2.Rout.save’ ... OK
+  running code in ‘reg-plot.R’
+  comparing 'reg-plot.pdf' to 'reg-plot.pdf.save' ...OK
+  running code in ‘reg-S4.R’
+  comparing ‘reg-S4.Rout’ to ‘reg-S4.Rout.save’ ... OK
+  running code in ‘reg-BLAS.R’
+  running code in ‘reg-tests-3.R’
+  comparing ‘reg-tests-3.Rout’ to ‘reg-tests-3.Rout.save’ ... OK
+  running code in ‘reg-examples3.R’
+  comparing ‘reg-examples3.Rout’ to ‘reg-examples3.Rout.save’ ... OK
+running tests of plotting Latin-1
+  expect failure or some differences if not in a Latin or UTF-8 locale
+  running code in ‘reg-plot-latin1.R’
+  comparing 'reg-plot-latin1.pdf' to 'reg-plot-latin1.pdf.save' ...OK
+> writeLines(as.character(IQResult), con = "results/IQ_log.txt")
+> q(status = IQResult)

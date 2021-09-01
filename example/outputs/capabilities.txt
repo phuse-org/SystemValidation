@@ -1,0 +1,6 @@
+       jpeg         png        tiff       tcltk         X11        aqua 
+       TRUE        TRUE        TRUE        TRUE       FALSE       FALSE 
+   http/ftp     sockets      libxml        fifo      cledit       iconv 
+       TRUE        TRUE        TRUE        TRUE       FALSE        TRUE 
+        NLS     profmem       cairo         ICU long.double     libcurl 
+      FALSE        TRUE        TRUE        TRUE        TRUE        TRUE 

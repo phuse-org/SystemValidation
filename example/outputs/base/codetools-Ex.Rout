@@ -1,0 +1,157 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "codetools"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('codetools')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("checkUsage")
+> ### * checkUsage
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: checkUsage
+> ### Title: Check R Code for Possible Problems
+> ### Aliases: checkUsage checkUsageEnv checkUsagePackage
+> ### Keywords: programming
+> 
+> ### ** Examples
+> 
+> checkUsage(checkUsage)
+> checkUsagePackage("codetools",all=TRUE)
+addCollectUsageHandler: parameter ‘where’ may not be used
+apdef: parameter ‘e’ changed by assignment
+checkUsageEnterLocal: parameter ‘type’ changed by assignment
+checkUsageFinishLocals: parameter ‘w’ changed by assignment
+collectUsageFun: parameter ‘w’ changed by assignment
+collectUsageIsLocal: parameter ‘v’ changed by assignment
+constantFold : job : isLocal: parameter ‘w’ may not be used
+constantFold : job : doExit: parameter ‘e’ may not be used
+constantFold : job : doExit: parameter ‘w’ may not be used
+constantFoldEnv : isLocal: parameter ‘w’ may not be used
+constantFoldEnv : job : doExit: parameter ‘e’ may not be used
+constantFoldEnv : job : doExit: parameter ‘w’ may not be used
+constantFoldEnv : <anonymous>: parameter ‘e’ may not be used
+constantFoldEnv: parameter ‘env’ may not be used
+evalseq: parameter ‘e’ changed by assignment
+findGlobals : enter: parameter ‘e’ may not be used
+findGlobals : enter: parameter ‘w’ may not be used
+findLocalsList : collect: parameter ‘e’ may not be used
+findLocalsList : collect: parameter ‘w’ may not be used
+findLocalsList : isLocal: parameter ‘w’ may not be used
+findOwnerEnv: parameter ‘env’ changed by assignment
+foldLeaf: parameter ‘e’ changed by assignment
+getCollectLocalsHandler : <anonymous>: parameter ‘e’ may not be used
+getCollectLocalsHandler : <anonymous>: parameter ‘w’ may not be used
+getCollectLocalsHandler : <anonymous>: parameter ‘e’ may not be used
+getCollectLocalsHandler : <anonymous>: parameter ‘w’ may not be used
+isClosureFunDef: parameter ‘w’ may not be used
+isConstantValue: parameter ‘w’ may not be used
+makeAssgnFcn: parameter ‘fun’ changed by assignment
+makeCodeWalker : <anonymous>: parameter ‘v’ may not be used
+makeCodeWalker : <anonymous>: parameter ‘w’ may not be used
+makeCodeWalker : <anonymous>: parameter ‘w’ may not be used
+makeConstantFolder : <anonymous>: parameter ‘w’ may not be used
+makeConstantFolder : <anonymous>: parameter ‘v’ may not be used
+makeConstantFolder : <anonymous>: parameter ‘w’ may not be used
+makeConstantFolder : <anonymous>: parameter ‘e’ may not be used
+makeConstantFolder : <anonymous>: parameter ‘w’ may not be used
+makeConstantFolder: parameter ‘foldable’ may not be used
+makeLocalsCollector : <anonymous>: parameter ‘e’ may not be used
+makeLocalsCollector : <anonymous>: parameter ‘w’ may not be used
+makeLocalsCollector : <anonymous>: parameter ‘v’ may not be used
+makeLocalsCollector : <anonymous>: parameter ‘w’ may not be used
+makeLocalsCollector : <anonymous>: parameter ‘e’ may not be used
+makeLocalsCollector : <anonymous>: parameter ‘w’ may not be used
+makeLocalsCollector : <anonymous>: parameter ‘e’ may not be used
+makeLocalsCollector : <anonymous>: parameter ‘w’ may not be used
+makeLocalsCollector: parameter ‘exit’ may not be used
+walkCode: local variable ‘h’ used as function with no apparent local function definition
+> ## Not run: checkUsagePackage("base",suppressLocal=TRUE)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("findGlobals")
+> ### * findGlobals
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: findGlobals
+> ### Title: Find Global Functions and Variables Used by a Closure
+> ### Aliases: findGlobals
+> ### Keywords: programming
+> 
+> ### ** Examples
+> 
+> findGlobals(findGlobals)
+ [1] "{"            "<-"           "=="           "assign"       "c"           
+ [6] "collectUsage" "if"           "list"         "ls"           "mkHash"      
+[11] "sort"         "unique"      
+> findGlobals(findGlobals, merge = FALSE)
+$functions
+ [1] "{"            "<-"           "=="           "assign"       "c"           
+ [6] "collectUsage" "if"           "list"         "ls"           "mkHash"      
+[11] "sort"         "unique"      
+
+$variables
+character(0)
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("showTree")
+> ### * showTree
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: showTree
+> ### Title: Print Lisp-Style Representation of R Expression
+> ### Aliases: showTree
+> ### Keywords: programming
+> 
+> ### ** Examples
+> 
+> showTree(quote(-3))
+(- 3)
+> showTree(quote("x"<-1))
+(<- "x" 1)
+> showTree(quote("f"(x)))
+(f x)
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.863 0.016 0.88 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

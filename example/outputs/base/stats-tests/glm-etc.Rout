@@ -1,0 +1,37 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> #### lm, glm, aov, etc --- typically *strict* tests (no *.Rout.save)
+> 
+> data(mtcars)
+> mtcar2 <- within(mtcars, {
++     mpg_c <- mpg * (1+am) + 5
++     am <- factor(am)
++ })
+> fm2 <- glm(disp ~ am * mpg + mpg_c, data = mtcar2)
+> c2 <- coef(fm2)
+> V2 <- vcov(fm2)
+> jj <- !is.na(c2)
+> stopifnot(names(which(!jj)) == "am1:mpg"
++ 	, identical(length(c2), 5L), identical(dim(V2), c(5L,5L))
++ 	, all.equal(c2[jj],    coef(fm2, complete=FALSE))
++ 	, all.equal(V2[jj,jj], vcov(fm2, complete=FALSE))
++ 	, all.equal(c2[jj], c(`(Intercept)`= 626.0915, am1 = -249.4183,
++ 			      mpg = -33.74701, mpg_c = 10.97014),
++ 		    tol = 7e-7)# 1.01e-7 [F26 Lnx 64b]
++ )
+> 

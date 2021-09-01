@@ -1,0 +1,51 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## PR#14646
+> 
+> library(stats4)
+> minusLogL1 <- function(mu, logsigma2)
++     N*log(2*pi*exp(logsigma2))/2 + N*(var(x)+(mean(x)-mu)^2)/(2*exp(logsigma2))
+> 
+> minusLogL2 <- function(mu) {
++     logsigma2 <- 0;
++     N*log(2*pi*exp(logsigma2))/2 + N*(var(x)+(mean(x)-mu)^2)/(2*exp(logsigma2))
++ }
+> 
+> N <- 100
+> set.seed(123)
+> x <- rnorm(N, 0, 1)
+> 
+> fit <- mle(minusLogL1, start = list(mu=0, logsigma2=0))
+> confint(fit)
+Profiling...
+                2.5 %    97.5 %
+mu        -0.09023952 0.2710513
+logsigma2 -0.44736788 0.1081772
+> 
+> fit2 <- mle(minusLogL1, start = list(mu=0), fixed = list(logsigma2=0))
+> confint(fit2) # failed
+Profiling...
+     2.5 %     97.5 % 
+-0.1055905  0.2864023 
+> 
+> fit3 <- mle(minusLogL2, start = list(mu=0))
+> confint(fit3) # same
+Profiling...
+     2.5 %     97.5 % 
+-0.1055905  0.2864023 
+> 

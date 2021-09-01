@@ -1,0 +1,36 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> setClass("B", contains = "numeric")
+> xx <- new("B", 1)
+> names(xx) <- "A"
+> stopifnot(identical(names(xx), "A"))
+> setClass("A", representation(xx = "numeric"))
+> a <- new("A", xx = 1)
+> stopifnot(is(tryCatch(names(a) <- "A" , error = function(e)e), "error"))
+> setClass("C", representation(xx = "numeric", names= "character"))
+> c <- new("C", xx = 1, names = "A")
+> c@names <- "B"
+> stopifnot(is(tryCatch(names(c) <- "A" , error = function(e)e), "error"))
+> setClass("D", contains = "numeric", representation(names = "character"))
+> d <- new("D", 1)
+> names(d) <- "A"
+> stopifnot(identical(d@names, "A"))
+> ## test the checks on @<- primitive assignment
+> stopifnot(is(tryCatch(a@yy <- 1 , error = function(e)e), "error"))
+> stopifnot(is(tryCatch(a@xx <- "A" , error = function(e)e), "error"))
+> 

@@ -1,0 +1,44 @@
+\documentclass[11pt,a4paper]{article}
+
+%% *** automatically switched by 'make' ( ./Makefile ) --- CARE!! in changing
+   % Exercise mode
+%\SweaveOpts{echo=TRUE,eval=TRUE,results=verbatim} % Solution mode
+%% other Sweave options
+
+
+\newif\ifSolution
+\Solutiontrue% if solution
+\Solutionfalse%if exercise
+%
+\ifSolution\newcommand{\commentSol}[1]{#1}
+\else      \newcommand{\commentSol}[1]{}
+\fi
+\newcommand{\T}[1]{\texttt{#1}}
+
+\usepackage{Sweave}
+\begin{document}
+
+
+We work with the data set \T{airquality} which is part of R....
+You can address it simply by \T{airquality}. Use \T{?airquality} to read about the
+meaning of the variables contained in the dataset.
+
+Get a summary of the data,
+\begin{Schunk}
+\begin{Sinput}
+R> summary(airquality)
+\end{Sinput}
+\end{Schunk}
+
+\commentSol{The data set contains \verb#<<nrow(airquality)>># observations. The data is
+complete for all but the first two variables \T{Ozone}, \T{Solar.R},
+which contain \verb#<<sum(is.na(airquality[,1]))>># and
+\verb#<<sum(is.na(airquality[,2]))>># missing values, respectively.
+}
+
+The above works in solution mode,
+but in exercise mode, the $\backslash$Sexpr results are put out verbatim,
+unfortunately using $\backslash$\verb|verb{bla bla{|  and the left brace
+\emph{really} messes up the $\backslash$commentSol\verb|{..}| command...
+
+\end{document}

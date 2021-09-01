@@ -1,0 +1,27 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## Taken from https://stat.ethz.ch/pipermail/r-devel/2018-January/075459.html
+> 
+> ## Hung with x86_64 Linux/gcc 7.3 but not i686 Linux nor x86_64 macOS
+> ## in early 2018.  Resolved by nlme 3.1-136.
+> 
+> ## Optional since it used to hang, on one platform only AFAWK.
+> ## gfortran with -fbounds-check detected a problem on one x86_64
+> ## Fedora 26 system (but not another) and on one of winbuilder's
+> ## subarchs.
+> if(!nzchar(Sys.getenv("TEST-NLME-STALL"))) q('no')

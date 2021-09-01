@@ -1,0 +1,370 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "nnet"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('nnet')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("class.ind")
+> ### * class.ind
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: class.ind
+> ### Title: Generates Class Indicator Matrix from a Factor
+> ### Aliases: class.ind
+> ### Keywords: neural utilities
+> 
+> ### ** Examples
+> 
+> # The function is currently defined as
+> class.ind <- function(cl)
++ {
++   n <- length(cl)
++   cl <- as.factor(cl)
++   x <- matrix(0, n, length(levels(cl)) )
++   x[(1:n) + n*(unclass(cl)-1)] <- 1
++   dimnames(x) <- list(names(cl), levels(cl))
++   x
++ }
+> 
+> 
+> 
+> cleanEx()
+> nameEx("multinom")
+> ### * multinom
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: multinom
+> ### Title: Fit Multinomial Log-linear Models
+> ### Aliases: multinom add1.multinom anova.multinom coef.multinom
+> ###   drop1.multinom extractAIC.multinom predict.multinom print.multinom
+> ###   summary.multinom print.summary.multinom vcov.multinom
+> ###   model.frame.multinom logLik.multinom
+> ### Keywords: neural models
+> 
+> ### ** Examples
+> 
+> oc <- options(contrasts = c("contr.treatment", "contr.poly"))
+> library(MASS)
+> example(birthwt)
+
+brthwt> bwt <- with(birthwt, {
+brthwt+ race <- factor(race, labels = c("white", "black", "other"))
+brthwt+ ptd <- factor(ptl > 0)
+brthwt+ ftv <- factor(ftv)
+brthwt+ levels(ftv)[-(1:2)] <- "2+"
+brthwt+ data.frame(low = factor(low), age, lwt, race, smoke = (smoke > 0),
+brthwt+            ptd, ht = (ht > 0), ui = (ui > 0), ftv)
+brthwt+ })
+
+brthwt> options(contrasts = c("contr.treatment", "contr.poly"))
+
+brthwt> glm(low ~ ., binomial, bwt)
+
+Call:  glm(formula = low ~ ., family = binomial, data = bwt)
+
+Coefficients:
+(Intercept)          age          lwt    raceblack    raceother    smokeTRUE  
+    0.82302     -0.03723     -0.01565      1.19241      0.74068      0.75553  
+    ptdTRUE       htTRUE       uiTRUE         ftv1        ftv2+  
+    1.34376      1.91317      0.68020     -0.43638      0.17901  
+
+Degrees of Freedom: 188 Total (i.e. Null);  178 Residual
+Null Deviance:	    234.7 
+Residual Deviance: 195.5 	AIC: 217.5
+> (bwt.mu <- multinom(low ~ ., bwt))
+# weights:  12 (11 variable)
+initial  value 131.004817 
+iter  10 value 98.029803
+final  value 97.737759 
+converged
+Call:
+multinom(formula = low ~ ., data = bwt)
+
+Coefficients:
+(Intercept)         age         lwt   raceblack   raceother   smokeTRUE 
+ 0.82320102 -0.03723828 -0.01565359  1.19240391  0.74065606  0.75550487 
+    ptdTRUE      htTRUE      uiTRUE        ftv1       ftv2+ 
+ 1.34375901  1.91320116  0.68020207 -0.43638470  0.17900392 
+
+Residual Deviance: 195.4755 
+AIC: 217.4755 
+> options(oc)
+> 
+> 
+> 
+> base::options(contrasts = c(unordered = "contr.treatment",ordered = "contr.poly"))
+> cleanEx()
+
+detaching ‘package:MASS’
+
+> nameEx("nnet.Hess")
+> ### * nnet.Hess
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: nnetHess
+> ### Title: Evaluates Hessian for a Neural Network
+> ### Aliases: nnetHess
+> ### Keywords: neural
+> 
+> ### ** Examples
+> 
+> # use half the iris data
+> ir <- rbind(iris3[,,1], iris3[,,2], iris3[,,3])
+> targets <- matrix(c(rep(c(1,0,0),50), rep(c(0,1,0),50), rep(c(0,0,1),50)),
++ 150, 3, byrow=TRUE)
+> samp <- c(sample(1:50,25), sample(51:100,25), sample(101:150,25))
+> ir1 <- nnet(ir[samp,], targets[samp,], size=2, rang=0.1, decay=5e-4, maxit=200)
+# weights:  19
+initial  value 56.674912 
+iter  10 value 31.325239
+iter  20 value 20.196710
+iter  30 value 2.916917
+iter  40 value 2.236114
+iter  50 value 1.068709
+iter  60 value 0.832019
+iter  70 value 0.801049
+iter  80 value 0.762972
+iter  90 value 0.756422
+iter 100 value 0.751530
+iter 110 value 0.747435
+iter 120 value 0.745665
+iter 130 value 0.744953
+iter 140 value 0.744659
+iter 150 value 0.744375
+iter 160 value 0.744236
+iter 170 value 0.744186
+iter 180 value 0.744177
+iter 190 value 0.744169
+final  value 0.744166 
+converged
+> eigen(nnetHess(ir1, ir[samp,], targets[samp,]), TRUE)$values
+ [1] 2.080028e+02 5.077710e-01 3.057057e-01 2.163896e-01 8.130880e-02
+ [6] 7.257908e-02 3.228338e-02 2.330258e-02 9.797846e-03 6.479389e-03
+[11] 5.898598e-03 4.595559e-03 2.263590e-03 1.797302e-03 1.264026e-03
+[16] 1.111228e-03 1.054441e-03 1.014209e-03 9.997903e-04
+> 
+> 
+> 
+> cleanEx()
+> nameEx("nnet")
+> ### * nnet
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: nnet
+> ### Title: Fit Neural Networks
+> ### Aliases: nnet nnet.default nnet.formula add.net norm.net eval.nn
+> ###   coef.nnet print.nnet summary.nnet print.summary.nnet
+> ### Keywords: neural
+> 
+> ### ** Examples
+> 
+> # use half the iris data
+> ir <- rbind(iris3[,,1],iris3[,,2],iris3[,,3])
+> targets <- class.ind( c(rep("s", 50), rep("c", 50), rep("v", 50)) )
+> samp <- c(sample(1:50,25), sample(51:100,25), sample(101:150,25))
+> ir1 <- nnet(ir[samp,], targets[samp,], size = 2, rang = 0.1,
++             decay = 5e-4, maxit = 200)
+# weights:  19
+initial  value 56.715701 
+iter  10 value 49.999255
+iter  20 value 31.167900
+iter  30 value 23.815420
+iter  40 value 20.041617
+iter  50 value 18.248364
+iter  60 value 17.973259
+iter  70 value 17.853775
+iter  80 value 17.703616
+iter  90 value 17.695121
+final  value 17.695070 
+converged
+> test.cl <- function(true, pred) {
++     true <- max.col(true)
++     cres <- max.col(pred)
++     table(true, cres)
++ }
+> test.cl(targets[-samp,], predict(ir1, ir[-samp,]))
+    cres
+true  1  2  3
+   1 23  0  2
+   2  0 25  0
+   3  0  0 25
+> 
+> 
+> # or
+> ird <- data.frame(rbind(iris3[,,1], iris3[,,2], iris3[,,3]),
++         species = factor(c(rep("s",50), rep("c", 50), rep("v", 50))))
+> ir.nn2 <- nnet(species ~ ., data = ird, subset = samp, size = 2, rang = 0.1,
++                decay = 5e-4, maxit = 200)
+# weights:  19
+initial  value 82.623527 
+iter  10 value 35.862047
+iter  20 value 34.625641
+iter  30 value 23.853047
+iter  40 value 8.996275
+iter  50 value 4.365142
+iter  60 value 3.938464
+iter  70 value 3.851891
+iter  80 value 3.749495
+iter  90 value 3.685044
+iter 100 value 2.440912
+iter 110 value 1.577467
+iter 120 value 0.979698
+iter 130 value 0.727596
+iter 140 value 0.678570
+iter 150 value 0.654952
+iter 160 value 0.642870
+iter 170 value 0.630720
+iter 180 value 0.629278
+iter 190 value 0.629143
+iter 200 value 0.629049
+final  value 0.629049 
+stopped after 200 iterations
+> table(ird$species[-samp], predict(ir.nn2, ird[-samp,], type = "class"))
+   
+     c  s  v
+  c 23  0  2
+  s  0 25  0
+  v  0  0 25
+> 
+> 
+> 
+> cleanEx()
+> nameEx("predict.nnet")
+> ### * predict.nnet
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: predict.nnet
+> ### Title: Predict New Examples by a Trained Neural Net
+> ### Aliases: predict.nnet
+> ### Keywords: neural
+> 
+> ### ** Examples
+> 
+> # use half the iris data
+> ir <- rbind(iris3[,,1], iris3[,,2], iris3[,,3])
+> targets <- class.ind( c(rep("s", 50), rep("c", 50), rep("v", 50)) )
+> samp <- c(sample(1:50,25), sample(51:100,25), sample(101:150,25))
+> ir1 <- nnet(ir[samp,], targets[samp,],size = 2, rang = 0.1,
++             decay = 5e-4, maxit = 200)
+# weights:  19
+initial  value 56.715701 
+iter  10 value 49.999255
+iter  20 value 31.167900
+iter  30 value 23.815420
+iter  40 value 20.041617
+iter  50 value 18.248364
+iter  60 value 17.973259
+iter  70 value 17.853775
+iter  80 value 17.703616
+iter  90 value 17.695121
+final  value 17.695070 
+converged
+> test.cl <- function(true, pred){
++         true <- max.col(true)
++         cres <- max.col(pred)
++         table(true, cres)
++ }
+> test.cl(targets[-samp,], predict(ir1, ir[-samp,]))
+    cres
+true  1  2  3
+   1 23  0  2
+   2  0 25  0
+   3  0  0 25
+> 
+> # or
+> ird <- data.frame(rbind(iris3[,,1], iris3[,,2], iris3[,,3]),
++         species = factor(c(rep("s",50), rep("c", 50), rep("v", 50))))
+> ir.nn2 <- nnet(species ~ ., data = ird, subset = samp, size = 2, rang = 0.1,
++                decay = 5e-4, maxit = 200)
+# weights:  19
+initial  value 82.623527 
+iter  10 value 35.862047
+iter  20 value 34.625641
+iter  30 value 23.853047
+iter  40 value 8.996275
+iter  50 value 4.365142
+iter  60 value 3.938464
+iter  70 value 3.851891
+iter  80 value 3.749495
+iter  90 value 3.685044
+iter 100 value 2.440912
+iter 110 value 1.577467
+iter 120 value 0.979698
+iter 130 value 0.727596
+iter 140 value 0.678570
+iter 150 value 0.654952
+iter 160 value 0.642870
+iter 170 value 0.630720
+iter 180 value 0.629278
+iter 190 value 0.629143
+iter 200 value 0.629049
+final  value 0.629049 
+stopped after 200 iterations
+> table(ird$species[-samp], predict(ir.nn2, ird[-samp,], type = "class"))
+   
+     c  s  v
+  c 23  0  2
+  s  0 25  0
+  v  0  0 25
+> 
+> 
+> 
+> cleanEx()
+> nameEx("which.is.max")
+> ### * which.is.max
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: which.is.max
+> ### Title: Find Maximum Position in Vector
+> ### Aliases: which.is.max
+> ### Keywords: utilities
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D ## this is incomplete
+> ##D pred <- predict(nnet, test)
+> ##D table(true, apply(pred, 1, which.is.max))
+> ## End(Not run)
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.282 0.122 0.235 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

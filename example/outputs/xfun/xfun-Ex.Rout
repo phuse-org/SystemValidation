@@ -1,0 +1,1615 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "xfun"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('xfun')
+Warning: package ‘xfun’ was built under R version 4.0.5
+
+Attaching package: ‘xfun’
+
+The following objects are masked from ‘package:base’:
+
+    attr, isFALSE
+
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("Rscript")
+> ### * Rscript
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: Rscript
+> ### Title: Run the commands 'Rscript' and 'R CMD'
+> ### Aliases: Rscript Rcmd
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> Rscript(c("-e", "1+1"))
+[1] 2
+> Rcmd(c("build", "--help"))
+Usage: R CMD build [options] pkgdirs
+
+Build R packages from package sources in the directories specified by
+‘pkgdirs’
+
+Options:
+  -h, --help		print short help message and exit
+  -v, --version		print version info and exit
+
+  --force               force removal of INDEX file
+  --keep-empty-dirs     do not remove empty dirs
+  --no-build-vignettes  do not (re)build package vignettes
+  --no-manual           do not build the PDF manual even if \Sexprs are present
+  --resave-data=        re-save data files as compactly as possible:
+                        "no", "best", "gzip" (default)
+  --resave-data         same as --resave-data=best
+  --no-resave-data      same as --resave-data=no
+  --compact-vignettes=  try to compact PDF files under inst/doc:
+                        "no" (default), "qpdf", "gs", "gs+qpdf", "both"
+  --compact-vignettes   same as --compact-vignettes=qpdf
+  --compression=        type of compression to be used on tarball:
+                        "gzip" (default), "none", "bzip2", "xz"
+  --md5                 add MD5 sums
+  --log                 log to file 'pkg-00build.log' when processing 
+                        the pkgdir with basename 'pkg'
+
+Report bugs at <https://bugs.R-project.org>.
+> 
+> 
+> 
+> cleanEx()
+> nameEx("Rscript_call")
+> ### * Rscript_call
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: Rscript_call
+> ### Title: Call a function in a new R session via 'Rscript()'
+> ### Aliases: Rscript_call
+> 
+> ### ** Examples
+> 
+> factorial(10)
+[1] 3628800
+> # should return the same value
+> xfun::Rscript_call("factorial", list(10))
+[1] 3628800
+> 
+> # the first argument can be either a character string or a function
+> xfun::Rscript_call(factorial, list(10))
+[1] 3628800
+> 
+> # Run Rscript starting a vanilla R session
+> xfun::Rscript_call(factorial, list(10), options = c("--vanilla"))
+[1] 3628800
+> 
+> 
+> 
+> cleanEx()
+> nameEx("attr")
+> ### * attr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: attr
+> ### Title: Obtain an attribute of an object without partial matching
+> ### Aliases: attr
+> 
+> ### ** Examples
+> 
+> z = structure(list(a = 1), foo = 2)
+> base::attr(z, "f")  # 2
+[1] 2
+> xfun::attr(z, "f")  # NULL
+NULL
+> xfun::attr(z, "foo")  # 2
+[1] 2
+> 
+> 
+> 
+> cleanEx()
+> nameEx("base64_encode")
+> ### * base64_encode
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: base64_encode
+> ### Title: Encode/decode data into/from base64 encoding.
+> ### Aliases: base64_encode base64_decode
+> 
+> ### ** Examples
+> 
+> xfun::base64_encode(as.raw(1:10))
+[1] "AQIDBAUGBwgJCg=="
+> logo = xfun:::R_logo()
+> xfun::base64_encode(logo)
+[1] "PCEtLQpDb3B5cmlnaHQgKEMpIDIwMTUtMjAxNiBUaGUgUiBGb3VuZGF0aW9uCgpZb3UgY2FuIGRpc3RyaWJ1dGUgdGhpcyBsb2dvIHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgQ3JlYXRpdmUKQ29tbW9ucyBBdHRyaWJ1dGlvbi1TaGFyZUFsaWtlIDQuMCBJbnRlcm5hdGlvbmFsIGxpY2Vuc2UgKENDLUJZLVNBCjQuMCkgb3IgKGF0IHlvdXIgb3B0aW9uKSB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAyCihHUEwtMikuCgpUaGlzIHByb2dyYW0gaXMgZGlzdHJpYnV0ZWQgaW4gdGhlIGhvcGUgdGhhdCBpdCB3aWxsIGJlIHVzZWZ1bCwKYnV0IFdJVEhPVVQgQU5ZIFdBUlJBTlRZOyB3aXRob3V0IGV2ZW4gdGhlIGltcGxpZWQgd2FycmFudHkgb2YKTUVSQ0hBTlRBQklMSVRZIG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAgCgpZb3Ugc2hvdWxkIGhhdmUgcmVjZWl2ZWQgYSBjb3B5IG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZQphbG9uZyB3aXRoIHRoaXMgcHJvZ3JhbTsgaWYgbm90LCBhIGNvcHkgaXMgYXZhaWxhYmxlIGF0Cmh0dHBzOi8vd3d3LlItcHJvamVjdC5vcmcvTGljZW5zZXMvCgpUaGUgdGV4dCBvZiB0aGUgQ0MgQlktU0EgNC4wIGxpY2Vuc2UgaXMgYXZhaWxhYmxlIGF0Cmh0dHBzOi8vY3JlYXRpdmVjb21tb25zLm9yZy9saWNlbnNlcy9ieS1zYS80LjAvCi0tPgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIiB3aWR0aD0iNzI0IiBoZWlnaHQ9IjU2MSIgdmlld0JveD0iMCAwIDcyNCA1NjEiPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudEZpbGwtMSIgeDE9IjAiIHgyPSIxIiB5MT0iMCIgeTI9IjEiIGdyYWRpZW50VW5pdHM9Im9iamVjdEJvdW5kaW5nQm94IiBzcHJlYWRNZXRob2Q9InBhZCI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0icmdiKDIwMywyMDYsMjA4KSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0icmdiKDEzMiwxMzEsMTM5KSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudEZpbGwtMiIgeDE9IjAiIHgyPSIxIiB5MT0iMCIgeTI9IjEiIGdyYWRpZW50VW5pdHM9Im9iamVjdEJvdW5kaW5nQm94IiBzcHJlYWRNZXRob2Q9InBhZCI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0icmdiKDM5LDEwOSwxOTUpIiBzdG9wLW9wYWNpdHk9IjEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSJyZ2IoMjIsOTIsMTcwKSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cGF0aCBkPSJNMzYxLjQ1Myw0ODUuOTM3IEMxNjIuMzI5LDQ4NS45MzcgMC45MDYsMzc3LjgyOCAwLjkwNiwyNDQuNDY5IEMwLjkwNiwxMTEuMTA5IDE2Mi4zMjksMy4wMDAgMzYxLjQ1MywzLjAwMCBDNTYwLjU3OCwzLjAwMCA3MjIuMDAwLDExMS4xMDkgNzIyLjAwMCwyNDQuNDY5IEM3MjIuMDAwLDM3Ny44MjggNTYwLjU3OCw0ODUuOTM3IDM2MS40NTMsNDg1LjkzNyBaTTQxNi42NDEsOTcuNDA2IEMyNjUuMjg5LDk3LjQwNiAxNDIuNTk0LDE3MS4zMTQgMTQyLjU5NCwyNjIuNDg0IEMxNDIuNTk0LDM1My42NTQgMjY1LjI4OSw0MjcuNTYyIDQxNi42NDEsNDI3LjU2MiBDNTY3Ljk5Miw0MjcuNTYyIDY3OS42ODcsMzc3LjAzMyA2NzkuNjg3LDI2Mi40ODQgQzY3OS42ODcsMTQ3Ljk3MSA1NjcuOTkyLDk3LjQwNiA0MTYuNjQxLDk3LjQwNiBaIiBmaWxsPSJ1cmwoI2dyYWRpZW50RmlsbC0xKSIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgPHBhdGggZD0iTTU1MC4wMDAsMzc3LjAwMCBDNTUwLjAwMCwzNzcuMDAwIDU3MS44MjIsMzgzLjU4NSA1ODQuNTAwLDM5MC4wMDAgQzU4OC44OTksMzkyLjIyNiA1OTYuNTEwLDM5Ni42NjggNjAyLjAwMCw0MDIuNTAwIEM2MDcuMzc4LDQwOC4yMTIgNjEwLjAwMCw0MTQuMDAwIDYxMC4wMDAsNDE0LjAwMCBMNjk2LjAwMCw1NTkuMDAwIEw1NTcuMDAwLDU1OS4wNjIgTDQ5Mi4wMDAsNDM3LjAwMCBDNDkyLjAwMCw0MzcuMDAwIDQ3OC42OTAsNDE0LjEzMSA0NzAuNTAwLDQwNy41MDAgQzQ2My42NjgsNDAxLjk2OSA0NjAuNzU1LDQwMC4wMDAgNDU0LjAwMCw0MDAuMDAwIEM0NDkuMjk4LDQwMC4wMDAgNDIwLjk3NCw0MDAuMDAwIDQyMC45NzQsNDAwLjAwMCBMNDIxLjAwMCw1NTguOTc0IEwyOTguMDAwLDU1OS4wMjYgTDI5OC4wMDAsMTUyLjkzOCBMNTQ1LjAwMCwxNTIuOTM4IEM1NDUuMDAwLDE1Mi45MzggNjU3LjUwMCwxNTQuOTY3IDY1Ny41MDAsMjYyLjAwMCBDNjU3LjUwMCwzNjkuMDMzIDU1MC4wMDAsMzc3LjAwMCA1NTAuMDAwLDM3Ny4wMDAgWk00OTYuNTAwLDI0MS4wMjQgTDQyMi4wMzcsMjQwLjk3NiBMNDIyLjAwMCwzMTAuMDI2IEw0OTYuNTAwLDMxMC4wMDIgQzQ5Ni41MDAsMzEwLjAwMiA1MzEuMDAwLDMwOS44OTUgNTMxLjAwMCwyNzQuODc3IEM1MzEuMDAwLDIzOS4xNTUgNDk2LjUwMCwyNDEuMDI0IDQ5Ni41MDAsMjQxLjAyNCBaIiBmaWxsPSJ1cmwoI2dyYWRpZW50RmlsbC0yKSIgZmlsbC1ydWxlPSJldmVub2RkIi8+Cjwvc3ZnPgo="
+> xfun::base64_decode("AQIDBAUGBwgJCg==")
+ [1] 01 02 03 04 05 06 07 08 09 0a
+> 
+> 
+> 
+> cleanEx()
+> nameEx("base64_uri")
+> ### * base64_uri
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: base64_uri
+> ### Title: Generate the Data URI for a file
+> ### Aliases: base64_uri
+> 
+> ### ** Examples
+> 
+> logo = xfun:::R_logo()
+> img = htmltools::img(src = xfun::base64_uri(logo), alt = "R logo")
+> if (interactive()) htmltools::browsable(img)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("bump_version")
+> ### * bump_version
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: bump_version
+> ### Title: Bump version numbers
+> ### Aliases: bump_version
+> 
+> ### ** Examples
+> 
+> xfun::bump_version(c("0.1", "91.2.14"))
+[1] ‘0.2’     ‘91.2.15’
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cache_rds")
+> ### * cache_rds
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cache_rds
+> ### Title: Cache the value of an R expression to an RDS file
+> ### Aliases: cache_rds
+> 
+> ### ** Examples
+> 
+> f = tempfile()  # the cache file
+> compute = function(...) {
++     res = xfun::cache_rds({
++         Sys.sleep(1)
++         1:10
++     }, file = f, dir = "", ...)
++     res
++ }
+> compute()  # takes one second
+ [1]  1  2  3  4  5  6  7  8  9 10
+> compute()  # returns 1:10 immediately
+ [1]  1  2  3  4  5  6  7  8  9 10
+> compute()  # fast again
+ [1]  1  2  3  4  5  6  7  8  9 10
+> compute(rerun = TRUE)  # one second to rerun
+ [1]  1  2  3  4  5  6  7  8  9 10
+> compute()
+ [1]  1  2  3  4  5  6  7  8  9 10
+> file.remove(f)
+Warning in file.remove(f) :
+  cannot remove file '/tmp/RtmprNp8vj/file222765c82423', reason 'No such file or directory'
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("do_once")
+> ### * do_once
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: do_once
+> ### Title: Perform a task once in an R session
+> ### Aliases: do_once
+> 
+> ### ** Examples
+> 
+> do_once(message("Today's date is ", Sys.Date()), "xfun.date.reminder")
+Today's date is 2021-08-31
+You will not see this message again in this R session. If you never want to see this message, you may set options(xfun.date.reminder = FALSE) in your .Rprofile.
+> # if you run it again, it will not emit the message again
+> do_once(message("Today's date is ", Sys.Date()), "xfun.date.reminder")
+> 
+> do_once({
++     Sys.sleep(2)
++     1 + 1
++ }, "xfun.task.1plus1")
+You will not see this message again in this R session. If you never want to see this message, you may set options(xfun.task.1plus1 = FALSE) in your .Rprofile.
+> do_once({
++     Sys.sleep(2)
++     1 + 1
++ }, "xfun.task.1plus1")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("embed_file")
+> ### * embed_file
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: embed_file
+> ### Title: Embed a file, multiple files, or directory on an HTML page
+> ### Aliases: embed_file embed_dir embed_files
+> 
+> ### ** Examples
+> 
+> logo = xfun:::R_logo()
+> link = xfun::embed_file(logo, text = "Download R logo")
+> link
+<a href="data:image/svg+xml;base64,PCEtLQpDb3B5cmlnaHQgKEMpIDIwMTUtMjAxNiBUaGUgUiBGb3VuZGF0aW9uCgpZb3UgY2FuIGRpc3RyaWJ1dGUgdGhpcyBsb2dvIHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgQ3JlYXRpdmUKQ29tbW9ucyBBdHRyaWJ1dGlvbi1TaGFyZUFsaWtlIDQuMCBJbnRlcm5hdGlvbmFsIGxpY2Vuc2UgKENDLUJZLVNBCjQuMCkgb3IgKGF0IHlvdXIgb3B0aW9uKSB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAyCihHUEwtMikuCgpUaGlzIHByb2dyYW0gaXMgZGlzdHJpYnV0ZWQgaW4gdGhlIGhvcGUgdGhhdCBpdCB3aWxsIGJlIHVzZWZ1bCwKYnV0IFdJVEhPVVQgQU5ZIFdBUlJBTlRZOyB3aXRob3V0IGV2ZW4gdGhlIGltcGxpZWQgd2FycmFudHkgb2YKTUVSQ0hBTlRBQklMSVRZIG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAgCgpZb3Ugc2hvdWxkIGhhdmUgcmVjZWl2ZWQgYSBjb3B5IG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZQphbG9uZyB3aXRoIHRoaXMgcHJvZ3JhbTsgaWYgbm90LCBhIGNvcHkgaXMgYXZhaWxhYmxlIGF0Cmh0dHBzOi8vd3d3LlItcHJvamVjdC5vcmcvTGljZW5zZXMvCgpUaGUgdGV4dCBvZiB0aGUgQ0MgQlktU0EgNC4wIGxpY2Vuc2UgaXMgYXZhaWxhYmxlIGF0Cmh0dHBzOi8vY3JlYXRpdmVjb21tb25zLm9yZy9saWNlbnNlcy9ieS1zYS80LjAvCi0tPgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIiB3aWR0aD0iNzI0IiBoZWlnaHQ9IjU2MSIgdmlld0JveD0iMCAwIDcyNCA1NjEiPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudEZpbGwtMSIgeDE9IjAiIHgyPSIxIiB5MT0iMCIgeTI9IjEiIGdyYWRpZW50VW5pdHM9Im9iamVjdEJvdW5kaW5nQm94IiBzcHJlYWRNZXRob2Q9InBhZCI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0icmdiKDIwMywyMDYsMjA4KSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0icmdiKDEzMiwxMzEsMTM5KSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudEZpbGwtMiIgeDE9IjAiIHgyPSIxIiB5MT0iMCIgeTI9IjEiIGdyYWRpZW50VW5pdHM9Im9iamVjdEJvdW5kaW5nQm94IiBzcHJlYWRNZXRob2Q9InBhZCI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0icmdiKDM5LDEwOSwxOTUpIiBzdG9wLW9wYWNpdHk9IjEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSJyZ2IoMjIsOTIsMTcwKSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cGF0aCBkPSJNMzYxLjQ1Myw0ODUuOTM3IEMxNjIuMzI5LDQ4NS45MzcgMC45MDYsMzc3LjgyOCAwLjkwNiwyNDQuNDY5IEMwLjkwNiwxMTEuMTA5IDE2Mi4zMjksMy4wMDAgMzYxLjQ1MywzLjAwMCBDNTYwLjU3OCwzLjAwMCA3MjIuMDAwLDExMS4xMDkgNzIyLjAwMCwyNDQuNDY5IEM3MjIuMDAwLDM3Ny44MjggNTYwLjU3OCw0ODUuOTM3IDM2MS40NTMsNDg1LjkzNyBaTTQxNi42NDEsOTcuNDA2IEMyNjUuMjg5LDk3LjQwNiAxNDIuNTk0LDE3MS4zMTQgMTQyLjU5NCwyNjIuNDg0IEMxNDIuNTk0LDM1My42NTQgMjY1LjI4OSw0MjcuNTYyIDQxNi42NDEsNDI3LjU2MiBDNTY3Ljk5Miw0MjcuNTYyIDY3OS42ODcsMzc3LjAzMyA2NzkuNjg3LDI2Mi40ODQgQzY3OS42ODcsMTQ3Ljk3MSA1NjcuOTkyLDk3LjQwNiA0MTYuNjQxLDk3LjQwNiBaIiBmaWxsPSJ1cmwoI2dyYWRpZW50RmlsbC0xKSIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgPHBhdGggZD0iTTU1MC4wMDAsMzc3LjAwMCBDNTUwLjAwMCwzNzcuMDAwIDU3MS44MjIsMzgzLjU4NSA1ODQuNTAwLDM5MC4wMDAgQzU4OC44OTksMzkyLjIyNiA1OTYuNTEwLDM5Ni42NjggNjAyLjAwMCw0MDIuNTAwIEM2MDcuMzc4LDQwOC4yMTIgNjEwLjAwMCw0MTQuMDAwIDYxMC4wMDAsNDE0LjAwMCBMNjk2LjAwMCw1NTkuMDAwIEw1NTcuMDAwLDU1OS4wNjIgTDQ5Mi4wMDAsNDM3LjAwMCBDNDkyLjAwMCw0MzcuMDAwIDQ3OC42OTAsNDE0LjEzMSA0NzAuNTAwLDQwNy41MDAgQzQ2My42NjgsNDAxLjk2OSA0NjAuNzU1LDQwMC4wMDAgNDU0LjAwMCw0MDAuMDAwIEM0NDkuMjk4LDQwMC4wMDAgNDIwLjk3NCw0MDAuMDAwIDQyMC45NzQsNDAwLjAwMCBMNDIxLjAwMCw1NTguOTc0IEwyOTguMDAwLDU1OS4wMjYgTDI5OC4wMDAsMTUyLjkzOCBMNTQ1LjAwMCwxNTIuOTM4IEM1NDUuMDAwLDE1Mi45MzggNjU3LjUwMCwxNTQuOTY3IDY1Ny41MDAsMjYyLjAwMCBDNjU3LjUwMCwzNjkuMDMzIDU1MC4wMDAsMzc3LjAwMCA1NTAuMDAwLDM3Ny4wMDAgWk00OTYuNTAwLDI0MS4wMjQgTDQyMi4wMzcsMjQwLjk3NiBMNDIyLjAwMCwzMTAuMDI2IEw0OTYuNTAwLDMxMC4wMDIgQzQ5Ni41MDAsMzEwLjAwMiA1MzEuMDAwLDMwOS44OTUgNTMxLjAwMCwyNzQuODc3IEM1MzEuMDAwLDIzOS4xNTUgNDk2LjUwMCwyNDEuMDI0IDQ5Ni41MDAsMjQxLjAyNCBaIiBmaWxsPSJ1cmwoI2dyYWRpZW50RmlsbC0yKSIgZmlsbC1ydWxlPSJldmVub2RkIi8+Cjwvc3ZnPgo=" download="Rlogo.svg">Download R logo</a>
+> if (interactive()) htmltools::browsable(link)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("exit_call")
+> ### * exit_call
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: exit_call
+> ### Title: Call 'on.exit()' in a parent function
+> ### Aliases: exit_call
+> 
+> ### ** Examples
+> 
+> f = function(x) {
++     print(x)
++     xfun::exit_call(function() print("The parent function is exiting!"))
++ }
+> g = function(y) {
++     f(y)
++     print("f() has been called!")
++ }
+> g("An argument of g()!")
+[1] "An argument of g()!"
+[1] "f() has been called!"
+[1] "The parent function is exiting!"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("file_ext")
+> ### * file_ext
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: file_ext
+> ### Title: Manipulate filename extensions
+> ### Aliases: file_ext sans_ext with_ext
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> p = c("abc.doc", "def123.tex", "path/to/foo.Rmd", "backup.ppt~", "pkg.tar.xz")
+> file_ext(p)
+[1] "doc"    "tex"    "Rmd"    "ppt~"   "tar.xz"
+> sans_ext(p)
+[1] "abc"         "def123"      "path/to/foo" "backup"      "pkg"        
+> with_ext(p, ".txt")
+[1] "abc.txt"         "def123.txt"      "path/to/foo.txt" "backup.txt"     
+[5] "pkg.txt"        
+> with_ext(p, c(".ppt", ".sty", ".Rnw", "doc", "zip"))
+[1] "abc.ppt"         "def123.sty"      "path/to/foo.Rnw" "backup.doc"     
+[5] "pkg.zip"        
+> with_ext(p, "html")
+[1] "abc.html"         "def123.html"      "path/to/foo.html" "backup.html"     
+[5] "pkg.html"        
+> 
+> 
+> 
+> cleanEx()
+> nameEx("file_string")
+> ### * file_string
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: file_string
+> ### Title: Read a text file and concatenate the lines by "\n"
+> ### Aliases: file_string
+> 
+> ### ** Examples
+> 
+> xfun::file_string(system.file("DESCRIPTION", package = "xfun"))
+Package: xfun
+Type: Package
+Title: Supporting Functions for Packages Maintained by 'Yihui Xie'
+Version: 0.25
+Authors@R: c(
+  person("Yihui", "Xie", role = c("aut", "cre", "cph"), email = "xie@yihui.name", comment = c(ORCID = "0000-0003-0645-5666")),
+  person("Wush", "Wu", role = "ctb"),
+  person("Daijiang", "Li", role = "ctb"),
+  person("Xianying", "Tan", role = "ctb"),
+  person("Salim", "Brüggemann", role = "ctb", email = "salim-b@pm.me", comment = c(ORCID = "0000-0002-5329-5987")),
+  person("Christophe", "Dervieux", role = "ctb"),
+  person()
+  )
+Description: Miscellaneous functions commonly used in other packages maintained by 'Yihui Xie'.
+Imports: stats, tools
+Suggests: testit, parallel, codetools, rstudioapi, tinytex (>= 0.30),
+        mime, markdown, knitr, htmltools, remotes, pak, renv, curl,
+        jsonlite, rmarkdown
+License: MIT + file LICENSE
+URL: https://github.com/yihui/xfun
+BugReports: https://github.com/yihui/xfun/issues
+Encoding: UTF-8
+RoxygenNote: 7.1.1
+VignetteBuilder: knitr
+NeedsCompilation: yes
+Packaged: 2021-08-06 04:52:08 UTC; yihui
+Author: Yihui Xie [aut, cre, cph] (<https://orcid.org/0000-0003-0645-5666>),
+  Wush Wu [ctb],
+  Daijiang Li [ctb],
+  Xianying Tan [ctb],
+  Salim Brüggemann [ctb] (<https://orcid.org/0000-0002-5329-5987>),
+  Christophe Dervieux [ctb]
+Maintainer: Yihui Xie <xie@yihui.name>
+Repository: RSPM
+Date/Publication: 2021-08-06 09:50:02 UTC
+Built: R 4.0.5; x86_64-pc-linux-gnu; 2021-08-09 11:14:01 UTC; unix
+> 
+> 
+> 
+> cleanEx()
+> nameEx("format_bytes")
+> ### * format_bytes
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: format_bytes
+> ### Title: Format numbers of bytes using a specified unit
+> ### Aliases: format_bytes
+> 
+> ### ** Examples
+> 
+> xfun::format_bytes(c(1, 1024, 2000, 1e+06, 2e+08))
+[1] "1 bytes"  "1 Kb"     "2 Kb"     "976.6 Kb" "190.7 Mb"
+> xfun::format_bytes(c(1, 1024, 2000, 1e+06, 2e+08), units = "KB")
+[1] "0 Kb"        "1 Kb"        "2 Kb"        "976.6 Kb"    "195312.5 Kb"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("from_root")
+> ### * from_root
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: from_root
+> ### Title: Get the relative path of a path in a project relative to the
+> ###   current working directory
+> ### Aliases: from_root
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D xfun::from_root("data", "mtcars.csv")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("github_releases")
+> ### * github_releases
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: github_releases
+> ### Title: Get the tags of Github releases of a repository
+> ### Aliases: github_releases
+> 
+> ### ** Examples
+> 
+> if (interactive()) xfun::github_releases("yihui/xfun")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("grep_sub")
+> ### * grep_sub
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: grep_sub
+> ### Title: Perform replacement with 'gsub()' on elements matched from
+> ###   'grep()'
+> ### Aliases: grep_sub
+> 
+> ### ** Examples
+> 
+> # find elements that matches 'a[b]+c' and capitalize 'b' with perl regex
+> xfun::grep_sub("a([b]+)c", "a\\U\\1c", c("abc", "abbbc", "addc", "123"), perl = TRUE)
+[1] "aBc"   "aBBBc"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("gsub_file")
+> ### * gsub_file
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gsub_file
+> ### Title: Search and replace strings in files
+> ### Aliases: gsub_file gsub_files gsub_dir gsub_ext
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> f = tempfile()
+> writeLines(c("hello", "world"), f)
+> gsub_file(f, "world", "woRld", fixed = TRUE)
+> readLines(f)
+[1] "hello" "woRld"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("in_dir")
+> ### * in_dir
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: in_dir
+> ### Title: Evaluate an expression under a specified working directory
+> ### Aliases: in_dir
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> in_dir(tempdir(), {
++     print(getwd())
++     list.files()
++ })
+[1] "/tmp/RtmprNp8vj"
+[1] "file222718959f"                                       
+[2] "file222765c82423_abe943e05b1199c9c4c96c2d702338cb.rds"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("isFALSE")
+> ### * isFALSE
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: isFALSE
+> ### Title: Test if an object is identical to 'FALSE'
+> ### Aliases: isFALSE
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> isFALSE(TRUE)  # false
+[1] FALSE
+> isFALSE(FALSE)  # true
+[1] TRUE
+> isFALSE(c(FALSE, FALSE))  # false
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_abs_path")
+> ### * is_abs_path
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_abs_path
+> ### Title: Test if paths are relative or absolute
+> ### Aliases: is_abs_path is_rel_path
+> 
+> ### ** Examples
+> 
+> xfun::is_abs_path(c("C:/foo", "foo.txt", "/Users/john/", tempdir()))
+[1] FALSE FALSE  TRUE  TRUE
+> xfun::is_rel_path(c("C:/foo", "foo.txt", "/Users/john/", tempdir()))
+[1]  TRUE  TRUE FALSE FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_ascii")
+> ### * is_ascii
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_ascii
+> ### Title: Check if a character vector consists of entirely ASCII
+> ###   characters
+> ### Aliases: is_ascii
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> is_ascii(letters)  # yes
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+> is_ascii(intToUtf8(8212))  # no
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_sub_path")
+> ### * is_sub_path
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_sub_path
+> ### Title: Test if a path is a subpath of a dir
+> ### Aliases: is_sub_path
+> 
+> ### ** Examples
+> 
+> xfun::is_sub_path("a/b/c.txt", "a/b")  # TRUE
+[1] TRUE
+> xfun::is_sub_path("a/b/c.txt", "d/b")  # FALSE
+[1] FALSE
+> xfun::is_sub_path("a/b/c.txt", "a\\b")  # FALSE (even on Windows)
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_web_path")
+> ### * is_web_path
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_web_path
+> ### Title: Test if a path is a web path
+> ### Aliases: is_web_path
+> 
+> ### ** Examples
+> 
+> xfun::is_web_path("https://www.r-project.org")  # TRUE
+[1] TRUE
+> xfun::is_web_path("www.r-project.org")  # FALSE
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("magic_path")
+> ### * magic_path
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: magic_path
+> ### Title: Find a file or directory under a root directory
+> ### Aliases: magic_path
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D xfun::magic_path("mtcars.csv")  # find any file that has the base name mtcars.csv
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("mark_dirs")
+> ### * mark_dirs
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: mark_dirs
+> ### Title: Mark some paths as directories
+> ### Aliases: mark_dirs
+> 
+> ### ** Examples
+> 
+> mark_dirs(list.files(find.package("xfun"), full.names = TRUE))
+ [1] "/usr/local/lib/R/site-library/xfun/DESCRIPTION"
+ [2] "/usr/local/lib/R/site-library/xfun/doc/"       
+ [3] "/usr/local/lib/R/site-library/xfun/help/"      
+ [4] "/usr/local/lib/R/site-library/xfun/html/"      
+ [5] "/usr/local/lib/R/site-library/xfun/INDEX"      
+ [6] "/usr/local/lib/R/site-library/xfun/libs/"      
+ [7] "/usr/local/lib/R/site-library/xfun/LICENSE"    
+ [8] "/usr/local/lib/R/site-library/xfun/Meta/"      
+ [9] "/usr/local/lib/R/site-library/xfun/NAMESPACE"  
+[10] "/usr/local/lib/R/site-library/xfun/NEWS.md"    
+[11] "/usr/local/lib/R/site-library/xfun/R/"         
+[12] "/usr/local/lib/R/site-library/xfun/scripts/"   
+> 
+> 
+> 
+> cleanEx()
+> nameEx("msg_cat")
+> ### * msg_cat
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: msg_cat
+> ### Title: Generate a message with 'cat()'
+> ### Aliases: msg_cat
+> 
+> ### ** Examples
+> 
+> {
++     # a message without a newline at the end
++     xfun::msg_cat("Hello world!")
++     # add a newline at the end
++     xfun::msg_cat(" This message appears right after the previous one.\n")
++ }
+Hello world! This message appears right after the previous one.
+> suppressMessages(xfun::msg_cat("Hello world!"))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("native_encode")
+> ### * native_encode
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: native_encode
+> ### Title: Try to use the system native encoding to represent a character
+> ###   vector
+> ### Aliases: native_encode
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> s = intToUtf8(c(20320, 22909))
+> Encoding(s)
+[1] "UTF-8"
+> 
+> s2 = native_encode(s)
+> Encoding(s2)
+[1] "UTF-8"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("news2md")
+> ### * news2md
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: news2md
+> ### Title: Convert package news to the Markdown format
+> ### Aliases: news2md
+> 
+> ### ** Examples
+> 
+> # news for the current version of R
+> xfun::news2md("R", Version == getRversion(), output = NA)
+# CHANGES IN R VERSION 4.0.3
+
+## NEW FEATURES
+
+- On platforms using configure option --with-internal-tzcode, additional values "internal" and (on macOS only) "macOS" are accepted for the environment variable TZDIR.  (See ?TZDIR.)  On macOS, "macOS" is used by default if the system timezone database is a newer version than that in the R installation.
+
+- When install.packages(type = "source") fails to find a package in a repository it mentions package versions which are excluded by their R version requirement and links to hints on why a package might not be found.
+
+- The default value for options("timeout") can be set from enviromnent variable R_DEFAULT_INTERNET_TIMEOUT, still defaulting to 60 (seconds) if that is not set or invalid.  This may be needed when child R processes are doing downloads, for example during the installation of source packages which download jars or other forms of data.
+
+## LINK-TIME OPTIMIZATION on a UNIX-ALIKE
+
+- There is now support for parallelized Link-Time Optimization (LTO) with GCC and for ‘thin’ LTO with clang _via_ setting the LTO macro.
+
+- There is support for setting a different LTO flag for the Fortran compiler, including to empty when mixing clang and gfortran (as on macOS).  See file config.site.
+
+- There is a new LTO_LD macro to set linker options for LTO compilation, for example to select an alternative linker or to parallelize thin LTO.
+
+## DEPRECATED AND DEFUNCT
+
+- The LINPACK argument to chol.default(), chol2inv(), solve.default() and svd() has been defunct since R 3.1.0. Using it now gives a warning which will become an error in R 4.1.0.
+
+## BUG FIXES
+
+- The code mitigating stack overflow with PCRE regexps on very long strings is enabled for PCRE2 < 10.30 also when JIT is enabled, since stack overflows have been seen in that case.
+
+- Fix to correctly show the group labels in dotchart() (which where lost in the ylab improvement for R 4.0.0).
+
+- addmargins(*, ..) now also works when fn() is a local function, thanks to bug report and patch PR#17124 from Alex Bertram.
+
+- rank(x) and hence sort(x) now work when x is an object (as per is.object(x)) of type "raw" _and_ provides a valid `[` method, e.g., for gmp::as.bigz(.) numbers.
+
+- chisq.test(*, simulate.p.value=TRUE) and r2dtable() now work correctly for large table entries (in the millions).  Reported by Sebastian Meyer and investigated by more helpers in PR#16184.
+
+- Low-level socket read/write operations have been fixed to correctly signal communication errors. Previously, such errors could lead to a segfault due to invalid memory access. Reported and debugged by Dmitriy Selivanov in PR#17850.
+
+- quantile(x, pr) works more consistently for pr values slightly outside [0,1], thanks to Suharto Anggono's PR#17891.  Further, quantile(x, prN, names=FALSE) now works even when prN contains NAs, thanks to Anggono's PR#17892.  Ditto for ordered factors or Date objects when type = 1 or 3, thanks to PR#17899.
+
+- Libcurl-based internet access, including curlGetHeaders(), was not respecting the "timeout" option.  If this causes unanticipated timeouts, consider increasing the default by setting R_DEFAULT_INTERNET_TIMEOUT.
+
+- as.Date(<char>) now also works with an initial "", thanks to Michael Chirico's PR#17909.
+
+- isS3stdGeneric(f) now detects an S3 generic also when it it is trace()d, thanks to Gabe Becker's PR#17917.
+
+- R_allocLD() has been fixed to return memory aligned for long double type PR#16534.
+
+- fisher.test() no longer segfaults when called again after its internal stack has been exceeded PR#17904.
+
+- Accessing a long vector represented by a compact integer sequence no longer segfaults (reported and debugged by Hugh Parsonage).
+
+- duplicated() now works also for strings with multiple encodings inside a single vector PR#17809.
+
+- phyper(11, 15, 0, 12, log.p=TRUE) no longer gives NaN; reported as PR#17271 by Alexey Stukalov.
+
+- Fix incorrect calculation in logLik.nls() PR#16100, patch from Sebastian Meyer.
+
+- A very old bug could cause a segfault in model.matrix() when terms involved logical variables.  Part of PR#17879.
+
+- model.frame.default() allowed data = 1, leading to involuntary variable capture (rest of PR#17879).
+
+- tar() no longer skips non-directory files, thanks to a patch by Sebastian Meyer, fixing the remaining part of PR#16716.
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("normalize_path")
+> ### * normalize_path
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: normalize_path
+> ### Title: Normalize paths
+> ### Aliases: normalize_path
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> normalize_path("~")
+[1] "/root"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("numbers_to_words")
+> ### * numbers_to_words
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: numbers_to_words
+> ### Title: Convert numbers to English words
+> ### Aliases: numbers_to_words n2w
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> n2w(0, cap = TRUE)
+[1] "Zero"
+> n2w(0:121, and = TRUE)
+  [1] "zero"                       "one"                       
+  [3] "two"                        "three"                     
+  [5] "four"                       "five"                      
+  [7] "six"                        "seven"                     
+  [9] "eight"                      "nine"                      
+ [11] "ten"                        "eleven"                    
+ [13] "twelve"                     "thirteen"                  
+ [15] "fourteen"                   "fifteen"                   
+ [17] "sixteen"                    "seventeen"                 
+ [19] "eighteen"                   "nineteen"                  
+ [21] "twenty"                     "twenty-one"                
+ [23] "twenty-two"                 "twenty-three"              
+ [25] "twenty-four"                "twenty-five"               
+ [27] "twenty-six"                 "twenty-seven"              
+ [29] "twenty-eight"               "twenty-nine"               
+ [31] "thirty"                     "thirty-one"                
+ [33] "thirty-two"                 "thirty-three"              
+ [35] "thirty-four"                "thirty-five"               
+ [37] "thirty-six"                 "thirty-seven"              
+ [39] "thirty-eight"               "thirty-nine"               
+ [41] "forty"                      "forty-one"                 
+ [43] "forty-two"                  "forty-three"               
+ [45] "forty-four"                 "forty-five"                
+ [47] "forty-six"                  "forty-seven"               
+ [49] "forty-eight"                "forty-nine"                
+ [51] "fifty"                      "fifty-one"                 
+ [53] "fifty-two"                  "fifty-three"               
+ [55] "fifty-four"                 "fifty-five"                
+ [57] "fifty-six"                  "fifty-seven"               
+ [59] "fifty-eight"                "fifty-nine"                
+ [61] "sixty"                      "sixty-one"                 
+ [63] "sixty-two"                  "sixty-three"               
+ [65] "sixty-four"                 "sixty-five"                
+ [67] "sixty-six"                  "sixty-seven"               
+ [69] "sixty-eight"                "sixty-nine"                
+ [71] "seventy"                    "seventy-one"               
+ [73] "seventy-two"                "seventy-three"             
+ [75] "seventy-four"               "seventy-five"              
+ [77] "seventy-six"                "seventy-seven"             
+ [79] "seventy-eight"              "seventy-nine"              
+ [81] "eighty"                     "eighty-one"                
+ [83] "eighty-two"                 "eighty-three"              
+ [85] "eighty-four"                "eighty-five"               
+ [87] "eighty-six"                 "eighty-seven"              
+ [89] "eighty-eight"               "eighty-nine"               
+ [91] "ninety"                     "ninety-one"                
+ [93] "ninety-two"                 "ninety-three"              
+ [95] "ninety-four"                "ninety-five"               
+ [97] "ninety-six"                 "ninety-seven"              
+ [99] "ninety-eight"               "ninety-nine"               
+[101] "one hundred"                "one hundred and one"       
+[103] "one hundred and two"        "one hundred and three"     
+[105] "one hundred and four"       "one hundred and five"      
+[107] "one hundred and six"        "one hundred and seven"     
+[109] "one hundred and eight"      "one hundred and nine"      
+[111] "one hundred and ten"        "one hundred and eleven"    
+[113] "one hundred and twelve"     "one hundred and thirteen"  
+[115] "one hundred and fourteen"   "one hundred and fifteen"   
+[117] "one hundred and sixteen"    "one hundred and seventeen" 
+[119] "one hundred and eighteen"   "one hundred and nineteen"  
+[121] "one hundred and twenty"     "one hundred and twenty-one"
+> n2w(1e+06)
+[1] "one million"
+> n2w(1e+11 + 12345678)
+[1] "one hundred billion, twelve million, three hundred forty-five thousand, six hundred seventy-eight"
+> n2w(-987654321)
+[1] "minus nine hundred eighty-seven million, six hundred fifty-four thousand, three hundred twenty-one"
+> n2w(1e+15 - 1)
+[1] "nine hundred ninety-nine trillion, nine hundred ninety-nine billion, nine hundred ninety-nine million, nine hundred ninety-nine thousand, nine hundred ninety-nine"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("os")
+> ### * os
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_windows
+> ### Title: Test for types of operating systems
+> ### Aliases: is_windows is_unix is_macos is_linux
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> # only one of the following statements should be true
+> is_windows()
+[1] FALSE
+> is_unix() && is_macos()
+[1] FALSE
+> is_linux()
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("parse_only")
+> ### * parse_only
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: parse_only
+> ### Title: Parse R code and do not keep the source
+> ### Aliases: parse_only
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> parse_only("1+1")
+expression(1 + 1)
+> parse_only(c("y~x", "1:5 # a comment"))
+expression(y ~ x, 1:5)
+> parse_only(character(0))
+expression()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pkg_attach")
+> ### * pkg_attach
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pkg_attach
+> ### Title: Attach or load packages, and automatically install missing
+> ###   packages if requested
+> ### Aliases: pkg_attach pkg_load loadable pkg_available pkg_attach2
+> ###   pkg_load2
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> pkg_attach("stats", "graphics")
+> # pkg_attach2('servr') # automatically install servr if it is not installed
+> 
+> (pkg_load("stats", "graphics"))
+[1] TRUE TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("process_file")
+> ### * process_file
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: process_file
+> ### Title: Read a text file, process the text with a function, and write
+> ###   the text back
+> ### Aliases: process_file sort_file
+> 
+> ### ** Examples
+> 
+> f = tempfile()
+> xfun::write_utf8("Hello World", f)
+> xfun::process_file(f, function(x) gsub("World", "woRld", x))
+> xfun::read_utf8(f)  # see if it has been updated
+[1] "Hello woRld"
+> file.remove(f)
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("prose_index")
+> ### * prose_index
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: prose_index
+> ### Title: Find the indices of lines in Markdown that are prose (not code
+> ###   blocks)
+> ### Aliases: prose_index
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> prose_index(c("a", "```", "b", "```", "c"))
+[1] 1 5
+> prose_index(c("a", "````", "```r", "1+1", "```", "````", "c"))
+[1] 1 7
+> 
+> 
+> 
+> cleanEx()
+> nameEx("protect_math")
+> ### * protect_math
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: protect_math
+> ### Title: Protect math expressions in pairs of backticks in Markdown
+> ### Aliases: protect_math
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> protect_math(c("hi $a+b$", "hello $$\\alpha$$", "no math here: $x is $10 dollars"))
+[1] "hi `\\(a+b\\)`"                  "hello `$$\\alpha$$`"            
+[3] "no math here: $x is $10 dollars"
+> protect_math(c("hi $$", "\\begin{equation}", "x + y = z", "\\end{equation}"))
+[1] "hi $$"              "`\\begin{equation}" "x + y = z"         
+[4] "\\end{equation}`"  
+> 
+> 
+> 
+> cleanEx()
+> nameEx("raw_string")
+> ### * raw_string
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: raw_string
+> ### Title: Print a character vector in its raw form
+> ### Aliases: raw_string print.xfun_raw_string
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> raw_string(head(LETTERS))
+A
+B
+C
+D
+E
+F
+> raw_string(c("a \"b\"", "hello\tworld!"))
+a "b"
+hello	world!
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read_bin")
+> ### * read_bin
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read_bin
+> ### Title: Read all records of a binary file as a raw vector by default
+> ### Aliases: read_bin
+> 
+> ### ** Examples
+> 
+> f = tempfile()
+> cat("abc", file = f)
+> xfun::read_bin(f)
+[1] 61 62 63
+> unlink(f)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("relative_path")
+> ### * relative_path
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: relative_path
+> ### Title: Get the relative path of a path relative to a directory
+> ### Aliases: relative_path
+> 
+> ### ** Examples
+> 
+> xfun::relative_path("foo/bar.txt", "foo/")
+[1] "bar.txt"
+> xfun::relative_path("foo/bar/a.txt", "foo/haha/")
+[1] "../bar/a.txt"
+> xfun::relative_path(getwd())
+[1] "."
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rename_seq")
+> ### * rename_seq
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rename_seq
+> ### Title: Rename files with a sequential numeric prefix
+> ### Aliases: rename_seq
+> 
+> ### ** Examples
+> 
+> xfun::rename_seq()
+character(0)
+> xfun::rename_seq("[.](jpeg|png)$", format = "%04d")
+character(0)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("retry")
+> ### * retry
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: retry
+> ### Title: Retry calling a function for a number of times
+> ### Aliases: retry
+> 
+> ### ** Examples
+> 
+> # read the Github releases info of the repo yihui/xfun
+> if (interactive()) xfun::retry(xfun::github_releases, "yihui/xfun")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rstudio_type")
+> ### * rstudio_type
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rstudio_type
+> ### Title: Type a character vector into the RStudio source editor
+> ### Aliases: rstudio_type
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> if (loadable("rstudioapi") && rstudioapi::isAvailable()) {
++     rstudio_type("Hello, RStudio! xfun::rstudio_type() looks pretty cool!",
++         pause = function() runif(1, 0, 0.5), mistake = 0.1)
++ }
+> 
+> 
+> 
+> cleanEx()
+> nameEx("same_path")
+> ### * same_path
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: same_path
+> ### Title: Test if two paths are the same after they are normalized
+> ### Aliases: same_path
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> same_path("~/foo", file.path(Sys.getenv("HOME"), "foo"))
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("session_info")
+> ### * session_info
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: session_info
+> ### Title: An alternative to sessionInfo() to print session information
+> ### Aliases: session_info
+> 
+> ### ** Examples
+> 
+> if (interactive()) xfun::session_info()
+> if (interactive() && loadable("MASS")) xfun::session_info("MASS")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("set_envvar")
+> ### * set_envvar
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: set_envvar
+> ### Title: Set environment variables
+> ### Aliases: set_envvar
+> 
+> ### ** Examples
+> 
+> vars = xfun::set_envvar(c(FOO = "1234"))
+> Sys.getenv("FOO")
+[1] "1234"
+> xfun::set_envvar(vars)
+> Sys.getenv("FOO")
+[1] ""
+> 
+> 
+> 
+> cleanEx()
+> nameEx("split_lines")
+> ### * split_lines
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: split_lines
+> ### Title: Split a character vector by line breaks
+> ### Aliases: split_lines
+> 
+> ### ** Examples
+> 
+> xfun::split_lines(c("a", "b\nc"))
+[1] "a" "b" "c"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("split_source")
+> ### * split_source
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: split_source
+> ### Title: Split source lines into complete expressions
+> ### Aliases: split_source
+> 
+> ### ** Examples
+> 
+> xfun::split_source(c("if (TRUE) {", "1 + 1", "}", "print(1:5)"))
+[[1]]
+[1] "if (TRUE) {" "1 + 1"       "}"          
+
+[[2]]
+[1] "print(1:5)"
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("strict_list")
+> ### * strict_list
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: strict_list
+> ### Title: Strict lists
+> ### Aliases: strict_list as_strict_list $.xfun_strict_list
+> ###   print.xfun_strict_list
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> (z = strict_list(aaa = "I am aaa", b = 1:5))
+$aaa
+[1] "I am aaa"
+
+$b
+[1] 1 2 3 4 5
+
+> z$a  # NULL!
+NULL
+> z$aaa  # I am aaa
+[1] "I am aaa"
+> z$b
+[1] 1 2 3 4 5
+> z$c = "create a new element"
+> 
+> z2 = unclass(z)  # a normal list
+> z2$a  # partial matching
+[1] "I am aaa"
+> 
+> z3 = as_strict_list(z2)  # a strict list again
+> z3$a  # NULL again!
+NULL
+> 
+> 
+> 
+> cleanEx()
+> nameEx("stringsAsStrings")
+> ### * stringsAsStrings
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: stringsAsStrings
+> ### Title: Set the global option 'options(stringsAsFactors = FALSE)' inside
+> ###   a parent function and restore the option after the parent function
+> ###   exits
+> ### Aliases: stringsAsStrings strings_please
+> 
+> ### ** Examples
+> 
+> f = function() {
++     xfun::strings_please()
++     data.frame(x = letters[1:4], y = factor(letters[1:4]))
++ }
+> str(f())  # the first column should be character
+'data.frame':	4 obs. of  2 variables:
+ $ x: chr  "a" "b" "c" "d"
+ $ y: Factor w/ 4 levels "a","b","c","d": 1 2 3 4
+> 
+> 
+> 
+> cleanEx()
+> nameEx("tinify")
+> ### * tinify
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: tinify
+> ### Title: Use the Tinify API to compress PNG and JPEG images
+> ### Aliases: tinify
+> 
+> ### ** Examples
+> 
+> if (interactive()) {
++     f = file.path(R.home("doc"), "html", "logo.jpg")
++     xfun::tinify(f)  # remember to set the API key before trying this
++ }
+> 
+> 
+> 
+> cleanEx()
+> nameEx("tojson")
+> ### * tojson
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: tojson
+> ### Title: A simple JSON serializer
+> ### Aliases: tojson json_vector
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> tojson(NULL)
+[1] "null"
+> tojson(1:10)
+[1] "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+> tojson(TRUE)
+[1] "true"
+> tojson(FALSE)
+[1] "false"
+> cat(tojson(list(a = 1, b = list(c = 1:3, d = "abc"))))
+{
+"a": 1,
+"b": {
+"c": [1, 2, 3],
+"d": "abc"
+}
+}> cat(tojson(list(c("a", "b"), 1:5, TRUE)))
+[["a", "b"], [1, 2, 3, 4, 5], true]> 
+> # the class JS_EVAL is originally from htmlwidgets::JS()
+> JS = function(x) structure(x, class = "JS_EVAL")
+> cat(tojson(list(a = 1:5, b = JS("function() {return true;}"))))
+{
+"a": [1, 2, 3, 4, 5],
+"b": function() {return true;}
+}> 
+> 
+> 
+> cleanEx()
+> nameEx("tree")
+> ### * tree
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: tree
+> ### Title: Turn the output of 'str()' into a tree diagram
+> ### Aliases: tree
+> 
+> ### ** Examples
+> 
+> fit = lsfit(1:9, 1:9)
+> str(fit)
+List of 4
+ $ coefficients: Named num [1:2] 1.11e-15 1.00
+  ..- attr(*, "names")= chr [1:2] "Intercept" "X"
+ $ residuals   : num [1:9] -7.86e-16 1.44e-15 -2.09e-16 -1.96e-16 -1.69e-16 ...
+ $ intercept   : logi TRUE
+ $ qr          :List of 6
+  ..$ qt   : num [1:9] -1.50e+01 7.75 -1.81e-16 4.17e-32 1.95e-16 ...
+  ..$ qr   : num [1:9, 1:2] -3 0.333 0.333 0.333 0.333 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. .. ..$ : NULL
+  .. .. ..$ : chr [1:2] "Intercept" "X"
+  ..$ qraux: num [1:2] 1.33 1.26
+  ..$ rank : int 2
+  ..$ pivot: int [1:2] 1 2
+  ..$ tol  : num 1e-07
+  ..- attr(*, "class")= chr "qr"
+> xfun::tree(fit)
+List of 4
+ |-coefficients: Named num [1:2] 1.11e-15 1.00
+ |  - attr(*, "names")= chr [1:2] "Intercept" "X"
+ |-residuals   : num [1:9] -7.86e-16 1.44e-15 -2.09e-16 -1.96e-16 -1.69e-16 ...
+ |-intercept   : logi TRUE
+ |-qr          :List of 6
+    |-qt   : num [1:9] -1.50e+01 7.75 -1.81e-16 4.17e-32 1.95e-16 ...
+    |-qr   : num [1:9, 1:2] -3 0.333 0.333 0.333 0.333 ...
+    |  - attr(*, "dimnames")=List of 2
+    |     |-: NULL
+    |     |-: chr [1:2] "Intercept" "X"
+    |-qraux: num [1:2] 1.33 1.26
+    |-rank : int 2
+    |-pivot: int [1:2] 1 2
+    |-tol  : num 1e-07
+    - attr(*, "class")= chr "qr"
+> 
+> fit = lm(dist ~ speed, data = cars)
+> str(fit)
+List of 12
+ $ coefficients : Named num [1:2] -17.58 3.93
+  ..- attr(*, "names")= chr [1:2] "(Intercept)" "speed"
+ $ residuals    : Named num [1:50] 3.85 11.85 -5.95 12.05 2.12 ...
+  ..- attr(*, "names")= chr [1:50] "1" "2" "3" "4" ...
+ $ effects      : Named num [1:50] -303.914 145.552 -8.115 9.885 0.194 ...
+  ..- attr(*, "names")= chr [1:50] "(Intercept)" "speed" "" "" ...
+ $ rank         : int 2
+ $ fitted.values: Named num [1:50] -1.85 -1.85 9.95 9.95 13.88 ...
+  ..- attr(*, "names")= chr [1:50] "1" "2" "3" "4" ...
+ $ assign       : int [1:2] 0 1
+ $ qr           :List of 5
+  ..$ qr   : num [1:50, 1:2] -7.071 0.141 0.141 0.141 0.141 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. .. ..$ : chr [1:50] "1" "2" "3" "4" ...
+  .. .. ..$ : chr [1:2] "(Intercept)" "speed"
+  .. ..- attr(*, "assign")= int [1:2] 0 1
+  ..$ qraux: num [1:2] 1.14 1.27
+  ..$ pivot: int [1:2] 1 2
+  ..$ tol  : num 1e-07
+  ..$ rank : int 2
+  ..- attr(*, "class")= chr "qr"
+ $ df.residual  : int 48
+ $ xlevels      : Named list()
+ $ call         : language lm(formula = dist ~ speed, data = cars)
+ $ terms        :Classes 'terms', 'formula'  language dist ~ speed
+  .. ..- attr(*, "variables")= language list(dist, speed)
+  .. ..- attr(*, "factors")= int [1:2, 1] 0 1
+  .. .. ..- attr(*, "dimnames")=List of 2
+  .. .. .. ..$ : chr [1:2] "dist" "speed"
+  .. .. .. ..$ : chr "speed"
+  .. ..- attr(*, "term.labels")= chr "speed"
+  .. ..- attr(*, "order")= int 1
+  .. ..- attr(*, "intercept")= int 1
+  .. ..- attr(*, "response")= int 1
+  .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+  .. ..- attr(*, "predvars")= language list(dist, speed)
+  .. ..- attr(*, "dataClasses")= Named chr [1:2] "numeric" "numeric"
+  .. .. ..- attr(*, "names")= chr [1:2] "dist" "speed"
+ $ model        :'data.frame':	50 obs. of  2 variables:
+  ..$ dist : num [1:50] 2 10 4 22 16 10 18 26 34 17 ...
+  ..$ speed: num [1:50] 4 4 7 7 8 9 10 10 10 11 ...
+  ..- attr(*, "terms")=Classes 'terms', 'formula'  language dist ~ speed
+  .. .. ..- attr(*, "variables")= language list(dist, speed)
+  .. .. ..- attr(*, "factors")= int [1:2, 1] 0 1
+  .. .. .. ..- attr(*, "dimnames")=List of 2
+  .. .. .. .. ..$ : chr [1:2] "dist" "speed"
+  .. .. .. .. ..$ : chr "speed"
+  .. .. ..- attr(*, "term.labels")= chr "speed"
+  .. .. ..- attr(*, "order")= int 1
+  .. .. ..- attr(*, "intercept")= int 1
+  .. .. ..- attr(*, "response")= int 1
+  .. .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+  .. .. ..- attr(*, "predvars")= language list(dist, speed)
+  .. .. ..- attr(*, "dataClasses")= Named chr [1:2] "numeric" "numeric"
+  .. .. .. ..- attr(*, "names")= chr [1:2] "dist" "speed"
+ - attr(*, "class")= chr "lm"
+> xfun::tree(fit)
+List of 12
+ |-coefficients : Named num [1:2] -17.58 3.93
+ |  - attr(*, "names")= chr [1:2] "(Intercept)" "speed"
+ |-residuals    : Named num [1:50] 3.85 11.85 -5.95 12.05 2.12 ...
+ |  - attr(*, "names")= chr [1:50] "1" "2" "3" "4" ...
+ |-effects      : Named num [1:50] -303.914 145.552 -8.115 9.885 0.194 ...
+ |  - attr(*, "names")= chr [1:50] "(Intercept)" "speed" "" "" ...
+ |-rank         : int 2
+ |-fitted.values: Named num [1:50] -1.85 -1.85 9.95 9.95 13.88 ...
+ |  - attr(*, "names")= chr [1:50] "1" "2" "3" "4" ...
+ |-assign       : int [1:2] 0 1
+ |-qr           :List of 5
+ |  |-qr   : num [1:50, 1:2] -7.071 0.141 0.141 0.141 0.141 ...
+ |  |  - attr(*, "dimnames")=List of 2
+ |  |     |-: chr [1:50] "1" "2" "3" "4" ...
+ |  |     |-: chr [1:2] "(Intercept)" "speed"
+ |  |  - attr(*, "assign")= int [1:2] 0 1
+ |  |-qraux: num [1:2] 1.14 1.27
+ |  |-pivot: int [1:2] 1 2
+ |  |-tol  : num 1e-07
+ |  |-rank : int 2
+ |  - attr(*, "class")= chr "qr"
+ |-df.residual  : int 48
+ |-xlevels      : Named list()
+ |-call         : language lm(formula = dist ~ speed, data = cars)
+ |-terms        :Classes 'terms', 'formula'  language dist ~ speed
+ |     - attr(*, "variables")= language list(dist, speed)
+ |     - attr(*, "factors")= int [1:2, 1] 0 1
+ |        - attr(*, "dimnames")=List of 2
+ |           |-: chr [1:2] "dist" "speed"
+ |           |-: chr "speed"
+ |     - attr(*, "term.labels")= chr "speed"
+ |     - attr(*, "order")= int 1
+ |     - attr(*, "intercept")= int 1
+ |     - attr(*, "response")= int 1
+ |     - attr(*, ".Environment")=<environment: R_GlobalEnv> 
+ |     - attr(*, "predvars")= language list(dist, speed)
+ |     - attr(*, "dataClasses")= Named chr [1:2] "numeric" "numeric"
+ |        - attr(*, "names")= chr [1:2] "dist" "speed"
+ |-model        :'data.frame':	50 obs. of  2 variables:
+    |-dist : num [1:50] 2 10 4 22 16 10 18 26 34 17 ...
+    |-speed: num [1:50] 4 4 7 7 8 9 10 10 10 11 ...
+    - attr(*, "terms")=Classes 'terms', 'formula'  language dist ~ speed
+          - attr(*, "variables")= language list(dist, speed)
+          - attr(*, "factors")= int [1:2, 1] 0 1
+             - attr(*, "dimnames")=List of 2
+                |-: chr [1:2] "dist" "speed"
+                |-: chr "speed"
+          - attr(*, "term.labels")= chr "speed"
+          - attr(*, "order")= int 1
+          - attr(*, "intercept")= int 1
+          - attr(*, "response")= int 1
+          - attr(*, ".Environment")=<environment: R_GlobalEnv> 
+          - attr(*, "predvars")= language list(dist, speed)
+          - attr(*, "dataClasses")= Named chr [1:2] "numeric" "numeric"
+             - attr(*, "names")= chr [1:2] "dist" "speed"
+ - attr(*, "class")= chr "lm"
+> 
+> # some trivial examples
+> xfun::tree(1:10)
+ int [1:10] 1 2 3 4 5 6 7 8 9 10
+> xfun::tree(iris)
+'data.frame':	150 obs. of  5 variables:
+ |-Sepal.Length: num  5.1 4.9 4.7 4.6 5 5.4 4.6 5 4.4 4.9 ...
+ |-Sepal.Width : num  3.5 3 3.2 3.1 3.6 3.9 3.4 3.4 2.9 3.1 ...
+ |-Petal.Length: num  1.4 1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.4 1.5 ...
+ |-Petal.Width : num  0.2 0.2 0.2 0.2 0.2 0.4 0.3 0.2 0.2 0.1 ...
+ |-Species     : Factor w/ 3 levels "setosa","versicolor",..: 1 1 1 1 1 1 1 1 1 1 ...
+> 
+> 
+> 
+> cleanEx()
+> nameEx("try_silent")
+> ### * try_silent
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: try_silent
+> ### Title: Try to evaluate an expression silently
+> ### Aliases: try_silent
+> 
+> ### ** Examples
+> 
+> library(xfun)
+> z = try_silent(stop("Wrong!"))
+> inherits(z, "try-error")
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("url_filename")
+> ### * url_filename
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: url_filename
+> ### Title: Extract filenames from a URLs
+> ### Aliases: url_filename
+> 
+> ### ** Examples
+> 
+> xfun::url_filename("https://yihui.org/images/logo.png")
+[1] "logo.png"
+> xfun::url_filename("https://yihui.org/index.html")
+[1] "index.html"
+> xfun::url_filename("https://yihui.org/index.html?foo=bar")
+[1] "index.html"
+> xfun::url_filename("https://yihui.org/index.html#about")
+[1] "index.html"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("valid_syntax")
+> ### * valid_syntax
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: valid_syntax
+> ### Title: Check if the syntax of the code is valid
+> ### Aliases: valid_syntax
+> 
+> ### ** Examples
+> 
+> xfun::valid_syntax("1+1")
+[1] TRUE
+> xfun::valid_syntax("1+")
+[1] FALSE
+> xfun::valid_syntax(c("if(T){1+1}", "else {2+2}"), silent = FALSE)
+Error in parse(text = code, keep.source = FALSE) : 
+  <text>:2:1: unexpected 'else'
+1: if(T){1+1}
+2: else
+   ^
+[1] FALSE
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.886 0.037 6.172 1.73 1.422 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

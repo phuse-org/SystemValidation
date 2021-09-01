@@ -1,0 +1,534 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ### Testing the group methods  --- some also happens in ./Class+Meth.R
+> 
+> library(Matrix)
+> source(system.file("test-tools.R", package = "Matrix"))# identical3() etc
+Loading required package: tools
+> assertV <- function(e) tools::assertError(e, verbose=TRUE)
+> 
+> cat("doExtras:",doExtras,"\n")
+doExtras: FALSE 
+> 
+> set.seed(2001)
+> 
+> mm <- Matrix(rnorm(50 * 7), nc = 7)
+> xpx <- crossprod(mm)# -> "factors" in mm !
+> round(xpx, 3) # works via "Math2"
+7 x 7 Matrix of class "dpoMatrix"
+       [,1]   [,2]    [,3]   [,4]   [,5]    [,6]   [,7]
+[1,] 47.565 -6.382  -4.728 -9.123 16.727   1.727  2.572
+[2,] -6.382 54.324  -1.016  1.032 -7.856  -0.907 -0.923
+[3,] -4.728 -1.016  46.545  4.594 -2.694 -13.324 -4.899
+[4,] -9.123  1.032   4.594 47.742 -3.846  -9.994 -0.052
+[5,] 16.727 -7.856  -2.694 -3.846 49.438   8.762  0.372
+[6,]  1.727 -0.907 -13.324 -9.994  8.762  50.182 -1.418
+[7,]  2.572 -0.923  -4.899 -0.052  0.372  -1.418 44.602
+> 
+> y <- rnorm(nrow(mm))
+> xpy <- crossprod(mm, y)
+> res <- solve(xpx, xpy)
+> signif(res, 4) # 7 x 1 Matrix
+7 x 1 Matrix of class "dgeMatrix"
+         [,1]
+[1,]  0.05242
+[2,] -0.17070
+[3,]  0.09749
+[4,] -0.02275
+[5,]  0.11190
+[6,]  0.13720
+[7,] -0.04519
+> 
+> stopifnot(all(signif(res) == signif(res, 6)),
++ 	  all(round (xpx) == round (xpx, 0)))
+> 
+> ## exp(): component wise
+> signif(dd <- (expm(xpx) - exp(xpx)) / 1e34, 3)# 7 x 7
+7 x 7 Matrix of class "dsyMatrix"
+       [,1]   [,2]   [,3]   [,4]   [,5]   [,6]   [,7]
+[1,]  4.780 -2.800 -3.200 -3.690  5.100  4.300  0.723
+[2,] -2.800  1.640  1.880  2.160 -2.990 -2.520 -0.424
+[3,] -3.200  1.880  2.140  2.470 -3.420 -2.880 -0.484
+[4,] -3.690  2.160  2.470  2.850 -3.940 -3.320 -0.558
+[5,]  5.100 -2.990 -3.420 -3.940  5.450  4.590  0.772
+[6,]  4.300 -2.520 -2.880 -3.320  4.590  3.870  0.651
+[7,]  0.723 -0.424 -0.484 -0.558  0.772  0.651  0.109
+> 
+> validObject(xpx)
+[1] TRUE
+> validObject(xpy)
+[1] TRUE
+> validObject(dd)
+[1] TRUE
+> 
+> ## "Math" also, for log() and [l]gamma() which need special treatment
+> stopifnot(identical(exp(res)@x, exp(res@x)),
++           identical(log(abs(res))@x, log(abs((res@x)))),
++           identical(lgamma(res)@x, lgamma(res@x)))
+> 
+> 
+> ###--- sparse matrices ---------
+> 
+> m <- Matrix(c(0,0,2:0), 3,5)
+> (mC <- as(m, "dgCMatrix"))
+3 x 5 sparse Matrix of class "dgCMatrix"
+              
+[1,] . 1 . . 2
+[2,] . . 2 . 1
+[3,] 2 . 1 . .
+> sm <- sin(mC)
+> stopifnot(class(sm) == class(mC), class(mC) == class(mC^2),
++           dim(sm) == dim(mC),
++           class(0 + 100*mC) == class(mC),
++           all.equal(0.1 * ((0 + 100*mC)/10), mC),
++           all.equal(sqrt(mC ^ 2), mC),
++           all.equal(m^m, mC^mC),
++           identical(mC^2, mC * mC),
++           identical(mC*2, mC + mC)
++           )
+> 
+> x <- Matrix(rbind(0,cbind(0, 0:3,0,0,-1:2,0),0))
+> x # sparse
+6 x 6 sparse Matrix of class "dgCMatrix"
+                 
+[1,] . . . .  . .
+[2,] . . . . -1 .
+[3,] . 1 . .  . .
+[4,] . 2 . .  1 .
+[5,] . 3 . .  2 .
+[6,] . . . .  . .
+> (x2 <- x + 10*t(x))
+6 x 6 sparse Matrix of class "dgCMatrix"
+                    
+[1,] .  .  .  .  . .
+[2,] .  . 10 20 29 .
+[3,] .  1  .  .  . .
+[4,] .  2  .  .  1 .
+[5,] . -7  . 10 22 .
+[6,] .  .  .  .  . .
+> stopifnot(is(x2, "sparseMatrix"),
++           identical(x2, t(x*10 + t(x))),
++ 	  identical(x, as((x + 10) - 10, class(x))))
+> 
+> (px <- Matrix(x^x - 1))#-> sparse again
+6 x 6 sparse Matrix of class "dgCMatrix"
+                  
+[1,] .  . . .  . .
+[2,] .  . . . -2 .
+[3,] .  . . .  . .
+[4,] .  3 . .  . .
+[5,] . 26 . .  3 .
+[6,] .  . . .  . .
+> stopifnot(px@i == c(3,4,1,4),
++           px@x == c(3,26,-2,3))
+> 
+> ## From: "Florent D." .. Thu, 23 Feb 2012 -- bug report
+> ##---> MM:  Make a regression test:
+> tst <- function(n, i = 1) {
++     stopifnot(i >= 1, n >= i)
++     D <- .sparseDiagonal(n)
++     ee <- numeric(n) ; ee[i] <- 1
++     stopifnot(all(D - ee == diag(n) - ee),
++               all(D * ee == diag(n) * ee),
++               all(ee - D == ee - diag(n)),
++               {C <- (ee / D == ee / diag(n)); all(is.na(C) | C)},
++               TRUE)
++ }
+> nn <- if(doExtras) 27 else 7
+> tmp <- sapply(1:nn, tst) # failed in Matrix 1.0-4
+> i <- sapply(1:nn, function(i) sample(i,1))
+> tmp <- mapply(tst, n= 1:nn, i= i)# failed too
+> 
+> (lsy <- new("lsyMatrix", Dim = c(2L,2L), x=c(TRUE,FALSE,TRUE,TRUE)))
+2 x 2 Matrix of class "lsyMatrix"
+     [,1] [,2]
+[1,] TRUE TRUE
+[2,] TRUE TRUE
+> nsy <- as(lsy, "nMatrix")
+> (t1  <- new("ltrMatrix", Dim = c(1L,1L), x = TRUE))
+1 x 1 Matrix of class "ltrMatrix"
+     [,1]
+[1,] TRUE
+> (t2  <- new("ltrMatrix", Dim = c(2L,2L), x = rep(TRUE,4)))
+2 x 2 Matrix of class "ltrMatrix"
+     [,1]  [,2] 
+[1,]  TRUE  TRUE
+[2,]     .  TRUE
+> stopifnot(all(lsy), # failed in Matrix 1.0-4
++           all(nsy), #  dito
++ 	  all(t1),  #   "
++           ## ok previously (all following):
++           !all(t2),
++ 	  all(sqrt(lsy) == 1))
+> dsy <- lsy+1
+> 
+> showProc.time()
+Time elapsed:  0.618 0.253 0.489 
+> set.seed(111)
+> local({
++     for(i in 1:(if(doExtras) 20 else 5)) {
++         M <- rspMat(n=1000, 200, density = 1/20)
++         v <- rnorm(ncol(M))
++         m <- as(M,"matrix")
++         stopifnot(all(t(M)/v == t(m)/v))
++         cat(".")
++     }});cat("\n")
+.....
+> 
+> ## Now just once, with a large such matrix:
+> local({
++     n <- 100000; m <- 30000
++     AA <- rspMat(n, m, density = 1/20000)
++     v <- rnorm(m)
++     st <- system.time({
++         BB <- t(AA)/v # should happen *fast*
++         stopifnot(dim(BB) == c(m,n), is(BB, "sparseMatrix"))
++     })
++     str(BB)
++     print(st)
++     if(Sys.info()[["sysname"]] == "Linux") {
++         mips <- as.numeric(sub(".*: *", '',
++                                grep("bogomips", readLines("/proc/cpuinfo"),
++                                     value=TRUE)[[1]]))
++         stopifnot(st[1] < 1000/mips)# ensure there was no gross inefficiency
++     }
++ })
+Formal class 'dgCMatrix' [package "Matrix"] with 6 slots
+  ..@ i       : int [1:150000] 12313 12670 16811 12507 25011 25802 6142 1708 8669 17869 ...
+  ..@ p       : int [1:100001] 0 3 6 7 8 8 12 13 13 13 ...
+  ..@ Dim     : int [1:2] 30000 100000
+  ..@ Dimnames:List of 2
+  .. ..$ : NULL
+  .. ..$ : NULL
+  ..@ x       : num [1:150000] -139671 -13383 -43683 181413 -654341 ...
+  ..@ factors : list()
+   user  system elapsed 
+  0.012   0.000   0.012 
+> 
+> 
+> ###----- Compare methods ---> logical Matrices ------------
+> l3 <- upper.tri(matrix(, 3, 3))
+> (ll3 <- Matrix(l3))
+3 x 3 sparse Matrix of class "ltCMatrix"
+          
+[1,] . | |
+[2,] . . |
+[3,] . . .
+> dt3 <- (99* Diagonal(3) + (10 * ll3 + Diagonal(3)))/10
+> (dsc <- crossprod(ll3))
+3 x 3 sparse Matrix of class "dsCMatrix"
+          
+[1,] . . .
+[2,] . 1 1
+[3,] . 1 2
+> stopifnot(identical(ll3, t(t(ll3))),
++ 	  identical(dsc, t(t(dsc))))
+> stopifnotValid(ll3, "ltCMatrix")
+> stopifnotValid(dsc, "dsCMatrix")
+> stopifnotValid(dsc + 3 * Diagonal(nrow(dsc)), "dsCMatrix")
+> stopifnotValid(dt3, "triangularMatrix")    # remained triangular
+> stopifnotValid(dt3 > 0, "triangularMatrix")# ditto
+> 
+> 
+> (lm1 <- dsc >= 1) # now ok
+3 x 3 sparse Matrix of class "lsCMatrix"
+          
+[1,] . . .
+[2,] . | |
+[3,] . | |
+> (lm2 <- dsc == 1) # now ok
+3 x 3 sparse Matrix of class "lsCMatrix"
+          
+[1,] . . .
+[2,] . | |
+[3,] . | :
+> nm1 <- as(lm1, "nMatrix")
+> (nm2 <- as(lm2, "nMatrix"))
+3 x 3 sparse Matrix of class "nsCMatrix"
+          
+[1,] . . .
+[2,] . | |
+[3,] . | |
+> 
+> stopifnot(validObject(lm1), validObject(lm2),
++           validObject(nm1), validObject(nm2),
++           identical(dsc, as(dsc * as(lm1, "dMatrix"), "dsCMatrix")))
+> 
+> crossprod(lm1) # lm1: "lsC*"
+3 x 3 sparse Matrix of class "dsCMatrix"
+          
+[1,] . . .
+[2,] . 2 2
+[3,] . 2 2
+> cnm1 <- crossprod(nm1)
+> stopifnot(is(cnm1, "symmetricMatrix"), ## whereas the %*% is not:
++ 	  Q.eq(cnm1, nm1 %*% nm1))
+> dn1 <- as(nm1, "denseMatrix")
+> stopifnot(all(dn1 == nm1))
+> 
+> dsc[2,3] <- NA ## now has an NA (and no longer is symmetric)
+> ##          ----- and "everything" is different
+> ## also add "non-structural 0":
+> dsc@x[1] <- 0
+> dsc
+3 x 3 sparse Matrix of class "dgCMatrix"
+           
+[1,] . .  .
+[2,] . 0 NA
+[3,] . 1  2
+> dsc/ 5
+3 x 3 sparse Matrix of class "dgCMatrix"
+              
+[1,] . .   .  
+[2,] . 0.0  NA
+[3,] . 0.2 0.4
+> dsc + dsc
+3 x 3 sparse Matrix of class "dgCMatrix"
+           
+[1,] . .  .
+[2,] . 0 NA
+[3,] . 2  4
+> dsc - dsc
+3 x 3 sparse Matrix of class "dgCMatrix"
+           
+[1,] . .  .
+[2,] . 0 NA
+[3,] . 0  0
+> dsc + 1 # -> no longer sparse
+3 x 3 Matrix of class "dgeMatrix"
+     [,1] [,2] [,3]
+[1,]    1    1    1
+[2,]    1    1   NA
+[3,]    1    2    3
+> Tsc <- as(dsc, "TsparseMatrix")
+> dsc. <- drop0(dsc)
+> stopifnot(identical(dsc., Matrix((dsc + 1) -1)),
++ 	  identical(as(-Tsc,"CsparseMatrix"), (-1) * Tsc),
++ 	  identical(-dsc., (-1) * dsc.),
++ 	  identical3(-Diagonal(3), Diagonal(3, -1), (-1) * Diagonal(3)),
++ 	  identical(dsc., Matrix((Tsc + 1) -1)), # ok (exact arithmetic)
++ 	  Q.eq(0 != dsc, dsc != Matrix(0, 3, 3)),
++ 	  Q.eq(0 != dsc, dsc != c(0,0)) # with a warning ("not multiple ..")
++ 	  )
+Warning message:
+In Matrix(e2, nrow = d[1], ncol = d[2]) :
+  data length [2] is not a sub-multiple or multiple of the number of rows [3]
+> str(lm1 <- dsc >= 1) # now ok (NA in proper place, however:
+Formal class 'lgCMatrix' [package "Matrix"] with 6 slots
+  ..@ i       : int [1:4] 1 2 1 2
+  ..@ p       : int [1:4] 0 0 2 4
+  ..@ Dim     : int [1:2] 3 3
+  ..@ Dimnames:List of 2
+  .. ..$ : NULL
+  .. ..$ : NULL
+  ..@ x       : logi [1:4] FALSE TRUE NA TRUE
+  ..@ factors : list()
+> lm1 ## NA used to print as ' ' , now 'N'
+3 x 3 sparse Matrix of class "lgCMatrix"
+          
+[1,] . . .
+[2,] . : N
+[3,] . | |
+> (lm2 <- dsc == 1)# ditto
+3 x 3 sparse Matrix of class "lgCMatrix"
+          
+[1,] . . .
+[2,] . : N
+[3,] . | :
+> stopifnot(identical(crossprod(lm1),# "lgC": here works!
++                     crossprod(as(lm1, "dMatrix"))),
++           identical(lm2, lm1 & lm2),
++ 	  identical(lm1, lm1 | lm2))
+> 
+> ddsc <- kronecker(Diagonal(7), dsc)
+> isValid(ddv <- rowSums(ddsc, sparse=TRUE), "sparseVector")
+[1] TRUE
+> sv <- colSums(kC <- kronecker(mC,kronecker(mC,mC)), sparse=TRUE)
+> EQ <- ddv == rowSums(ddsc)
+> na.ddv <- is.na(ddv)
+> sM <- Matrix(pmax(0, round(rnorm(50*15, -1.5), 2)), 50,15)
+> stopifnot(sv == colSums(kC), is.na(as.vector(ddv)) == na.ddv,
++           isValid(sM/(-7:7), "CsparseMatrix"),
++ 	  all(EQ | na.ddv))
+> 
+> ## Subclasses (!)
+> setClass("m.spV", contains = "dsparseVector")
+> (m.ddv <- as(ddv, "m.spV"))
+sparse vector (nnz/length = 14/21) of class "m.spV"
+ [1]  . NA  3  . NA  3  . NA  3  . NA  3  . NA  3  . NA  3  . NA  3
+> stopifnot(all.equal(m.ddv, ddv))# failed
+> setClass("m.dgC", contains = "dgCMatrix")
+> (m.mC <- as(mC, "m.dgC"))
+3 x 5 sparse Matrix of class "m.dgC"
+              
+[1,] . 1 . . 2
+[2,] . . 2 . 1
+[3,] 2 . 1 . .
+> stopifnot(all(m.mC == mC))
+> ## 2-level inheritance (R-forge Matrix bug #6185)
+> ## https://r-forge.r-project.org/tracker/index.php?func=detail&aid=6185&group_id=61&atid=294
+> setClass("Z", representation(zz = "list"))
+> setClass("C", contains = c("Z", "dgCMatrix"))
+> setClass("C2", contains = "C")
+> setClass("C3", contains = "C2")
+> (cc <- as(mC, "C"))
+3 x 5 sparse Matrix of class "C"
+              
+[1,] . 1 . . 2
+[2,] . . 2 . 1
+[3,] 2 . 1 . .
+> c2 <- as(mC, "C2")
+> c3 <- as(mC, "C3")
+> if(getRversion() >= "3.5.0") { # as(*, "matrix") of these __fail__ in  R < 3.5.0
++                                # before R_check_class_and_super() became better :
++     print(c2)
++     print(c3)
++ }## ==> Error in asMethod(object) : invalid class of object to as_cholmod_sparse
+3 x 5 sparse Matrix of class "C2"
+              
+[1,] . 1 . . 2
+[2,] . . 2 . 1
+[3,] 2 . 1 . .
+3 x 5 sparse Matrix of class "C3"
+              
+[1,] . 1 . . 2
+[2,] . . 2 . 1
+[3,] 2 . 1 . .
+> stopifnot(identical(cc > 0, mC > 0 -> m.gt.0), ## cc > 0 - gave error in Matrix <= 1.2-11
++           identical(c2 > 0, m.gt.0),
++           identical(c3 > 0, m.gt.0))
+> if(getRversion() < "3.5.0") rm(c2,c3) # they would "fail" below
+> 
+> ## Just for print "show":
+> z <- round(rnorm(77), 2)
+> z[sample(77,10)] <- NA
+> (D <- Matrix(z, 7)) # dense
+7 x 11 Matrix of class "dgeMatrix"
+      [,1]  [,2]  [,3]  [,4]  [,5]  [,6]  [,7]  [,8]  [,9] [,10] [,11]
+[1,] -0.86 -0.09  1.17    NA    NA  1.25  0.62 -1.63 -1.60  1.49 -1.60
+[2,] -1.74  0.34  0.56  1.00    NA  0.33  1.13  0.58  0.01 -0.69 -0.66
+[3,]    NA  1.47  0.45 -1.35 -1.39 -0.54 -1.59 -1.72 -0.99 -1.09 -0.22
+[4,]  1.46 -0.67 -0.73 -0.34    NA    NA  1.24  0.54 -0.68    NA  2.23
+[5,] -1.35 -0.50 -0.49 -0.50 -0.56  0.42    NA  0.37  0.81 -0.63 -0.90
+[6,]  1.27    NA  2.82  1.91    NA -2.83  0.84  0.93 -0.73 -0.65  0.09
+[7,]  0.44  2.38 -0.47 -0.16 -1.15  0.25 -0.31 -0.37  2.31 -1.44  0.25
+> z[sample(77,15)] <- 0
+> (D <- Matrix(z, 7)) # sparse
+7 x 11 Matrix of class "dgeMatrix"
+      [,1]  [,2]  [,3]  [,4]  [,5]  [,6]  [,7]  [,8]  [,9] [,10] [,11]
+[1,] -0.86 -0.09  1.17  0.00    NA  0.00  0.62 -1.63 -1.60  1.49  0.00
+[2,]  0.00  0.00  0.00  1.00    NA  0.33  1.13  0.58  0.01  0.00 -0.66
+[3,]    NA  0.00  0.45 -1.35 -1.39 -0.54 -1.59 -1.72  0.00 -1.09 -0.22
+[4,]  1.46 -0.67 -0.73 -0.34    NA  0.00  1.24  0.54 -0.68    NA  2.23
+[5,] -1.35 -0.50 -0.49 -0.50 -0.56  0.42    NA  0.37  0.81  0.00  0.00
+[6,]  0.00    NA  2.82  1.91  0.00 -2.83  0.84  0.93 -0.73  0.00  0.09
+[7,]  0.44  2.38 -0.47 -0.16 -1.15  0.25 -0.31 -0.37  2.31 -1.44  0.25
+> abs(D) >= 0.5       # logical sparse
+7 x 11 Matrix of class "lgeMatrix"
+      [,1]  [,2]  [,3]  [,4]  [,5]  [,6]  [,7]  [,8]  [,9] [,10] [,11]
+[1,]  TRUE FALSE  TRUE FALSE    NA FALSE  TRUE  TRUE  TRUE  TRUE FALSE
+[2,] FALSE FALSE FALSE  TRUE    NA FALSE  TRUE  TRUE FALSE FALSE  TRUE
+[3,]    NA FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE FALSE
+[4,]  TRUE  TRUE  TRUE FALSE    NA FALSE  TRUE  TRUE  TRUE    NA  TRUE
+[5,]  TRUE  TRUE FALSE  TRUE  TRUE FALSE    NA FALSE  TRUE FALSE FALSE
+[6,] FALSE    NA  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE
+[7,] FALSE  TRUE FALSE FALSE  TRUE FALSE FALSE FALSE  TRUE  TRUE FALSE
+> 
+> ## For the checks below, remove some and add a few more objects:
+> rm(list= ls(pat="^.[mMC]?$"))
+> D3 <- Diagonal(x=4:2); L7 <- Diagonal(7) > 0
+> T3 <- Diagonal(3) > 0; stopifnot(T3@diag == "U") # "uni-diagonal"
+> validObject(xpp <- pack(round(xpx,2)))
+[1] TRUE
+> validObject(dtp <- pack(as(dt3, "denseMatrix")))
+[1] TRUE
+> lsp <- xpp > 0
+> stopifnot(exprs = {
++     isValid(lsC <- as(lsp, "sparseMatrix"), "lsCMatrix")
++     ## 0-extent matrices {fixes in Feb.2019}:
++     isValid(L00 <- L7[FALSE,FALSE], "ldiMatrix")
++     isValid(x60 <- x2[,FALSE],      "dgCMatrix")
++     identical(t(x60), x06 <- x2[FALSE,])
++     isValid(x00 <- x06[,FALSE],     "dgCMatrix")
++     isValid(sv0 <- as(x06, "sparseVector"), "dsparseVector")
++ })
+> 
+> showProc.time()
+Time elapsed:  0.902 0.024 0.926 
+> 
+> ### Consider "all" Matrix classes
+> cl <- sapply(ls(), function(.) class(get(.)))
+> Mcl <- cl[vapply(cl, extends, "Matrix",       FUN.VALUE=NA) |
++           vapply(cl, extends, "sparseVector", FUN.VALUE=NA)]
+> table(Mcl)
+, , cc = C, cnm1 = nsCMatrix, D3 = ddiMatrix, dd = dsyMatrix, ddsc = dgTMatrix, ddv = dsparseVector, dn1 = nsyMatrix, dsc = dgCMatrix, dsc. = dgCMatrix, dsy = dsyMatrix, dt3 = dtCMatrix, dtp = dtpMatrix, L00 = ldiMatrix, L7 = ldiMatrix, ll3 = ltCMatrix, lm1 = lgCMatrix, lm2 = lgCMatrix, lsC = lsCMatrix, lsp = lspMatrix, lsy = lsyMatrix, m.ddv = m.spV, m.gt.0 = lgCMatrix, m.mC = m.dgC, na.ddv = nsparseVector, nm1 = nsCMatrix, nm2 = nsCMatrix, nsy = nsyMatrix, px = dgCMatrix, res = dgeMatrix, sv = dsparseVector, sv0 = dsparseVector, t1 = ltrMatrix, t2 = ltrMatrix, T3 = ldiMatrix, Tsc = dgTMatrix, x00 = dgCMatrix, x06 = dgCMatrix, x2 = dgCMatrix, x60 = dgCMatrix, xpp = dppMatrix, xpx = dpoMatrix, xpy = dgeMatrix
+
+    c3
+c2   C3
+  C2  1
+
+> ## choose *one* of each class:
+> ## M.objs <- names(Mcl[!duplicated(Mcl)])
+> ## choose all
+> M.objs <- names(Mcl) # == the ls() from above
+> Mat.objs <- M.objs[vapply(M.objs, function(nm) is(get(nm), "Matrix"), NA)]
+> MatDims <- t(vapply(Mat.objs, function(nm) dim(get(nm)), 0:1))
+> ## Nice summary info :
+> noquote(cbind(Mcl[Mat.objs], format(MatDims)))
+       [,1]        [,2] [,3]
+c2     "C2"        " 3" " 5"
+c3     "C3"        " 3" " 5"
+cc     "C"         " 3" " 5"
+cnm1   "nsCMatrix" " 3" " 3"
+D3     "ddiMatrix" " 3" " 3"
+dd     "dsyMatrix" " 7" " 7"
+ddsc   "dgTMatrix" "21" "21"
+dn1    "nsyMatrix" " 3" " 3"
+dsc    "dgCMatrix" " 3" " 3"
+dsc.   "dgCMatrix" " 3" " 3"
+dsy    "dsyMatrix" " 2" " 2"
+dt3    "dtCMatrix" " 3" " 3"
+dtp    "dtpMatrix" " 3" " 3"
+L00    "ldiMatrix" " 0" " 0"
+L7     "ldiMatrix" " 7" " 7"
+ll3    "ltCMatrix" " 3" " 3"
+lm1    "lgCMatrix" " 3" " 3"
+lm2    "lgCMatrix" " 3" " 3"
+lsC    "lsCMatrix" " 7" " 7"
+lsp    "lspMatrix" " 7" " 7"
+lsy    "lsyMatrix" " 2" " 2"
+m.gt.0 "lgCMatrix" " 3" " 5"
+m.mC   "m.dgC"     " 3" " 5"
+nm1    "nsCMatrix" " 3" " 3"
+nm2    "nsCMatrix" " 3" " 3"
+nsy    "nsyMatrix" " 2" " 2"
+px     "dgCMatrix" " 6" " 6"
+res    "dgeMatrix" " 7" " 1"
+t1     "ltrMatrix" " 1" " 1"
+t2     "ltrMatrix" " 2" " 2"
+T3     "ldiMatrix" " 3" " 3"
+Tsc    "dgTMatrix" " 3" " 3"
+x00    "dgCMatrix" " 0" " 0"
+x06    "dgCMatrix" " 0" " 6"
+x2     "dgCMatrix" " 6" " 6"
+x60    "dgCMatrix" " 6" " 0"
+xpp    "dppMatrix" " 7" " 7"
+xpx    "dpoMatrix" " 7" " 7"
+xpy    "dgeMatrix" " 7" " 1"
+> 
+> if(!doExtras && !interactive()) q("no") ## (saving testing time)

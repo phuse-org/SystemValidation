@@ -1,0 +1,34 @@
+Test file for custom graphics devices
+\begin{Schunk}
+\begin{Sinput}
+R> my.Swd <- function(name, width, height, ...) {
++    cat("running my.Swd\n")
++    grDevices::png(filename = paste(name, "png", sep = "."),
++                   width = width, height = height, res = 100, units = "in",
++                   bg = "transparent")
++  }
+R> my.Swd.off <- function() {
++      cat("shutting down my.Swd\n")
++      grDevices::dev.off()
++  }
+\end{Sinput}
+\end{Schunk}
+\begin{Schunk}
+\begin{Sinput}
+R> plot(1:2)
+\end{Sinput}
+\end{Schunk}
+\includegraphics{customgraphics-002}
+\begin{Schunk}
+\begin{Sinput}
+R> plot(1:3)
+\end{Sinput}
+\end{Schunk}
+\includegraphics{customgraphics-003}
+\begin{Schunk}
+\begin{Sinput}
+R> plot(1:4)
+\end{Sinput}
+\end{Schunk}
+\includegraphics{customgraphics-004}
+Done!

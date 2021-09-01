@@ -1,0 +1,61 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> runone <- function(f)
++ {
++     message("  Running ", sQuote(f))
++     infile <- paste(f, "RR", sep = ".")
++     outfile <- paste(f, "Rout", sep = ".")
++     cmd <- paste(shQuote(file.path(R.home("bin"), "R")),
++                  "CMD BATCH --vanilla",
++                  shQuote(infile), shQuote(outfile))
++     res <- system(cmd)
++     if (res) {
++         cat(readLines(outfile), sep="\n")
++         file.rename(outfile, paste(outfile, "fail", sep="."))
++         return(1L)
++     }
++     savefile <- paste(outfile, "save", sep = "." )
++     if (file.exists(savefile)) {
++         message("  Comparing ", sQuote(outfile), " to ",
++                 sQuote(savefile), " ...", appendLF = FALSE)
++         res <- tools:::Rdiff(outfile, savefile, TRUE)
++         if (!res) message(" OK")
++     }
++     0L
++ }
+> 
+> res <- 0L
+> if(.Platform$OS.type == "unix") {
++     res <- res + runone("multicore1")
++     res <- res + runone("multicore2")
++     res <- res + runone("multicore3")
++ }
+  Running ‘multicore1’
+  Running ‘multicore2’
+  Comparing ‘multicore2.Rout’ to ‘multicore2.Rout.save’ ... OK
+  Running ‘multicore3’
+> res <- res + runone("snow1")
+  Running ‘snow1’
+> res <- res + runone("snow2")
+  Running ‘snow2’
+  Comparing ‘snow2.Rout’ to ‘snow2.Rout.save’ ... OK
+> 
+> if(res) stop(gettextf("%d tests failed", res))
+> 
+> 

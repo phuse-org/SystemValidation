@@ -1,0 +1,97 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ### Example from Merete Kjær Hansen 2011-07-06
+> library(MASS)
+> dat <- data.frame(y = c(35, 21, 9, 6, 1),
++                   dose = c(0.0028, 0.0056, 0.0112, 0.0225, 0.045),
++                   n = c(40, 40, 40, 40, 40), w = 1:5)
+> ### fit model with two-column response and weights
+> fm <- glm(cbind(y, n-y) ~ dose, weights=w, family=binomial, data=dat)
+> ### Investigating the profile likelihoods of the parameters with profile.glm
+> profile(fm)
+$`(Intercept)`
+            z par.vals.(Intercept) par.vals.dose
+1  -2.6238077            0.1830344   -86.8060446
+2  -2.0922921            0.2819672   -91.4480912
+3  -1.5637841            0.3809000   -96.2044941
+4  -1.0386682            0.4798328  -101.0765136
+5  -0.5172994            0.5787656  -106.0647003
+6   0.0000000            0.6776984  -111.1688433
+7   0.5129427            0.7766311  -116.3879459
+8   1.0212782            0.8755639  -121.7202316
+9   1.5247933            0.9744967  -127.1631836
+10  2.0233116            1.0734295  -132.7136168
+11  2.5166919            1.1723623  -138.3677771
+12  3.0048263            1.2712951  -144.1214627
+
+$dose
+            z par.vals.(Intercept) par.vals.dose
+1  -2.8281753            1.1296688  -149.3735803
+2  -2.3891367            1.0578165  -143.0061242
+3  -1.9383918            0.9847366  -136.6386680
+4  -1.4750868            0.9103196  -130.2712118
+5  -0.9982839            0.8344399  -123.9037557
+6  -0.5069584            0.7569542  -117.5362995
+7   0.0000000            0.6776984  -111.1688433
+8   0.5237834            0.5964861  -104.8013872
+9   1.0656558            0.5131070   -98.4339310
+10  1.6269367            0.4273263   -92.0664749
+11  2.2089780            0.3388843   -85.6990187
+12  2.8131314            0.2474991   -79.3315625
+
+attr(,"original.fit")
+
+Call:  glm(formula = cbind(y, n - y) ~ dose, family = binomial, data = dat, 
+    weights = w)
+
+Coefficients:
+(Intercept)         dose  
+     0.6777    -111.1688  
+
+Degrees of Freedom: 4 Total (i.e. Null);  3 Residual
+Null Deviance:	    184 
+Residual Deviance: 28.08 	AIC: 78.98
+attr(,"summary")
+
+Call:
+glm(formula = cbind(y, n - y) ~ dose, family = binomial, data = dat, 
+    weights = w)
+
+Deviance Residuals: 
+      1        2        3        4        5  
+ 3.9563   0.2008  -3.2372   0.3978   1.3212  
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept)    0.6777     0.1920   3.529 0.000417 ***
+dose        -111.1688    12.3600  -8.994  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 183.977  on 4  degrees of freedom
+Residual deviance:  28.076  on 3  degrees of freedom
+AIC: 78.981
+
+Number of Fisher Scoring iterations: 5
+
+attr(,"class")
+[1] "profile.glm" "profile"    
+> ## failed in MASS 7.3-13
+> 

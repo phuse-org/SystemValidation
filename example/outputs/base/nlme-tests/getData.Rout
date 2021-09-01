@@ -1,0 +1,62 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(nlme)
+> fm1 <- lme(distance ~ age, Orthodont)
+> str(o1 <- getData(fm1))
+Classes ‘nfnGroupedData’, ‘nfGroupedData’, ‘groupedData’ and 'data.frame':	108 obs. of  4 variables:
+ $ distance: num  26 25 29 31 21.5 22.5 23 26.5 23 22.5 ...
+ $ age     : num  8 10 12 14 8 10 12 14 8 10 ...
+ $ Subject : Ord.factor w/ 27 levels "M16"<"M05"<"M02"<..: 15 15 15 15 3 3 3 3 7 7 ...
+ $ Sex     : Factor w/ 2 levels "Male","Female": 1 1 1 1 1 1 1 1 1 1 ...
+ - attr(*, "outer")=Class 'formula'  language ~Sex
+  .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+ - attr(*, "formula")=Class 'formula'  language distance ~ age | Subject
+  .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+ - attr(*, "labels")=List of 2
+  ..$ x: chr "Age"
+  ..$ y: chr "Distance from pituitary to pterygomaxillary fissure"
+ - attr(*, "units")=List of 2
+  ..$ x: chr "(yr)"
+  ..$ y: chr "(mm)"
+ - attr(*, "FUN")=function (x)  
+  ..- attr(*, "source")= chr "function (x) max(x, na.rm = TRUE)"
+ - attr(*, "order.groups")= logi TRUE
+> 
+> df <- Orthodont # note that the name conflicts with df in the stats
+> fm2 <- lme(distance ~ age, df)
+> str(o2 <- getData(fm2))
+Classes ‘nfnGroupedData’, ‘nfGroupedData’, ‘groupedData’ and 'data.frame':	108 obs. of  4 variables:
+ $ distance: num  26 25 29 31 21.5 22.5 23 26.5 23 22.5 ...
+ $ age     : num  8 10 12 14 8 10 12 14 8 10 ...
+ $ Subject : Ord.factor w/ 27 levels "M16"<"M05"<"M02"<..: 15 15 15 15 3 3 3 3 7 7 ...
+ $ Sex     : Factor w/ 2 levels "Male","Female": 1 1 1 1 1 1 1 1 1 1 ...
+ - attr(*, "outer")=Class 'formula'  language ~Sex
+  .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+ - attr(*, "formula")=Class 'formula'  language distance ~ age | Subject
+  .. ..- attr(*, ".Environment")=<environment: R_GlobalEnv> 
+ - attr(*, "labels")=List of 2
+  ..$ x: chr "Age"
+  ..$ y: chr "Distance from pituitary to pterygomaxillary fissure"
+ - attr(*, "units")=List of 2
+  ..$ x: chr "(yr)"
+  ..$ y: chr "(mm)"
+ - attr(*, "FUN")=function (x)  
+  ..- attr(*, "source")= chr "function (x) max(x, na.rm = TRUE)"
+ - attr(*, "order.groups")= logi TRUE
+> stopifnot(identical(o1, o2))
+> 

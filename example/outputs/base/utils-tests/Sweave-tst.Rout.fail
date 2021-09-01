@@ -1,0 +1,146 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> #  File src/library/utils/tests/Sweave-tst.R
+> #  Part of the R package, https://www.R-project.org
+> #
+> #  This program is free software; you can redistribute it and/or modify
+> #  it under the terms of the GNU General Public License as published by
+> #  the Free Software Foundation; either version 2 of the License, or
+> #  (at your option) any later version.
+> #
+> #  This program is distributed in the hope that it will be useful,
+> #  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> #  GNU General Public License for more details.
+> #
+> #  A copy of the GNU General Public License is available at
+> #  https://www.R-project.org/Licenses/
+> 
+> ## Testing Sweave
+> 
+> .proctime00 <- proc.time()
+> library(utils)
+> options(digits = 5) # to avoid trivial printed differences
+> options(show.signif.stars = FALSE) # avoid fancy quotes in o/p
+> 
+> SweaveTeX <- function(file, ...) {
++     if(!file.exists(file))
++         stop("File", file, "does not exist in", getwd())
++     texF <- sub("\\.[RSrs]nw$", ".tex", file)
++     Sweave(file, ...)
++     if(!file.exists(texF))
++         stop("File", texF, "does not exist in", getwd())
++     readLines(texF)
++ }
+> 
+> p0 <- paste0
+> latexEnv <- function(lines, name) {
++     stopifnot(is.character(lines), is.character(name),
++ 	      length(lines) >= 2, length(name) == 1)
++     beg <- p0("\\begin{",name,"}")
++     end <- p0("\\end{",name,"}")
++     i <- grep(beg, lines, fixed=TRUE)
++     j <- grep(end, lines, fixed=TRUE)
++     if((n <- length(i)) != length(j))
++ 	stop(sprintf("different number of %s / %s", beg,end))
++     if(any(j-1 < i+1))
++ 	stop(sprintf("positionally mismatched %s / %s", beg,end))
++     lapply(mapply(seq, i+1,j-1, SIMPLIFY=FALSE),
++ 	   function(ind) lines[ind])
++ }
+> 
+> ## now, Sweave() and check  *.Rnw  examples :
+> 
+> ### ------------------------------------ 1 ----------------------------------
+> t1 <- SweaveTeX("swv-keepSrc-1.Rnw")
+Writing to file swv-keepSrc-1.tex
+Processing code chunks with options ...
+ 1 : keep.source term hide (label = preliminaries, swv-keepSrc-1.Rnw:7)
+ 2 : echo keep.source term verbatim (label = ex1-U3, swv-keepSrc-1.Rnw:14)
+ 3 : echo keep.source term verbatim (label = str, swv-keepSrc-1.Rnw:21)
+ 4 : echo keep.source term verbatim (label = req-lattice, swv-keepSrc-1.Rnw:25)
+Loading required package: lattice
+ 5 : echo keep.source (label = splom-def, swv-keepSrc-1.Rnw:31)
+ 6 : keep.source term verbatim pdf  (label = splom, swv-keepSrc-1.Rnw:33)
+ 7 : echo keep.source term tex (label = sessionInfo, swv-keepSrc-1.Rnw:44)
+
+You can now run (pdf)latex on 'swv-keepSrc-1.tex'
+R> if(FALSE)## look at it
++  writeLines(t1)
+R> 
+R> inp <- latexEnv(t1, "Sinput")
+R> out <- latexEnv(t1, "Soutput")
+R> ## This may have to be updated when the *.Rnw changes:
+R> stopifnot(length(inp) == 5,
++  	  grepl("#", inp[[2]]), length(inp[[3]]) == 1,
++  	  length(out) == 1,
++  	  any(grepl("\\includegraphics", t1)))
+R> 
+R> ### ------------------------------------ 2 ----------------------------------
+R> ## Sweave() comments with  keep.source=TRUE
+R> t2 <- SweaveTeX("keepsource.Rnw")
+Writing to file keepsource.tex
+Processing code chunks with options ...
+ 1 : echo keep.source term verbatim (label = ex, keepsource.Rnw:4)
+
+You can now run (pdf)latex on 'keepsource.tex'
+R> comml <- grep("##", t2, value=TRUE)
+R> stopifnot(length(comml) == 2,
++  	  grepl("initial comment line", comml[1]),
++  	  grepl("last comment", comml[2]))
+R> ## the first was lost in 2.12.0;  the last in most/all previous versions of R
+R> 
+R> ### ------------------------------------ 3 ----------------------------------
+R> ## custom graphics devices
+R> Sweave("customgraphics.Rnw")
+Writing to file customgraphics.tex
+Processing code chunks with options ...
+ 1 : echo keep.source term hide (customgraphics.Rnw:2)
+ 2 : echo keep.source term verbatim pdf my.Swd (customgraphics.Rnw:13)
+running my.Swd
+shutting down my.Swd
+ 3 : echo keep.source term verbatim pdf my.Swd (customgraphics.Rnw:15)
+running my.Swd
+shutting down my.Swd
+ 4 : echo keep.source term verbatim pdf my.Swd (customgraphics.Rnw:17)
+running my.Swd
+shutting down my.Swd
+
+You can now run (pdf)latex on 'customgraphics.tex'
+R> 
+R> ### ------------------------------------ 4 ----------------------------------
+R> ## SweaveOpts + \Sexpr --> \verb... output
+R> Sweave(f <- "Sexpr-verb-ex.Rnw")
+Writing to file Sexpr-verb-ex.tex
+Processing code chunks with options ...
+ 1 : keep.source (label = preliminaries, Sexpr-verb-ex.Rnw:20)
+ 2 : echo keep.source term hide (label = s-air-2, Sexpr-verb-ex.Rnw:29)
+
+You can now run (pdf)latex on 'Sexpr-verb-ex.tex'
+R> tools::texi2pdf(sub("Rnw$","tex", f))# used to fail
+Error in texi2dvi(file = file, pdf = TRUE, clean = clean, quiet = quiet,  : 
+  Running 'texi2dvi' on 'Sexpr-verb-ex.tex' failed.
+Messages:
+sh: 1: /usr/bin/texi2dvi: not found
+Calls: <Anonymous> -> texi2dvi
+In addition: Warning messages:
+1: In system2(command, args, env = env, stdout = outfile, stderr = errfile,  :
+  error in running command
+2: In system2(command, args, env = env, stdout = outfile, stderr = errfile,  :
+  error in running command
+Execution halted

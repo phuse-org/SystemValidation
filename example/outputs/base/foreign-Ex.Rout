@@ -1,0 +1,958 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "foreign"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('foreign')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("lookup.xport")
+> ### * lookup.xport
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: lookup.xport
+> ### Title: Lookup Information on a SAS XPORT Format Library
+> ### Aliases: lookup.xport
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D ## no XPORT file is installed.
+> ##D lookup.xport("test.xpt")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read.S")
+> ### * read.S
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: S3 read functions
+> ### Title: Read an S3 Binary or data.dump File
+> ### Aliases: data.restore read.S
+> ### Keywords: data file
+> 
+> ### ** Examples
+> ## if you have an S-PLUS _Data file containing 'myobj'
+> ## Not run: 
+> ##D read.S(file.path("_Data", "myobj"))
+> ##D data.restore("dumpdata", print = TRUE)
+> ## End(Not run)
+> 
+> 
+> cleanEx()
+> nameEx("read.dbf")
+> ### * read.dbf
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read.dbf
+> ### Title: Read a DBF File
+> ### Aliases: read.dbf
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> x <- read.dbf(system.file("files/sids.dbf", package="foreign")[1])
+> str(x)
+'data.frame':	100 obs. of  14 variables:
+ $ AREA     : num  0.114 0.061 0.143 0.07 0.153 0.097 0.062 0.091 0.118 0.124 ...
+ $ PERIMETER: num  1.44 1.23 1.63 2.97 2.21 ...
+ $ CNTY_    : int  1825 1827 1828 1831 1832 1833 1834 1835 1836 1837 ...
+ $ CNTY_ID  : int  1825 1827 1828 1831 1832 1833 1834 1835 1836 1837 ...
+ $ NAME     : Factor w/ 100 levels "Alamance","Alexander",..: 5 3 86 27 66 46 15 37 93 85 ...
+ $ FIPS     : Factor w/ 100 levels "37001","37003",..: 5 3 86 27 66 46 15 37 93 85 ...
+ $ FIPSNO   : int  37009 37005 37171 37053 37131 37091 37029 37073 37185 37169 ...
+ $ CRESS_ID : int  5 3 86 27 66 46 15 37 93 85 ...
+ $ BIR74    : num  1091 487 3188 508 1421 ...
+ $ SID74    : num  1 0 5 1 9 7 0 0 4 1 ...
+ $ NWBIR74  : num  10 10 208 123 1066 ...
+ $ BIR79    : num  1364 542 3616 830 1606 ...
+ $ SID79    : num  0 3 6 2 3 5 2 2 2 5 ...
+ $ NWBIR79  : num  19 12 260 145 1197 ...
+ - attr(*, "data_types")= chr [1:14] "N" "N" "N" "N" ...
+> summary(x)
+      AREA          PERIMETER         CNTY_         CNTY_ID            NAME   
+ Min.   :0.0420   Min.   :0.999   Min.   :1825   Min.   :1825   Alamance : 1  
+ 1st Qu.:0.0910   1st Qu.:1.324   1st Qu.:1902   1st Qu.:1902   Alexander: 1  
+ Median :0.1205   Median :1.609   Median :1982   Median :1982   Alleghany: 1  
+ Mean   :0.1263   Mean   :1.673   Mean   :1986   Mean   :1986   Anson    : 1  
+ 3rd Qu.:0.1542   3rd Qu.:1.859   3rd Qu.:2067   3rd Qu.:2067   Ashe     : 1  
+ Max.   :0.2410   Max.   :3.640   Max.   :2241   Max.   :2241   Avery    : 1  
+                                                                (Other)  :94  
+      FIPS        FIPSNO         CRESS_ID          BIR74           SID74      
+ 37001  : 1   Min.   :37001   Min.   :  1.00   Min.   :  248   Min.   : 0.00  
+ 37003  : 1   1st Qu.:37050   1st Qu.: 25.75   1st Qu.: 1077   1st Qu.: 2.00  
+ 37005  : 1   Median :37100   Median : 50.50   Median : 2180   Median : 4.00  
+ 37007  : 1   Mean   :37100   Mean   : 50.50   Mean   : 3300   Mean   : 6.67  
+ 37009  : 1   3rd Qu.:37150   3rd Qu.: 75.25   3rd Qu.: 3936   3rd Qu.: 8.25  
+ 37011  : 1   Max.   :37199   Max.   :100.00   Max.   :21588   Max.   :44.00  
+ (Other):94                                                                   
+    NWBIR74           BIR79           SID79          NWBIR79       
+ Min.   :   1.0   Min.   :  319   Min.   : 0.00   Min.   :    3.0  
+ 1st Qu.: 190.0   1st Qu.: 1336   1st Qu.: 2.00   1st Qu.:  250.5  
+ Median : 697.5   Median : 2636   Median : 5.00   Median :  874.5  
+ Mean   :1050.8   Mean   : 4224   Mean   : 8.36   Mean   : 1352.8  
+ 3rd Qu.:1168.5   3rd Qu.: 4889   3rd Qu.:10.25   3rd Qu.: 1406.8  
+ Max.   :8027.0   Max.   :30757   Max.   :57.00   Max.   :11631.0  
+                                                                   
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read.dta")
+> ### * read.dta
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read.dta
+> ### Title: Read Stata Binary Files
+> ### Aliases: read.dta
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> write.dta(swiss,swissfile <- tempfile())
+> read.dta(swissfile)
+   Fertility Agriculture Examination Education Catholic Infant_Mortality
+1       80.2        17.0          15        12     9.96             22.2
+2       83.1        45.1           6         9    84.84             22.2
+3       92.5        39.7           5         5    93.40             20.2
+4       85.8        36.5          12         7    33.77             20.3
+5       76.9        43.5          17        15     5.16             20.6
+6       76.1        35.3           9         7    90.57             26.6
+7       83.8        70.2          16         7    92.85             23.6
+8       92.4        67.8          14         8    97.16             24.9
+9       82.4        53.3          12         7    97.67             21.0
+10      82.9        45.2          16        13    91.38             24.4
+11      87.1        64.5          14         6    98.61             24.5
+12      64.1        62.0          21        12     8.52             16.5
+13      66.9        67.5          14         7     2.27             19.1
+14      68.9        60.7          19        12     4.43             22.7
+15      61.7        69.3          22         5     2.82             18.7
+16      68.3        72.6          18         2    24.20             21.2
+17      71.7        34.0          17         8     3.30             20.0
+18      55.7        19.4          26        28    12.11             20.2
+19      54.3        15.2          31        20     2.15             10.8
+20      65.1        73.0          19         9     2.84             20.0
+21      65.5        59.8          22        10     5.23             18.0
+22      65.0        55.1          14         3     4.52             22.4
+23      56.6        50.9          22        12    15.14             16.7
+24      57.4        54.1          20         6     4.20             15.3
+25      72.5        71.2          12         1     2.40             21.0
+26      74.2        58.1          14         8     5.23             23.8
+27      72.0        63.5           6         3     2.56             18.0
+28      60.5        60.8          16        10     7.72             16.3
+29      58.3        26.8          25        19    18.46             20.9
+30      65.4        49.5          15         8     6.10             22.5
+31      75.5        85.9           3         2    99.71             15.1
+32      69.3        84.9           7         6    99.68             19.8
+33      77.3        89.7           5         2   100.00             18.3
+34      70.5        78.2          12         6    98.96             19.4
+35      79.4        64.9           7         3    98.22             20.2
+36      65.0        75.9           9         9    99.06             17.8
+37      92.2        84.6           3         3    99.46             16.3
+38      79.3        63.1          13        13    96.83             18.1
+39      70.4        38.4          26        12     5.62             20.3
+40      65.7         7.7          29        11    13.79             20.5
+41      72.7        16.7          22        13    11.22             18.9
+42      64.4        17.6          35        32    16.92             23.0
+43      77.6        37.6          15         7     4.97             20.0
+44      67.6        18.7          25         7     8.65             19.5
+45      35.0         1.2          37        53    42.34             18.0
+46      44.7        46.6          16        29    50.43             18.2
+47      42.8        27.7          22        29    58.33             19.3
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read.epiinfo")
+> ### * read.epiinfo
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read.epiinfo
+> ### Title: Read Epi Info Data Files
+> ### Aliases: read.epiinfo
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D ## That file is not available
+> ##D read.epiinfo("oswego.rec", guess.broken.dates = TRUE, thisyear = "1972")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read.mtp")
+> ### * read.mtp
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read.mtp
+> ### Title: Read a Minitab Portable Worksheet
+> ### Aliases: read.mtp
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D read.mtp("ex1-10.mtp")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read.spss")
+> ### * read.spss
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read.spss
+> ### Title: Read an SPSS Data File
+> ### Aliases: read.spss
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> (sav <- system.file("files", "electric.sav", package = "foreign"))
+[1] "/usr/local/lib/R/library/foreign/files/electric.sav"
+> dat <- read.spss(file=sav) 
+> str(dat)   # list structure with attributes
+List of 13
+ $ CASEID  : num [1:240] 13 30 53 84 89 102 117 132 151 153 ...
+ $ FIRSTCHD: Factor w/ 5 levels "NO CHD","SUDDEN  DEATH",..: 3 3 2 3 2 3 3 3 2 2 ...
+ $ AGE     : num [1:240] 40 49 43 50 43 50 45 47 53 49 ...
+ $ DBP58   : num [1:240] 70 87 89 105 110 88 70 79 102 99 ...
+ $ EDUYR   : num [1:240] 16 11 12 8 NA 8 NA 9 12 14 ...
+ $ CHOL58  : num [1:240] 321 246 262 275 301 261 212 372 216 251 ...
+ $ CGT58   : num [1:240] 0 60 0 15 25 30 0 30 0 10 ...
+ $ HT58    : num [1:240] 68.8 72.2 69 62.5 68 68 66.5 67 67 64.3 ...
+ $ WT58    : num [1:240] 190 204 162 152 148 142 196 193 172 162 ...
+ $ DAYOFWK : Factor w/ 8 levels "SUNDAY","MONDAY",..: 8 5 7 4 2 1 8 1 3 5 ...
+ $ VITAL10 : Factor w/ 2 levels "ALIVE","DEAD": 1 1 2 1 2 2 1 1 2 2 ...
+ $ FAMHXCVR: Factor w/ 2 levels "NO","YES": 2 1 1 2 1 1 1 1 1 2 ...
+ $ CHD     : num [1:240] 1 1 1 1 1 1 1 1 1 1 ...
+ - attr(*, "label.table")=List of 13
+  ..$ CASEID  : NULL
+  ..$ FIRSTCHD: Named num [1:5] 6 5 3 2 1
+  .. ..- attr(*, "names")= chr [1:5] "OTHER   CHD" "FATAL   MI" "NONFATALMI" "SUDDEN  DEATH" ...
+  ..$ AGE     : NULL
+  ..$ DBP58   : NULL
+  ..$ EDUYR   : NULL
+  ..$ CHOL58  : NULL
+  ..$ CGT58   : NULL
+  ..$ HT58    : NULL
+  ..$ WT58    : NULL
+  ..$ DAYOFWK : Named num [1:8] 9 7 6 5 4 3 2 1
+  .. ..- attr(*, "names")= chr [1:8] "MISSING" "SATURDAY" "FRIDAY" "THURSDAY" ...
+  ..$ VITAL10 : Named num [1:2] 1 0
+  .. ..- attr(*, "names")= chr [1:2] "DEAD" "ALIVE"
+  ..$ FAMHXCVR: Named chr [1:2] "Y       " "N       "
+  .. ..- attr(*, "names")= chr [1:2] "YES" "NO"
+  ..$ CHD     : NULL
+ - attr(*, "variable.labels")= Named chr [1:13] "CASE IDENTIFICATION NUMBER" "FIRST CHD EVENT" "AGE AT ENTRY" "AVERAGE DIAST BLOOD PRESSURE 58" ...
+  ..- attr(*, "names")= chr [1:13] "CASEID" "FIRSTCHD" "AGE" "DBP58" ...
+ - attr(*, "missings")=List of 13
+  ..$ CASEID  :List of 1
+  .. ..$ type: chr "none"
+  ..$ FIRSTCHD:List of 1
+  .. ..$ type: chr "none"
+  ..$ AGE     :List of 1
+  .. ..$ type: chr "none"
+  ..$ DBP58   :List of 1
+  .. ..$ type: chr "none"
+  ..$ EDUYR   :List of 1
+  .. ..$ type: chr "none"
+  ..$ CHOL58  :List of 1
+  .. ..$ type: chr "none"
+  ..$ CGT58   :List of 1
+  .. ..$ type: chr "none"
+  ..$ HT58    :List of 1
+  .. ..$ type: chr "none"
+  ..$ WT58    :List of 1
+  .. ..$ type: chr "none"
+  ..$ DAYOFWK :List of 2
+  .. ..$ type : chr "one"
+  .. ..$ value: num 9
+  ..$ VITAL10 :List of 1
+  .. ..$ type: chr "none"
+  ..$ FAMHXCVR:List of 1
+  .. ..$ type: chr "none"
+  ..$ CHD     :List of 1
+  .. ..$ type: chr "none"
+> 
+> dat <- read.spss(file=sav, to.data.frame=TRUE) 
+> str(dat)   # now a data.frame
+'data.frame':	240 obs. of  13 variables:
+ $ CASEID  : num  13 30 53 84 89 102 117 132 151 153 ...
+ $ FIRSTCHD: Factor w/ 5 levels "NO CHD","SUDDEN  DEATH",..: 3 3 2 3 2 3 3 3 2 2 ...
+ $ AGE     : num  40 49 43 50 43 50 45 47 53 49 ...
+ $ DBP58   : num  70 87 89 105 110 88 70 79 102 99 ...
+ $ EDUYR   : num  16 11 12 8 NA 8 NA 9 12 14 ...
+ $ CHOL58  : num  321 246 262 275 301 261 212 372 216 251 ...
+ $ CGT58   : num  0 60 0 15 25 30 0 30 0 10 ...
+ $ HT58    : num  68.8 72.2 69 62.5 68 68 66.5 67 67 64.3 ...
+ $ WT58    : num  190 204 162 152 148 142 196 193 172 162 ...
+ $ DAYOFWK : Factor w/ 7 levels "SUNDAY","MONDAY",..: NA 5 7 4 2 1 NA 1 3 5 ...
+ $ VITAL10 : Factor w/ 2 levels "ALIVE","DEAD": 1 1 2 1 2 2 1 1 2 2 ...
+ $ FAMHXCVR: Factor w/ 2 levels "NO","YES": 2 1 1 2 1 1 1 1 1 2 ...
+ $ CHD     : num  1 1 1 1 1 1 1 1 1 1 ...
+ - attr(*, "variable.labels")= Named chr [1:13] "CASE IDENTIFICATION NUMBER" "FIRST CHD EVENT" "AGE AT ENTRY" "AVERAGE DIAST BLOOD PRESSURE 58" ...
+  ..- attr(*, "names")= chr [1:13] "CASEID" "FIRSTCHD" "AGE" "DBP58" ...
+> 
+> 
+> ### Now we use an example file that is not very well structured and 
+> ### hence may need some special treatment with appropriate argument settings.
+> ### Expect lots of warnings as value labels (corresponding to R factor labels) are uncomplete, 
+> ### and an unsupported long string variable is present in the data
+> (sav <- system.file("files", "testdata.sav", package = "foreign"))
+[1] "/usr/local/lib/R/library/foreign/files/testdata.sav"
+> 
+> ### Examples for add.undeclared.levels:
+> ## add.undeclared.levels = "sort" (default):
+> x.sort <- read.spss(file=sav, to.data.frame = TRUE)
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  /usr/local/lib/R/library/foreign/files/testdata.sav: Very long string record(s) found (record type 7, subtype 14), each will be imported in consecutive separate variables
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Duplicated levels in factor factor_n_duplicated: A
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Undeclared level(s) 2, 3, 4 added in variable: factor_n_undeclared
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Undeclared level(s) 0, 3 added in variable: factor_n_undeclared2
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Undeclared level(s) ä, ö added in variable: factor_s_duplicated
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Duplicated levels in factor factor_s_duplicated: A
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Undeclared level(s) perhaps added in variable: factor_s_undeclared
+> ## add.undeclared.levels = "append":
+> x.append <- read.spss(file=sav, to.data.frame = TRUE, 
++     add.undeclared.levels = "append")
+Warning in read.spss(file = sav, to.data.frame = TRUE, add.undeclared.levels = "append") :
+  /usr/local/lib/R/library/foreign/files/testdata.sav: Very long string record(s) found (record type 7, subtype 14), each will be imported in consecutive separate variables
+Warning in read.spss(file = sav, to.data.frame = TRUE, add.undeclared.levels = "append") :
+  Duplicated levels in factor factor_n_duplicated: A
+Warning in read.spss(file = sav, to.data.frame = TRUE, add.undeclared.levels = "append") :
+  Undeclared level(s) 2, 3, 4 added in variable: factor_n_undeclared
+Warning in read.spss(file = sav, to.data.frame = TRUE, add.undeclared.levels = "append") :
+  Undeclared level(s) 0, 3 added in variable: factor_n_undeclared2
+Warning in read.spss(file = sav, to.data.frame = TRUE, add.undeclared.levels = "append") :
+  Undeclared level(s) ä, ö added in variable: factor_s_duplicated
+Warning in read.spss(file = sav, to.data.frame = TRUE, add.undeclared.levels = "append") :
+  Duplicated levels in factor factor_s_duplicated: A
+Warning in read.spss(file = sav, to.data.frame = TRUE, add.undeclared.levels = "append") :
+  Undeclared level(s) perhaps added in variable: factor_s_undeclared
+> ## add.undeclared.levels = "no":
+> x.no <- read.spss(file=sav, to.data.frame = TRUE, 
++     add.undeclared.levels = "no")
+Warning in read.spss(file = sav, to.data.frame = TRUE, add.undeclared.levels = "no") :
+  /usr/local/lib/R/library/foreign/files/testdata.sav: Very long string record(s) found (record type 7, subtype 14), each will be imported in consecutive separate variables
+Warning in read.spss(file = sav, to.data.frame = TRUE, add.undeclared.levels = "no") :
+  Duplicated levels in factor factor_n_duplicated: A
+> 
+> levels(x.sort$factor_n_undeclared)
+[1] "strongly disagree" "2"                 "3"                
+[4] "4"                 "strongly agree"   
+> levels(x.append$factor_n_undeclared)
+[1] "strongly disagree" "strongly agree"    "2"                
+[4] "3"                 "4"                
+> str(x.no$factor_n_undeclared)
+ num [1:5] 1 2 4 3 1
+ - attr(*, "value.labels")= Named num [1:2] 5 1
+  ..- attr(*, "names")= chr [1:2] "strongly agree" "strongly disagree"
+> 
+> 
+> ### Examples for duplicated.value.labels:
+> ## duplicated.value.labels = "append" (default)
+> x.append <- read.spss(file=sav, to.data.frame=TRUE)
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  /usr/local/lib/R/library/foreign/files/testdata.sav: Very long string record(s) found (record type 7, subtype 14), each will be imported in consecutive separate variables
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Duplicated levels in factor factor_n_duplicated: A
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Undeclared level(s) 2, 3, 4 added in variable: factor_n_undeclared
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Undeclared level(s) 0, 3 added in variable: factor_n_undeclared2
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Undeclared level(s) ä, ö added in variable: factor_s_duplicated
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Duplicated levels in factor factor_s_duplicated: A
+Warning in read.spss(file = sav, to.data.frame = TRUE) :
+  Undeclared level(s) perhaps added in variable: factor_s_undeclared
+> ## duplicated.value.labels = "condense"
+> x.condense <- read.spss(file=sav, to.data.frame=TRUE, 
++     duplicated.value.labels = "condense")
+Warning in read.spss(file = sav, to.data.frame = TRUE, duplicated.value.labels = "condense") :
+  /usr/local/lib/R/library/foreign/files/testdata.sav: Very long string record(s) found (record type 7, subtype 14), each will be imported in consecutive separate variables
+Warning in read.spss(file = sav, to.data.frame = TRUE, duplicated.value.labels = "condense") :
+  Duplicated levels in factor factor_n_duplicated: A
+Warning in read.spss(file = sav, to.data.frame = TRUE, duplicated.value.labels = "condense") :
+  Undeclared level(s) 2, 3, 4 added in variable: factor_n_undeclared
+Warning in read.spss(file = sav, to.data.frame = TRUE, duplicated.value.labels = "condense") :
+  Undeclared level(s) 0, 3 added in variable: factor_n_undeclared2
+Warning in read.spss(file = sav, to.data.frame = TRUE, duplicated.value.labels = "condense") :
+  Undeclared level(s) ä, ö added in variable: factor_s_duplicated
+Warning in read.spss(file = sav, to.data.frame = TRUE, duplicated.value.labels = "condense") :
+  Duplicated levels in factor factor_s_duplicated: A
+Warning in read.spss(file = sav, to.data.frame = TRUE, duplicated.value.labels = "condense") :
+  Undeclared level(s) perhaps added in variable: factor_s_undeclared
+> 
+> levels(x.append$factor_n_duplicated)
+[1] "A"              "A_duplicated_2" "B"             
+> levels(x.condense$factor_n_duplicated)
+[1] "A" "B"
+> 
+> as.numeric(x.append$factor_n_duplicated)
+[1]  1  1  2 NA  3
+> as.numeric(x.condense$factor_n_duplicated)
+[1]  1  1  1 NA  2
+> 
+>     
+> ## Long Strings (>255 chars) are imported in consecutive separate variables 
+> ## (see warning about subtype 14):
+> x <- read.spss(file=sav, to.data.frame=TRUE, stringsAsFactors=FALSE)
+Warning in read.spss(file = sav, to.data.frame = TRUE, stringsAsFactors = FALSE) :
+  /usr/local/lib/R/library/foreign/files/testdata.sav: Very long string record(s) found (record type 7, subtype 14), each will be imported in consecutive separate variables
+Warning in read.spss(file = sav, to.data.frame = TRUE, stringsAsFactors = FALSE) :
+  Duplicated levels in factor factor_n_duplicated: A
+Warning in read.spss(file = sav, to.data.frame = TRUE, stringsAsFactors = FALSE) :
+  Undeclared level(s) 2, 3, 4 added in variable: factor_n_undeclared
+Warning in read.spss(file = sav, to.data.frame = TRUE, stringsAsFactors = FALSE) :
+  Undeclared level(s) 0, 3 added in variable: factor_n_undeclared2
+Warning in read.spss(file = sav, to.data.frame = TRUE, stringsAsFactors = FALSE) :
+  Undeclared level(s) ä, ö added in variable: factor_s_duplicated
+Warning in read.spss(file = sav, to.data.frame = TRUE, stringsAsFactors = FALSE) :
+  Duplicated levels in factor factor_s_duplicated: A
+Warning in read.spss(file = sav, to.data.frame = TRUE, stringsAsFactors = FALSE) :
+  Undeclared level(s) perhaps added in variable: factor_s_undeclared
+> 
+> cat.long.string <- function(x, w=70) cat(paste(strwrap(x, width=w), "\n"))
+> 
+> ## first part: x$string_500:
+> cat.long.string(x$string_500)
+A wonderful serenity has taken possession of my entire soul, like 
+ these sweet mornings of spring which I enjoy with my whole heart. I 
+ am alone, and feel the charm of existence in this spot, which was 
+ created for the bliss of souls like mine. I am so happy 
+  
+ Far far away, behind the word mountains, far from the countries 
+ Vokalia and Consonantia, there live the blind texts. Separated they 
+ live in Bookmarksgrove right at the coast of the Semantics, a large 
+ language ocean. A small river named Duden flows by thei 
+  
+ abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ 
+ !"§ $%& /() =?* '<> #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs 
+ tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !"§ $%& /() =?* '<> #|; 
+ ²³~ @`´ ©«» ¤¼× {} abc def ghi j 
+> ## second part: x$STRIN0:
+> cat.long.string(x$STRIN0)
+, my dear friend, so absorbed in the exquisite sense of mere tranquil 
+ existence, that I neglect my talents. I should be incapable of 
+ drawing a single stroke at the present moment; and yet I feel that I 
+ never was a greater artist than now. 
+  
+ r place and supplies it with the necessary regelialia. It is a 
+ paradisematic country, in which roasted parts of sentences fly into 
+ your mouth. 
+  
+ kl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !"§ $%& /() 
+ =?* '<> #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC 
+ DEF GHI JKL MNO PQRS TUV WXYZ !"§ $%& /() =?* '<> #|; ²³~ @`´ ©«» ¤¼× 
+ {} abc def ghi jkl 
+> ## complete long string:
+> long.string <- apply(x[,c("string_500", "STRIN0")], 1, paste, collapse="")
+> cat.long.string(long.string)
+A wonderful serenity has taken possession of my entire soul, like 
+ these sweet mornings of spring which I enjoy with my whole heart. I 
+ am alone, and feel the charm of existence in this spot, which was 
+ created for the bliss of souls like mine. I am so happy, my dear 
+ friend, so absorbed in the exquisite sense of mere tranquil 
+ existence, that I neglect my talents. I should be incapable of 
+ drawing a single stroke at the present moment; and yet I feel that I 
+ never was a greater artist than now. 
+  
+ Far far away, behind the word mountains, far from the countries 
+ Vokalia and Consonantia, there live the blind texts. Separated they 
+ live in Bookmarksgrove right at the coast of the Semantics, a large 
+ language ocean. A small river named Duden flows by their place and 
+ supplies it with the necessary regelialia. It is a paradisematic 
+ country, in which roasted parts of sentences fly into your mouth. 
+  
+ abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ 
+ !"§ $%& /() =?* '<> #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs 
+ tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !"§ $%& /() =?* '<> #|; 
+ ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL 
+ MNO PQRS TUV WXYZ !"§ $%& /() =?* '<> #|; ²³~ @`´ ©«» ¤¼× {} abc def 
+ ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !"§ $%& 
+ /() =?* '<> #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read.ssd")
+> ### * read.ssd
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read.ssd
+> ### Title: Obtain a Data Frame from a SAS Permanent Dataset, via read.xport
+> ### Aliases: read.ssd
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> ## if there were some files on the web we could get a real
+> ## runnable example
+> ## Not run: 
+> ##D R> list.files("trialdata")
+> ##D  [1] "baseline.sas7bdat" "form11.sas7bdat"   "form12.sas7bdat"  
+> ##D  [4] "form13.sas7bdat"   "form22.sas7bdat"   "form23.sas7bdat"  
+> ##D  [7] "form3.sas7bdat"    "form4.sas7bdat"    "form48.sas7bdat"  
+> ##D [10] "form50.sas7bdat"   "form51.sas7bdat"   "form71.sas7bdat"  
+> ##D [13] "form72.sas7bdat"   "form8.sas7bdat"    "form9.sas7bdat"   
+> ##D [16] "form90.sas7bdat"   "form91.sas7bdat"  
+> ##D R> baseline <- read.ssd("trialdata", "baseline")
+> ##D R> form90 <- read.ssd("trialdata", "form90")
+> ##D 
+> ##D ## Or for a Windows example
+> ##D sashome <- "/Program Files/SAS/SAS 9.1"
+> ##D read.ssd(file.path(sashome, "core", "sashelp"), "retail",
+> ##D          sascmd = file.path(sashome, "sas.exe"))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read.systat")
+> ### * read.systat
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read.systat
+> ### Title: Obtain a Data Frame from a Systat File
+> ### Aliases: read.systat
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> summary(iris)
+  Sepal.Length    Sepal.Width     Petal.Length    Petal.Width   
+ Min.   :4.300   Min.   :2.000   Min.   :1.000   Min.   :0.100  
+ 1st Qu.:5.100   1st Qu.:2.800   1st Qu.:1.600   1st Qu.:0.300  
+ Median :5.800   Median :3.000   Median :4.350   Median :1.300  
+ Mean   :5.843   Mean   :3.057   Mean   :3.758   Mean   :1.199  
+ 3rd Qu.:6.400   3rd Qu.:3.300   3rd Qu.:5.100   3rd Qu.:1.800  
+ Max.   :7.900   Max.   :4.400   Max.   :6.900   Max.   :2.500  
+       Species  
+ setosa    :50  
+ versicolor:50  
+ virginica :50  
+                
+                
+                
+> iris.s <- read.systat(system.file("files/Iris.syd", package="foreign")[1])
+> str(iris.s)
+'data.frame':	150 obs. of  5 variables:
+ $ SPECIES : num  1 1 1 1 1 1 1 1 1 1 ...
+ $ SEPALLEN: num  5.1 4.9 4.7 4.6 5 5.4 4.6 5 4.4 4.9 ...
+ $ SEPALWID: num  3.5 3 3.2 3.1 3.6 3.9 3.4 3.4 2.9 3.1 ...
+ $ PETALLEN: num  1.4 1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.4 1.5 ...
+ $ PETALWID: num  0.2 0.2 0.2 0.2 0.2 0.4 0.3 0.2 0.2 0.1 ...
+> summary(iris.s)
+    SPECIES     SEPALLEN        SEPALWID        PETALLEN        PETALWID    
+ Min.   :1   Min.   :4.300   Min.   :2.000   Min.   :1.000   Min.   :0.100  
+ 1st Qu.:1   1st Qu.:5.100   1st Qu.:2.800   1st Qu.:1.600   1st Qu.:0.300  
+ Median :2   Median :5.800   Median :3.000   Median :4.350   Median :1.300  
+ Mean   :2   Mean   :5.843   Mean   :3.057   Mean   :3.758   Mean   :1.199  
+ 3rd Qu.:3   3rd Qu.:6.400   3rd Qu.:3.300   3rd Qu.:5.100   3rd Qu.:1.800  
+ Max.   :3   Max.   :7.900   Max.   :4.400   Max.   :6.900   Max.   :2.500  
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read.xport")
+> ### * read.xport
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read.xport
+> ### Title: Read a SAS XPORT Format Library
+> ### Aliases: read.xport
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D ## no XPORT file is installed
+> ##D read.xport("test.xpt")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("write.arff")
+> ### * write.arff
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: write.arff
+> ### Title: Write Data into ARFF Files
+> ### Aliases: write.arff
+> ### Keywords: print file
+> 
+> ### ** Examples
+> 
+> write.arff(iris, file = "")
+@relation iris
+@attribute Sepal.Length numeric
+@attribute Sepal.Width numeric
+@attribute Petal.Length numeric
+@attribute Petal.Width numeric
+@attribute Species {'setosa','versicolor','virginica'}
+@data
+5.1,3.5,1.4,0.2,'setosa'
+4.9,3,1.4,0.2,'setosa'
+4.7,3.2,1.3,0.2,'setosa'
+4.6,3.1,1.5,0.2,'setosa'
+5,3.6,1.4,0.2,'setosa'
+5.4,3.9,1.7,0.4,'setosa'
+4.6,3.4,1.4,0.3,'setosa'
+5,3.4,1.5,0.2,'setosa'
+4.4,2.9,1.4,0.2,'setosa'
+4.9,3.1,1.5,0.1,'setosa'
+5.4,3.7,1.5,0.2,'setosa'
+4.8,3.4,1.6,0.2,'setosa'
+4.8,3,1.4,0.1,'setosa'
+4.3,3,1.1,0.1,'setosa'
+5.8,4,1.2,0.2,'setosa'
+5.7,4.4,1.5,0.4,'setosa'
+5.4,3.9,1.3,0.4,'setosa'
+5.1,3.5,1.4,0.3,'setosa'
+5.7,3.8,1.7,0.3,'setosa'
+5.1,3.8,1.5,0.3,'setosa'
+5.4,3.4,1.7,0.2,'setosa'
+5.1,3.7,1.5,0.4,'setosa'
+4.6,3.6,1,0.2,'setosa'
+5.1,3.3,1.7,0.5,'setosa'
+4.8,3.4,1.9,0.2,'setosa'
+5,3,1.6,0.2,'setosa'
+5,3.4,1.6,0.4,'setosa'
+5.2,3.5,1.5,0.2,'setosa'
+5.2,3.4,1.4,0.2,'setosa'
+4.7,3.2,1.6,0.2,'setosa'
+4.8,3.1,1.6,0.2,'setosa'
+5.4,3.4,1.5,0.4,'setosa'
+5.2,4.1,1.5,0.1,'setosa'
+5.5,4.2,1.4,0.2,'setosa'
+4.9,3.1,1.5,0.2,'setosa'
+5,3.2,1.2,0.2,'setosa'
+5.5,3.5,1.3,0.2,'setosa'
+4.9,3.6,1.4,0.1,'setosa'
+4.4,3,1.3,0.2,'setosa'
+5.1,3.4,1.5,0.2,'setosa'
+5,3.5,1.3,0.3,'setosa'
+4.5,2.3,1.3,0.3,'setosa'
+4.4,3.2,1.3,0.2,'setosa'
+5,3.5,1.6,0.6,'setosa'
+5.1,3.8,1.9,0.4,'setosa'
+4.8,3,1.4,0.3,'setosa'
+5.1,3.8,1.6,0.2,'setosa'
+4.6,3.2,1.4,0.2,'setosa'
+5.3,3.7,1.5,0.2,'setosa'
+5,3.3,1.4,0.2,'setosa'
+7,3.2,4.7,1.4,'versicolor'
+6.4,3.2,4.5,1.5,'versicolor'
+6.9,3.1,4.9,1.5,'versicolor'
+5.5,2.3,4,1.3,'versicolor'
+6.5,2.8,4.6,1.5,'versicolor'
+5.7,2.8,4.5,1.3,'versicolor'
+6.3,3.3,4.7,1.6,'versicolor'
+4.9,2.4,3.3,1,'versicolor'
+6.6,2.9,4.6,1.3,'versicolor'
+5.2,2.7,3.9,1.4,'versicolor'
+5,2,3.5,1,'versicolor'
+5.9,3,4.2,1.5,'versicolor'
+6,2.2,4,1,'versicolor'
+6.1,2.9,4.7,1.4,'versicolor'
+5.6,2.9,3.6,1.3,'versicolor'
+6.7,3.1,4.4,1.4,'versicolor'
+5.6,3,4.5,1.5,'versicolor'
+5.8,2.7,4.1,1,'versicolor'
+6.2,2.2,4.5,1.5,'versicolor'
+5.6,2.5,3.9,1.1,'versicolor'
+5.9,3.2,4.8,1.8,'versicolor'
+6.1,2.8,4,1.3,'versicolor'
+6.3,2.5,4.9,1.5,'versicolor'
+6.1,2.8,4.7,1.2,'versicolor'
+6.4,2.9,4.3,1.3,'versicolor'
+6.6,3,4.4,1.4,'versicolor'
+6.8,2.8,4.8,1.4,'versicolor'
+6.7,3,5,1.7,'versicolor'
+6,2.9,4.5,1.5,'versicolor'
+5.7,2.6,3.5,1,'versicolor'
+5.5,2.4,3.8,1.1,'versicolor'
+5.5,2.4,3.7,1,'versicolor'
+5.8,2.7,3.9,1.2,'versicolor'
+6,2.7,5.1,1.6,'versicolor'
+5.4,3,4.5,1.5,'versicolor'
+6,3.4,4.5,1.6,'versicolor'
+6.7,3.1,4.7,1.5,'versicolor'
+6.3,2.3,4.4,1.3,'versicolor'
+5.6,3,4.1,1.3,'versicolor'
+5.5,2.5,4,1.3,'versicolor'
+5.5,2.6,4.4,1.2,'versicolor'
+6.1,3,4.6,1.4,'versicolor'
+5.8,2.6,4,1.2,'versicolor'
+5,2.3,3.3,1,'versicolor'
+5.6,2.7,4.2,1.3,'versicolor'
+5.7,3,4.2,1.2,'versicolor'
+5.7,2.9,4.2,1.3,'versicolor'
+6.2,2.9,4.3,1.3,'versicolor'
+5.1,2.5,3,1.1,'versicolor'
+5.7,2.8,4.1,1.3,'versicolor'
+6.3,3.3,6,2.5,'virginica'
+5.8,2.7,5.1,1.9,'virginica'
+7.1,3,5.9,2.1,'virginica'
+6.3,2.9,5.6,1.8,'virginica'
+6.5,3,5.8,2.2,'virginica'
+7.6,3,6.6,2.1,'virginica'
+4.9,2.5,4.5,1.7,'virginica'
+7.3,2.9,6.3,1.8,'virginica'
+6.7,2.5,5.8,1.8,'virginica'
+7.2,3.6,6.1,2.5,'virginica'
+6.5,3.2,5.1,2,'virginica'
+6.4,2.7,5.3,1.9,'virginica'
+6.8,3,5.5,2.1,'virginica'
+5.7,2.5,5,2,'virginica'
+5.8,2.8,5.1,2.4,'virginica'
+6.4,3.2,5.3,2.3,'virginica'
+6.5,3,5.5,1.8,'virginica'
+7.7,3.8,6.7,2.2,'virginica'
+7.7,2.6,6.9,2.3,'virginica'
+6,2.2,5,1.5,'virginica'
+6.9,3.2,5.7,2.3,'virginica'
+5.6,2.8,4.9,2,'virginica'
+7.7,2.8,6.7,2,'virginica'
+6.3,2.7,4.9,1.8,'virginica'
+6.7,3.3,5.7,2.1,'virginica'
+7.2,3.2,6,1.8,'virginica'
+6.2,2.8,4.8,1.8,'virginica'
+6.1,3,4.9,1.8,'virginica'
+6.4,2.8,5.6,2.1,'virginica'
+7.2,3,5.8,1.6,'virginica'
+7.4,2.8,6.1,1.9,'virginica'
+7.9,3.8,6.4,2,'virginica'
+6.4,2.8,5.6,2.2,'virginica'
+6.3,2.8,5.1,1.5,'virginica'
+6.1,2.6,5.6,1.4,'virginica'
+7.7,3,6.1,2.3,'virginica'
+6.3,3.4,5.6,2.4,'virginica'
+6.4,3.1,5.5,1.8,'virginica'
+6,3,4.8,1.8,'virginica'
+6.9,3.1,5.4,2.1,'virginica'
+6.7,3.1,5.6,2.4,'virginica'
+6.9,3.1,5.1,2.3,'virginica'
+5.8,2.7,5.1,1.9,'virginica'
+6.8,3.2,5.9,2.3,'virginica'
+6.7,3.3,5.7,2.5,'virginica'
+6.7,3,5.2,2.3,'virginica'
+6.3,2.5,5,1.9,'virginica'
+6.5,3,5.2,2,'virginica'
+6.2,3.4,5.4,2.3,'virginica'
+5.9,3,5.1,1.8,'virginica'
+> 
+> 
+> 
+> cleanEx()
+> nameEx("write.dbf")
+> ### * write.dbf
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: write.dbf
+> ### Title: Write a DBF File
+> ### Aliases: write.dbf
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> str(warpbreaks)
+'data.frame':	54 obs. of  3 variables:
+ $ breaks : num  26 30 54 25 70 52 51 26 67 18 ...
+ $ wool   : Factor w/ 2 levels "A","B": 1 1 1 1 1 1 1 1 1 1 ...
+ $ tension: Factor w/ 3 levels "L","M","H": 1 1 1 1 1 1 1 1 1 2 ...
+> try1 <- paste(tempfile(), ".dbf", sep = "")
+> write.dbf(warpbreaks, try1, factor2char = FALSE)
+> in1 <- read.dbf(try1)
+> str(in1)
+'data.frame':	54 obs. of  3 variables:
+ $ breaks : num  26 30 54 25 70 52 51 26 67 18 ...
+ $ wool   : int  1 1 1 1 1 1 1 1 1 1 ...
+ $ tension: int  1 1 1 1 1 1 1 1 1 2 ...
+ - attr(*, "data_types")= chr [1:3] "N" "N" "N"
+> try2 <- paste(tempfile(), ".dbf", sep = "")
+> write.dbf(warpbreaks, try2, factor2char = TRUE)
+> in2 <- read.dbf(try2)
+> str(in2)
+'data.frame':	54 obs. of  3 variables:
+ $ breaks : num  26 30 54 25 70 52 51 26 67 18 ...
+ $ wool   : Factor w/ 2 levels "A","B": 1 1 1 1 1 1 1 1 1 1 ...
+ $ tension: Factor w/ 3 levels "H","L","M": 2 2 2 2 2 2 2 2 2 3 ...
+ - attr(*, "data_types")= chr [1:3] "N" "C" "C"
+> unlink(c(try1, try2))
+> ## Don't show: 
+> DF <- data.frame(a=c(1:3, NA), b=c(NA, rep(pi, 3)),
++                  c=c(TRUE,NA, FALSE, TRUE), d=c("aa", "bb", NA, "dd"),
++                  e=I(c("a1", NA, NA, "a4")))
+> DF$f <- as.Date(c("2001-01-01", NA, NA, "2004-10-26"))
+> str(DF)
+'data.frame':	4 obs. of  6 variables:
+ $ a: int  1 2 3 NA
+ $ b: num  NA 3.14 3.14 3.14
+ $ c: logi  TRUE NA FALSE TRUE
+ $ d: chr  "aa" "bb" NA "dd"
+ $ e: 'AsIs' chr  "a1" NA NA "a4"
+ $ f: Date, format: "2001-01-01" NA ...
+> write.dbf(DF, try2)
+> in2 <- read.dbf(try2)
+> str(in2)
+'data.frame':	4 obs. of  6 variables:
+ $ a: int  1 2 3 NA
+ $ b: num  NA 3.14 3.14 3.14
+ $ c: logi  TRUE NA FALSE TRUE
+ $ d: Factor w/ 3 levels "aa","bb","dd": 1 2 NA 3
+ $ e: Factor w/ 2 levels "a1","a4": 1 NA NA 2
+ $ f: Date, format: "2001-01-01" NA ...
+ - attr(*, "data_types")= chr [1:6] "N" "N" "L" "C" ...
+> unlink(try2)
+> ## End(Don't show)
+> 
+> 
+> cleanEx()
+> nameEx("write.dta")
+> ### * write.dta
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: write.dta
+> ### Title: Write Files in Stata Binary Format
+> ### Aliases: write.dta
+> ### Keywords: file
+> 
+> ### ** Examples
+> 
+> write.dta(swiss, swissfile <- tempfile())
+> read.dta(swissfile)
+   Fertility Agriculture Examination Education Catholic Infant_Mortality
+1       80.2        17.0          15        12     9.96             22.2
+2       83.1        45.1           6         9    84.84             22.2
+3       92.5        39.7           5         5    93.40             20.2
+4       85.8        36.5          12         7    33.77             20.3
+5       76.9        43.5          17        15     5.16             20.6
+6       76.1        35.3           9         7    90.57             26.6
+7       83.8        70.2          16         7    92.85             23.6
+8       92.4        67.8          14         8    97.16             24.9
+9       82.4        53.3          12         7    97.67             21.0
+10      82.9        45.2          16        13    91.38             24.4
+11      87.1        64.5          14         6    98.61             24.5
+12      64.1        62.0          21        12     8.52             16.5
+13      66.9        67.5          14         7     2.27             19.1
+14      68.9        60.7          19        12     4.43             22.7
+15      61.7        69.3          22         5     2.82             18.7
+16      68.3        72.6          18         2    24.20             21.2
+17      71.7        34.0          17         8     3.30             20.0
+18      55.7        19.4          26        28    12.11             20.2
+19      54.3        15.2          31        20     2.15             10.8
+20      65.1        73.0          19         9     2.84             20.0
+21      65.5        59.8          22        10     5.23             18.0
+22      65.0        55.1          14         3     4.52             22.4
+23      56.6        50.9          22        12    15.14             16.7
+24      57.4        54.1          20         6     4.20             15.3
+25      72.5        71.2          12         1     2.40             21.0
+26      74.2        58.1          14         8     5.23             23.8
+27      72.0        63.5           6         3     2.56             18.0
+28      60.5        60.8          16        10     7.72             16.3
+29      58.3        26.8          25        19    18.46             20.9
+30      65.4        49.5          15         8     6.10             22.5
+31      75.5        85.9           3         2    99.71             15.1
+32      69.3        84.9           7         6    99.68             19.8
+33      77.3        89.7           5         2   100.00             18.3
+34      70.5        78.2          12         6    98.96             19.4
+35      79.4        64.9           7         3    98.22             20.2
+36      65.0        75.9           9         9    99.06             17.8
+37      92.2        84.6           3         3    99.46             16.3
+38      79.3        63.1          13        13    96.83             18.1
+39      70.4        38.4          26        12     5.62             20.3
+40      65.7         7.7          29        11    13.79             20.5
+41      72.7        16.7          22        13    11.22             18.9
+42      64.4        17.6          35        32    16.92             23.0
+43      77.6        37.6          15         7     4.97             20.0
+44      67.6        18.7          25         7     8.65             19.5
+45      35.0         1.2          37        53    42.34             18.0
+46      44.7        46.6          16        29    50.43             18.2
+47      42.8        27.7          22        29    58.33             19.3
+> 
+> 
+> 
+> cleanEx()
+> nameEx("write.foreign")
+> ### * write.foreign
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: write.foreign
+> ### Title: Write Text Files and Code to Read Them
+> ### Aliases: write.foreign
+> ### Keywords: file
+> 
+> ### ** Examples
+> ## Not run: 
+> ##D datafile <- tempfile()
+> ##D codefile <- tempfile()
+> ##D write.foreign(esoph, datafile, codefile, package="SPSS")
+> ##D file.show(datafile)
+> ##D file.show(codefile)
+> ##D unlink(datafile)
+> ##D unlink(codefile)
+> ## End(Not run)
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.244 0.024 0.268 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

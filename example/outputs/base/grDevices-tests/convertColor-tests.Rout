@@ -1,0 +1,168 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> cols <- t(col2rgb(palette()))
+> 
+> ## One full space1-XYZ-space2 conversion
+> 
+> convertColor(cols, 'sRGB', 'Lab', scale.in=255)
+            L          a             b
+[1,]  0.00000   0.000000  0.000000e+00
+[2,] 55.16051  56.308997  1.618063e+01
+[3,] 74.89688 -55.977389  5.300681e+01
+[4,] 59.98342  -3.542552 -4.862932e+01
+[5,] 82.01645 -41.734979 -1.410432e+01
+[6,] 48.23048  79.843152 -4.253326e+01
+[7,] 82.05072   2.317476  8.163638e+01
+[8,] 65.11425   0.000000 -2.220446e-14
+> 
+> ## to XYZ, then to every defined space
+> 
+> XYZ <- convertColor(cols, 'sRGB', 'XYZ', scale.in=255)
+> fromXYZ <- vapply(
++   names(colorspaces), convertColor, FUN.VALUE=XYZ,
++   from='XYZ', color=XYZ, clip=NA
++ )
+> round(fromXYZ, 4)
+, , XYZ
+
+       [,1]   [,2]   [,3]
+[1,] 0.0000 0.0000 0.0000
+[2,] 0.3649 0.2309 0.1639
+[3,] 0.2888 0.4811 0.1513
+[4,] 0.2593 0.2810 0.7864
+[5,] 0.4209 0.6033 0.8328
+[6,] 0.3461 0.1698 0.4886
+[7,] 0.5852 0.6039 0.0906
+[8,] 0.3259 0.3419 0.3711
+
+, , Apple RGB
+
+       [,1]   [,2]   [,3]
+[1,] 0.0000 0.0000 0.0000
+[2,] 0.8168 0.2283 0.3465
+[3,] 0.3597 0.7886 0.2103
+[4,] 0.1425 0.5202 0.8880
+[5,] 0.2267 0.8696 0.8742
+[6,] 0.7286    NaN 0.6945
+[7,] 0.9413 0.7335    NaN
+[8,] 0.5509 0.5509 0.5509
+
+, , sRGB
+
+       [,1]   [,2]   [,3]
+[1,] 0.0000 0.0000 0.0000
+[2,] 0.8745 0.3255 0.4196
+[3,] 0.3804 0.8157 0.3098
+[4,] 0.1333 0.5922 0.9020
+[5,] 0.1569 0.8863 0.8980
+[6,] 0.8039 0.0431 0.7372
+[7,] 0.9608 0.7804 0.0628
+[8,] 0.6196 0.6196 0.6196
+
+, , CIE RGB
+
+       [,1]   [,2]   [,3]
+[1,] 0.0000 0.0000 0.0000
+[2,] 0.7807 0.4299 0.4397
+[3,] 0.4591 0.7625 0.4186
+[4,]    NaN 0.6099 0.8990
+[5,] 0.2844 0.8598 0.9208
+[6,] 0.6869 0.3627 0.7247
+[7,] 0.9041 0.7733 0.3273
+[8,] 0.5699 0.6227 0.6374
+
+, , Lab
+
+        [,1]     [,2]     [,3]
+[1,]  0.0000   0.0000   0.0000
+[2,] 55.1605  56.3090  16.1806
+[3,] 74.8969 -55.9774  53.0068
+[4,] 59.9834  -3.5426 -48.6293
+[5,] 82.0164 -41.7350 -14.1043
+[6,] 48.2305  79.8432 -42.5333
+[7,] 82.0507   2.3175  81.6364
+[8,] 65.1142   0.0000   0.0000
+
+, , Luv
+
+        [,1]     [,2]     [,3]
+[1,]  0.0000   0.0000   0.0000
+[2,] 55.1605  99.9487   8.9530
+[3,] 74.8969 -51.9569  73.4965
+[4,] 59.9834 -36.4365 -76.7427
+[5,] 82.0164 -61.6428 -15.8562
+[6,] 48.2305  74.7063 -73.9514
+[7,] 82.0507  40.0752  84.9249
+[8,] 65.1142   0.0000   0.0000
+
+> 
+> ## Back to XYZ, delta to original XYZ should be close to zero
+> 
+> tol <- 1e-5
+> toXYZ <- vapply(
++   dimnames(fromXYZ)[[3]],
++   function(x) all(abs(convertColor(fromXYZ[,,x], from=x, to='XYZ') - XYZ)<tol),
++   logical(1)
++ )
+> toXYZ
+      XYZ Apple RGB      sRGB   CIE RGB       Lab       Luv 
+     TRUE        NA      TRUE        NA      TRUE      TRUE 
+> stopifnot(all(toXYZ | is.na(toXYZ)))
+> 
+> ## Test Apple and CIE RGB on smaller gamuts since they clip
+> 
+> XYZ2 <- XYZ * .7 + .15
+> fromXYZ2 <- vapply(
++   c('Apple RGB', 'CIE RGB'), convertColor, FUN.VALUE=XYZ2,
++   from='XYZ', color=XYZ2, clip=NA
++ )
+> round(fromXYZ2, 4)
+, , Apple RGB
+
+       [,1]   [,2]   [,3]
+[1,] 0.3816 0.3379 0.3309
+[2,] 0.7958 0.3985 0.4530
+[3,] 0.5005 0.7518 0.3844
+[4,] 0.4061 0.5649 0.8214
+[5,] 0.4366 0.8113 0.8112
+[6,] 0.7335 0.3195 0.6802
+[7,] 0.8860 0.7120 0.3176
+[8,] 0.6142 0.5852 0.5807
+
+, , CIE RGB
+
+       [,1]   [,2]   [,3]
+[1,] 0.4222 0.4222 0.4222
+[2,] 0.7658 0.5414 0.5466
+[3,] 0.5572 0.7529 0.5355
+[4,] 0.4146 0.6487 0.8524
+[5,] 0.4746 0.8234 0.8688
+[6,] 0.7001 0.5078 0.7262
+[7,] 0.8562 0.7606 0.4919
+[8,] 0.6231 0.6570 0.6667
+
+> toXYZ2 <- vapply(
++   dimnames(fromXYZ2)[[3]],
++   function(x)
++     all(abs(convertColor(fromXYZ2[,,x], from=x, to='XYZ') - XYZ2)<tol),
++   logical(1)
++ )
+> stopifnot(all(toXYZ2))
+> 
+> 

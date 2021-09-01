@@ -1,0 +1,364 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "pillar"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('pillar')
+Warning: package ‘pillar’ was built under R version 4.0.5
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("align")
+> ### * align
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: align
+> ### Title: Alignment helper
+> ### Aliases: align
+> 
+> ### ** Examples
+> 
+> align(c("abc", "de"), align = "left")
+[1] "abc" "de "
+> align(c("abc", "de"), align = "right")
+[1] "abc" " de"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("char")
+> ### * char
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: char
+> ### Title: Format a character vector in a tibble
+> ### Aliases: char set_char_opts
+> 
+> ### ** Examples
+> 
+> # Display as a vector:
+> char(letters[1:3])
+<pillar_char[3]>
+[1] a b c
+> ## Don't show: 
+> if ({ set.seed(20210331); rlang::is_installed("stringi") }) (if (getRversion() >= "3.4") withAutoprint else force)({ # examplesIf
++ ## End(Don't show)
++ # Space constraints:
++ rand_strings <- stringi::stri_rand_strings(10, seq(40, 22, by = -2))
++ 
++ # Plain character vectors get truncated if space is limited:
++ data_with_id <- function(id) {
++   tibble::tibble(
++     id,
++     some_number_1 = 1, some_number_2 = 2, some_number_3 = 3,
++     some_number_4 = 4, some_number_5 = 5, some_number_6 = 6,
++     some_number_7 = 7, some_number_8 = 8, some_number_9 = 9
++   )
++ }
++ data_with_id(rand_strings)
++ 
++ # Use char() to avoid or control truncation
++ data_with_id(char(rand_strings, min_chars = 24))
++ data_with_id(char(rand_strings, min_chars = Inf))
++ data_with_id(char(rand_strings, min_chars = 24, shorten = "mid"))
++ 
++ # Lorem Ipsum, one sentence per row.
++ lipsum <- unlist(strsplit(stringi::stri_rand_lipsum(1), "(?<=[.]) +", perl = TRUE))
++ tibble::tibble(
++   back = char(lipsum, shorten = "back"),
++   front = char(lipsum, shorten = "front"),
++   mid   = char(lipsum, shorten = "mid")
++ )
++ tibble::tibble(abbr = char(lipsum, shorten = "abbreviate"))
++ ## Don't show: 
++ }) # examplesIf
+> rand_strings <- stringi::stri_rand_strings(10, seq(40, 22, by = -2))
+> data_with_id <- function(id) {
++     tibble::tibble(id, some_number_1 = 1, some_number_2 = 2, some_number_3 = 3, some_number_4 = 4, 
++         some_number_5 = 5, some_number_6 = 6, some_number_7 = 7, some_number_8 = 8, 
++         some_number_9 = 9)
++ }
+> data_with_id(rand_strings)
+# A tibble: 10 × 10
+   id      some_number_1 some_number_2 some_number_3 some_number_4 some_number_5
+   <chr>           <dbl>         <dbl>         <dbl>         <dbl>         <dbl>
+ 1 WJSsxf…             1             2             3             4             5
+ 2 HQOlqj…             1             2             3             4             5
+ 3 GR8hYm…             1             2             3             4             5
+ 4 dO0k5C…             1             2             3             4             5
+ 5 3yKhjZ…             1             2             3             4             5
+ 6 uyWa9T…             1             2             3             4             5
+ 7 UaiZMc…             1             2             3             4             5
+ 8 z2qYwl…             1             2             3             4             5
+ 9 ek4O7h…             1             2             3             4             5
+10 YCRHBt…             1             2             3             4             5
+# … with 4 more variables: some_number_6 <dbl>, some_number_7 <dbl>,
+#   some_number_8 <dbl>, some_number_9 <dbl>
+> data_with_id(char(rand_strings, min_chars = 24))
+# A tibble: 10 × 10
+   id                                  some_number_1 some_number_2 some_number_3
+   <char>                                      <dbl>         <dbl>         <dbl>
+ 1 WJSsxf5RPiDjFRy7iVoadHgnz4uveIpMlA…             1             2             3
+ 2 HQOlqjZavreUgr3GXLoDX6mpkxihE20qyT…             1             2             3
+ 3 GR8hYmPYrwJG9UsJm9A47KvwLTo2FQEkuq…             1             2             3
+ 4 dO0k5CLEp9McpsCkmBt5wkYOioyg9COiuR              1             2             3
+ 5 3yKhjZZbegjEYOJm1HIxNkWvYx8Ozl85                1             2             3
+ 6 uyWa9TGFPzGkVAZsJlCaIHvalJsvMC                  1             2             3
+ 7 UaiZMcOCjm7Lh2Gthq6NgOGsJbR2                    1             2             3
+ 8 z2qYwlo7fldemmrE772uCYLrI6                      1             2             3
+ 9 ek4O7hFxIud6K9YsvhQTB6Oe                        1             2             3
+10 YCRHBt1kj2i9JnNgyaa5MB                          1             2             3
+# … with 6 more variables: some_number_4 <dbl>, some_number_5 <dbl>,
+#   some_number_6 <dbl>, some_number_7 <dbl>, some_number_8 <dbl>,
+#   some_number_9 <dbl>
+> data_with_id(char(rand_strings, min_chars = Inf))
+# A tibble: 10 × 10
+   id                                       some_number_1 some_number_2
+   <char>                                           <dbl>         <dbl>
+ 1 WJSsxf5RPiDjFRy7iVoadHgnz4uveIpMlA7Qaqjz             1             2
+ 2 HQOlqjZavreUgr3GXLoDX6mpkxihE20qyTAB45               1             2
+ 3 GR8hYmPYrwJG9UsJm9A47KvwLTo2FQEkuqMT                 1             2
+ 4 dO0k5CLEp9McpsCkmBt5wkYOioyg9COiuR                   1             2
+ 5 3yKhjZZbegjEYOJm1HIxNkWvYx8Ozl85                     1             2
+ 6 uyWa9TGFPzGkVAZsJlCaIHvalJsvMC                       1             2
+ 7 UaiZMcOCjm7Lh2Gthq6NgOGsJbR2                         1             2
+ 8 z2qYwlo7fldemmrE772uCYLrI6                           1             2
+ 9 ek4O7hFxIud6K9YsvhQTB6Oe                             1             2
+10 YCRHBt1kj2i9JnNgyaa5MB                               1             2
+# … with 7 more variables: some_number_3 <dbl>, some_number_4 <dbl>,
+#   some_number_5 <dbl>, some_number_6 <dbl>, some_number_7 <dbl>,
+#   some_number_8 <dbl>, some_number_9 <dbl>
+> data_with_id(char(rand_strings, min_chars = 24, shorten = "mid"))
+# A tibble: 10 × 10
+   id                                  some_number_1 some_number_2 some_number_3
+   <char>                                      <dbl>         <dbl>         <dbl>
+ 1 WJSsxf5RPiDjFRy7i…nz4uveIpMlA7Qaqjz             1             2             3
+ 2 HQOlqjZavreUgr3GX…6mpkxihE20qyTAB45             1             2             3
+ 3 GR8hYmPYrwJG9UsJm…47KvwLTo2FQEkuqMT             1             2             3
+ 4 dO0k5CLEp9McpsCkmBt5wkYOioyg9COiuR              1             2             3
+ 5 3yKhjZZbegjEYOJm1HIxNkWvYx8Ozl85                1             2             3
+ 6 uyWa9TGFPzGkVAZsJlCaIHvalJsvMC                  1             2             3
+ 7 UaiZMcOCjm7Lh2Gthq6NgOGsJbR2                    1             2             3
+ 8 z2qYwlo7fldemmrE772uCYLrI6                      1             2             3
+ 9 ek4O7hFxIud6K9YsvhQTB6Oe                        1             2             3
+10 YCRHBt1kj2i9JnNgyaa5MB                          1             2             3
+# … with 6 more variables: some_number_4 <dbl>, some_number_5 <dbl>,
+#   some_number_6 <dbl>, some_number_7 <dbl>, some_number_8 <dbl>,
+#   some_number_9 <dbl>
+> lipsum <- unlist(strsplit(stringi::stri_rand_lipsum(1), "(?<=[.]) +", 
++     perl = TRUE))
+> tibble::tibble(back = char(lipsum, shorten = "back"), front = char(lipsum, 
++     shorten = "front"), mid = char(lipsum, shorten = "mid"))
+# A tibble: 10 × 3
+   back                      front                     mid                      
+   <char>                    <char>                    <char>                   
+ 1 Lorem ipsum dolor sit am… … dui, nisl vitae sociis. Lorem ipsum …itae sociis.
+ 2 Laoreet in nec diam ut s… …rtor risus donec turpis. Laoreet in n…onec turpis.
+ 3 Eleifend eleifend, metus… …fend, metus nunc turpis. Eleifend ele…nunc turpis.
+ 4 Augue massa lobortis fau… …t efficitur ac faucibus. Augue massa …ac faucibus.
+ 5 Elit egestas egestas sit… …nubia faucibus facilisi. Elit egestas…us facilisi.
+ 6 Tempor urna nisi feugiat… …a nisi feugiat senectus. Tempor urna …at senectus.
+ 7 Nunc in pretium dui ac.   Nunc in pretium dui ac.   Nunc in pretium dui ac.  
+ 8 Elit semper eu.           Elit semper eu.           Elit semper eu.          
+ 9 Sapien congue, dictum ma… …sa sed posuere sagittis. Sapien congu…re sagittis.
+10 Interdum ante aenean, ni… …felis ultricies dapibus. Interdum ant…ies dapibus.
+> tibble::tibble(abbr = char(lipsum, shorten = "abbreviate"))
+# A tibble: 10 × 1
+   abbr                                                                         
+   <char>                                                                       
+ 1 Loremipsumdolorsitamet,sitetauctorlacinetiamcommodo!Tinciduntdui,nislvitsocs.
+ 2 Laoreetinnecdiamutsuspendisseadipiscingsuspendissconubtortorrisusdonecturpis.
+ 3 Eleifend eleifend, metus nunc turpis.                                        
+ 4 Augue massa lobortis faucibus velit efficitur ac faucibus.                   
+ 5 Elit egestas egestas sit amet ut conubia faucibus facilisi.                  
+ 6 Tempor urna nisi feugiat senectus.                                           
+ 7 Nunc in pretium dui ac.                                                      
+ 8 Elit semper eu.                                                              
+ 9 Sapien congue, dictum massa sed posuere sagittis.                            
+10 Interdumanteaenean,nisidapibuslacinianullalaoreet,felisultriciesdapibus.     
+> ## End(Don't show)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("colonnade")
+> ### * colonnade
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: colonnade
+> ### Title: Format multiple vectors in a tabular display
+> ### Aliases: colonnade
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> colonnade(list(a = 1:3, b = letters[1:3]))
+      a b    
+  <int> <chr>
+1     1 a    
+2     2 b    
+3     3 c    
+> 
+> long_string <- list(paste(letters, collapse = " "))
+> colonnade(long_string, width = 20)
+  <chr>             
+1 a b c d e f g h i…
+> colonnade(long_string, has_row_id = FALSE, width = 20)
+<chr>               
+a b c d e f g h i j…
+> 
+> # The width can also be overridden when calling format() or print():
+> print(colonnade(long_string), width = 20)
+  <chr>             
+1 a b c d e f g h i…
+> 
+> # If width is larger than getOption("width"), multiple tiers are created:
+> colonnade(rep(long_string, 4), width = Inf)
+  <chr>                                              
+1 a b c d e f g h i j k l m n o p q r s t u v w x y z
+  <chr>                                              
+1 a b c d e f g h i j k l m n o p q r s t u v w x y z
+  <chr>                                              
+1 a b c d e f g h i j k l m n o p q r s t u v w x y z
+  <chr>                                              
+1 a b c d e f g h i j k l m n o p q r s t u v w x y z
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ctl_new_pillar")
+> ### * ctl_new_pillar
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ctl_new_pillar
+> ### Title: Customize your tibble subclass
+> ### Aliases: ctl_new_pillar ctl_new_compound_pillar
+> 
+> ### ** Examples
+> 
+> ## Don't show: 
+> if (rlang::is_installed("palmerpenguins") && requireNamespace("tibble")) (if (getRversion() >= "3.4") withAutoprint else force)({ # examplesIf
++ ## End(Don't show)
++ # Create pillar objects
++ ctl_new_pillar(
++   palmerpenguins::penguins,
++   palmerpenguins::penguins$species[1:3], width = 60
++ )
++ ctl_new_pillar(
++   palmerpenguins::penguins,
++   palmerpenguins::penguins$bill_length_mm[1:3],
++   width = 60
++ )
++ 
++ # Packed data frame
++ ctl_new_compound_pillar(
++   tibble::tibble(),
++   palmerpenguins::penguins,
++   width = 60
++ )
++ 
++ # Packed matrix
++ ctl_new_compound_pillar(tibble::tibble(), matrix(1:6, ncol = 2), width = 60)
++ 
++ # Packed array
++ ctl_new_compound_pillar(tibble::tibble(), Titanic, width = 60)
++ ## Don't show: 
++ }) # examplesIf
+> ## End(Don't show)
+> 
+> # Customize output
+> lines <- function(char = "-") {
++   stopifnot(nchar(char) == 1)
++   structure(char, class = "lines")
++ }
+> 
+> format.lines <- function(x, width, ...) {
++   paste(rep(x, width), collapse = "")
++ }
+> 
+> ctl_new_pillar.line_tbl <- function(controller, x, width, ..., title = NULL) {
++   out <- NextMethod()
++   new_pillar(list(
++     title = out$title,
++     type = out$type,
++     lines = new_pillar_component(list(lines("=")), width = 1),
++     data = out$data
++   ))
++ }
+> 
+> vctrs::new_data_frame(
++   list(a = 1:3, b = letters[1:3]),
++   class = c("line_tbl", "tbl")
++ )
+# A data frame: 3 × 2
+      a b    
+  <int> <chr>
+  ===== =====
+1     1 a    
+2     2 b    
+3     3 c    
+> 
+> 
+> 
+> cleanEx()
+> nameEx("dim_desc")
+> ### * dim_desc
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: dim_desc
+> ### Title: Format dimensions
+> ### Aliases: dim_desc
+> 
+> ### ** Examples
+> 
+> dim_desc(1:10)
+[1] "10"
+> dim_desc(Titanic)
+[1] "4 × 2 × 2 × 2"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("expect_known_display")
+> ### * expect_known_display
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: expect_known_display
+> ### Title: Test helpers
+> ### Aliases: expect_known_display
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> file <- tempfile("pillar", fileext = ".txt")
+> 
+> # The pillar is constructed after options have been set
+> # (need two runs because reference file doesn't exist during the first run)
+> suppressWarnings(tryCatch(
++   expect_known_display(pillar(1:3), file, crayon = FALSE),
++   expectation_failure = function(e) {}
++ ))
+Error in loadNamespace(name) : there is no package called ‘testthat’
+Execution halted

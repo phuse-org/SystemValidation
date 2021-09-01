@@ -1,0 +1,276 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "magrittr"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('magrittr')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("aliases")
+> ### * aliases
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: extract
+> ### Title: Aliases
+> ### Aliases: extract extract2 use_series add subtract multiply_by
+> ###   multiply_by_matrix divide_by divide_by_int raise_to_power and or mod
+> ###   is_in equals is_greater_than is_weakly_greater_than is_less_than
+> ###   is_weakly_less_than not 'n'est pas' set_colnames set_rownames
+> ###   set_names set_class inset inset2 set_attr set_attributes
+> 
+> ### ** Examples
+> 
+>  iris %>%
++    extract(, 1:4) %>%
++    head
+  Sepal.Length Sepal.Width Petal.Length Petal.Width
+1          5.1         3.5          1.4         0.2
+2          4.9         3.0          1.4         0.2
+3          4.7         3.2          1.3         0.2
+4          4.6         3.1          1.5         0.2
+5          5.0         3.6          1.4         0.2
+6          5.4         3.9          1.7         0.4
+> 
+> good.times <-
++   Sys.Date() %>%
++   as.POSIXct %>%
++   seq(by = "15 mins", length.out = 100) %>%
++   data.frame(timestamp = .)
+> 
+> good.times$quarter <-
++   good.times %>%
++   use_series(timestamp) %>%
++   format("%M") %>%
++   as.numeric %>%
++   divide_by_int(15) %>%
++   add(1)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("compound")
+> ### * compound
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: %<>%
+> ### Title: Assignment pipe
+> ### Aliases: %<>%
+> 
+> ### ** Examples
+> 
+> iris$Sepal.Length %<>% sqrt
+> 
+> x <- rnorm(100)
+> 
+> x %<>% abs %>% sort
+> 
+> is_weekend <- function(day)
++ {
++    # day could be e.g. character a valid representation
++    day %<>% as.Date
++    
++    result <- day %>% format("%u") %>% as.numeric %>% is_greater_than(5)
++    
++    if (result)
++      message(day %>% paste("is a weekend!"))
++    else
++      message(day %>% paste("is not a weekend!"))
++    
++    invisible(result)
++ }
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("exposition")
+> ### * exposition
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: %$%
+> ### Title: Exposition pipe
+> ### Aliases: %$%
+> 
+> ### ** Examples
+> 
+> iris %>%
++   subset(Sepal.Length > mean(Sepal.Length)) %$%
++   cor(Sepal.Length, Sepal.Width)
+[1] 0.3361992
+>   
+> data.frame(z = rnorm(100)) %$% 
++   ts.plot(z)
+>   
+> 
+> 
+> 
+> cleanEx()
+> nameEx("magrittr-package")
+> ### * magrittr-package
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: magrittr-package
+> ### Title: magrittr - Ceci n'est pas un pipe
+> ### Aliases: magrittr magrittr-package
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D 
+> ##D the_data <-
+> ##D   read.csv('/path/to/data/file.csv') %>%
+> ##D   subset(variable_a > x) %>%
+> ##D   transform(variable_c = variable_a/variable_b) %>%
+> ##D   head(100)
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pipe")
+> ### * pipe
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: %>%
+> ### Title: Pipe
+> ### Aliases: %>%
+> 
+> ### ** Examples
+> 
+> # Basic use:
+> iris %>% head
+  Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1          5.1         3.5          1.4         0.2  setosa
+2          4.9         3.0          1.4         0.2  setosa
+3          4.7         3.2          1.3         0.2  setosa
+4          4.6         3.1          1.5         0.2  setosa
+5          5.0         3.6          1.4         0.2  setosa
+6          5.4         3.9          1.7         0.4  setosa
+> 
+> # Use with lhs as first argument
+> iris %>% head(10)
+   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1           5.1         3.5          1.4         0.2  setosa
+2           4.9         3.0          1.4         0.2  setosa
+3           4.7         3.2          1.3         0.2  setosa
+4           4.6         3.1          1.5         0.2  setosa
+5           5.0         3.6          1.4         0.2  setosa
+6           5.4         3.9          1.7         0.4  setosa
+7           4.6         3.4          1.4         0.3  setosa
+8           5.0         3.4          1.5         0.2  setosa
+9           4.4         2.9          1.4         0.2  setosa
+10          4.9         3.1          1.5         0.1  setosa
+> 
+> # Using the dot place-holder
+> "Ceci n'est pas une pipe" %>% gsub("une", "un", .)
+[1] "Ceci n'est pas un pipe"
+>   
+> # When dot is nested, lhs is still placed first:
+> sample(1:10) %>% paste0(LETTERS[.])
+ [1] "9I"  "4D"  "7G"  "1A"  "2B"  "5E"  "3C"  "10J" "6F"  "8H" 
+> 
+> # This can be avoided:
+> rnorm(100) %>% {c(min(.), mean(.), max(.))} %>% floor
+[1] -3  0  2
+> 
+> # Lambda expressions: 
+> iris %>%
++ {
++   size <- sample(1:10, size = 1)
++   rbind(head(., size), tail(., size))
++ }
+    Sepal.Length Sepal.Width Petal.Length Petal.Width   Species
+1            5.1         3.5          1.4         0.2    setosa
+2            4.9         3.0          1.4         0.2    setosa
+3            4.7         3.2          1.3         0.2    setosa
+148          6.5         3.0          5.2         2.0 virginica
+149          6.2         3.4          5.4         2.3 virginica
+150          5.9         3.0          5.1         1.8 virginica
+> 
+> # renaming in lambdas:
+> iris %>%
++ {
++   my_data <- .
++   size <- sample(1:10, size = 1)
++   rbind(head(my_data, size), tail(my_data, size))
++ }
+    Sepal.Length Sepal.Width Petal.Length Petal.Width   Species
+1            5.1         3.5          1.4         0.2    setosa
+2            4.9         3.0          1.4         0.2    setosa
+3            4.7         3.2          1.3         0.2    setosa
+148          6.5         3.0          5.2         2.0 virginica
+149          6.2         3.4          5.4         2.3 virginica
+150          5.9         3.0          5.1         1.8 virginica
+> 
+> # Building unary functions with %>%
+> trig_fest <- . %>% tan %>% cos %>% sin
+> 
+> 1:10 %>% trig_fest
+ [1]  0.0133878 -0.5449592  0.8359477  0.3906486 -0.8257855  0.8180174
+ [7]  0.6001744  0.7640323  0.7829771  0.7153150
+> trig_fest(1:10)
+ [1]  0.0133878 -0.5449592  0.8359477  0.3906486 -0.8257855  0.8180174
+ [7]  0.6001744  0.7640323  0.7829771  0.7153150
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("tee")
+> ### * tee
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: %T>%
+> ### Title: Tee pipe
+> ### Aliases: %T>%
+> 
+> ### ** Examples
+> 
+> rnorm(200) %>%
++ matrix(ncol = 2) %T>%
++ plot %>% # plot usually does not return anything. 
++ colSums
+[1] 10.888737 -3.780808
+> 
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.134 0.008 0.142 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

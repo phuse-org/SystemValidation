@@ -1,0 +1,182 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "ellipsis"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('ellipsis')
+Warning: package ‘ellipsis’ was built under R version 4.0.4
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("check_dots_empty")
+> ### * check_dots_empty
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: check_dots_empty
+> ### Title: Check that dots are unused
+> ### Aliases: check_dots_empty
+> 
+> ### ** Examples
+> 
+> f <- function(x, ..., foofy = 8) {
++   check_dots_empty()
++   x + foofy
++ }
+> 
+> try(f(1, foof = 4))
+Error : `...` is not empty.
+
+We detected these problematic arguments:
+* `foof`
+
+These dots only exist to allow future extensions and should be empty.
+Did you misspecify an argument?
+> f(1, foofy = 4)
+[1] 5
+> 
+> 
+> 
+> cleanEx()
+> nameEx("check_dots_unnamed")
+> ### * check_dots_unnamed
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: check_dots_unnamed
+> ### Title: Check that all dots are unnamed
+> ### Aliases: check_dots_unnamed
+> 
+> ### ** Examples
+> 
+> f <- function(..., foofy = 8) {
++   check_dots_unnamed()
++   c(...)
++ }
+> 
+> f(1, 2, 3, foofy = 4)
+[1] 1 2 3
+> try(f(1, 2, 3, foof = 4))
+Error : 1 components of `...` had unexpected names.
+
+We detected these problematic arguments:
+* `foof`
+
+Did you misspecify an argument?
+> 
+> 
+> 
+> cleanEx()
+> nameEx("check_dots_used")
+> ### * check_dots_used
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: check_dots_used
+> ### Title: Check that all dots have been used
+> ### Aliases: check_dots_used
+> 
+> ### ** Examples
+> 
+> f <- function(...) {
++   check_dots_used()
++   g(...)
++ }
+> 
+> g <- function(x, y, ...) {
++   x + y
++ }
+> f(x = 1, y = 2)
+[1] 3
+> 
+> try(f(x = 1, y = 2, z = 3))
+Error : 1 components of `...` were not used.
+
+We detected these problematic arguments:
+* `z`
+
+Did you misspecify an argument?
+> try(f(x = 1, y = 2, 3, 4, 5))
+Error : 3 components of `...` were not used.
+
+We detected these problematic arguments:
+* `..3`
+* `..4`
+* `..5`
+
+Did you misspecify an argument?
+> 
+> 
+> 
+> cleanEx()
+> nameEx("safe_median")
+> ### * safe_median
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: safe_median
+> ### Title: Safe version of median
+> ### Aliases: safe_median safe_median.numeric
+> 
+> ### ** Examples
+> 
+> x <- c(1:10, NA)
+> safe_median(x, na.rm = TRUE)
+[1] 5.5
+> median(x, na.rm = TRUE)
+[1] 5.5
+> 
+> try(median(x, na.mr = TRUE))
+[1] NA
+> try(safe_median(x, na.mr = TRUE))
+Error : 1 components of `...` were not used.
+
+We detected these problematic arguments:
+* `na.mr`
+
+Did you misspecify an argument?
+> 
+> try(median(1, 2, 3))
+[1] 1
+> try(safe_median(1, 2, 3))
+Error : 2 components of `...` were not used.
+
+We detected these problematic arguments:
+* `..1`
+* `..2`
+
+Did you misspecify an argument?
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.133 0.016 0.149 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

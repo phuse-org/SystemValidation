@@ -1,0 +1,143 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "tinytex"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('tinytex')
+Warning: package ‘tinytex’ was built under R version 4.0.5
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("check_installed")
+> ### * check_installed
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: check_installed
+> ### Title: Check if certain LaTeX packages are installed
+> ### Aliases: check_installed
+> 
+> ### ** Examples
+> 
+> tinytex::check_installed('framed')
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_tinytex")
+> ### * is_tinytex
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_tinytex
+> ### Title: Check if the LaTeX installation is TinyTeX
+> ### Aliases: is_tinytex
+> 
+> ### ** Examples
+> 
+> tinytex::is_tinytex()
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("r_texmf")
+> ### * r_texmf
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: r_texmf
+> ### Title: Add/remove R's texmf tree to/from TeX Live
+> ### Aliases: r_texmf
+> 
+> ### ** Examples
+> 
+> # running the code below will modify your texmf tree; please do not run
+> # unless you know what it means
+> 
+> # r_texmf('remove')
+> # r_texmf('add')
+> 
+> # all files under R's texmf tree
+> list.files(file.path(R.home('share'), 'texmf'), recursive = TRUE, full.names = TRUE)
+ [1] "/usr/local/lib/R/share/texmf/bibtex/bib/RJournal.bib"
+ [2] "/usr/local/lib/R/share/texmf/bibtex/bib/Rnews.bib"   
+ [3] "/usr/local/lib/R/share/texmf/bibtex/bst/jss.bst"     
+ [4] "/usr/local/lib/R/share/texmf/tex/latex/jss.cls"      
+ [5] "/usr/local/lib/R/share/texmf/tex/latex/omsaer.fd"    
+ [6] "/usr/local/lib/R/share/texmf/tex/latex/omsaett.fd"   
+ [7] "/usr/local/lib/R/share/texmf/tex/latex/omscmtt.fd"   
+ [8] "/usr/local/lib/R/share/texmf/tex/latex/Rd.sty"       
+ [9] "/usr/local/lib/R/share/texmf/tex/latex/Sweave.sty"   
+[10] "/usr/local/lib/R/share/texmf/tex/latex/ts1aer.fd"    
+[11] "/usr/local/lib/R/share/texmf/tex/latex/ts1aett.fd"   
+> 
+> 
+> 
+> cleanEx()
+> nameEx("tlmgr")
+> ### * tlmgr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: tlmgr
+> ### Title: Run the TeX Live Manager
+> ### Aliases: tlmgr tlmgr_search tlmgr_install tlmgr_remove tlmgr_update
+> ###   tlmgr_path tlmgr_conf tlmgr_repo
+> 
+> ### ** Examples
+> 
+> # search for a package that contains titling.sty
+> tlmgr_search('titling.sty')
+tlmgr search --file --global 'titling.sty'
+(running on Debian, switching to user mode!)
+TLPDB: not a directory, not loading: /root/texmf
+tlmgr: running in usermode, did you call `tlmgr init-usertree'?
+> 
+> #' to match titling.sty exactly, add a slash before the keyword, e.g.
+> #' tlmgr_search('/titling.sty')
+> 
+> #' use a regular expression if you want to be more precise, e.g.
+> #' tlmgr_search('/titling\.sty$')
+> 
+> # list all installed LaTeX packages
+> tlmgr(c('info', '--list', '--only-installed', '--data', 'name'))
+tlmgr info --list --only-installed --data name
+(running on Debian, switching to user mode!)
+TLPDB: not a directory, not loading: /root/texmf
+tlmgr: running in usermode, did you call `tlmgr init-usertree'?
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.127 0.002 0.805 0.56 0.069 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

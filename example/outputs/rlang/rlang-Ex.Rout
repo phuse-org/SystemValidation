@@ -1,0 +1,6396 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "rlang"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('rlang')
+Warning: package ‘rlang’ was built under R version 4.0.4
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("abort")
+> ### * abort
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: abort
+> ### Title: Signal an error, warning, or message
+> ### Aliases: abort warn inform signal interrupt
+> 
+> ### ** Examples
+> 
+> # These examples are guarded to avoid throwing errors
+> if (FALSE) {
++ 
++ # Signal an error with a message just like stop():
++ abort("Something bad happened")
++ 
++ # Give a class to the error:
++ abort("Something bad happened", "somepkg_bad_error")
++ 
++ # This will allow your users to handle the error selectively
++ tryCatch(
++   somepkg_function(),
++   somepkg_bad_error = function(err) {
++     warn(conditionMessage(err)) # Demote the error to a warning
++     NA                          # Return an alternative value
++   }
++ )
++ 
++ # You can also specify metadata that will be stored in the condition:
++ abort("Something bad happened", "somepkg_bad_error", data = 1:10)
++ 
++ # This data can then be consulted by user handlers:
++ tryCatch(
++   somepkg_function(),
++   somepkg_bad_error = function(err) {
++     # Compute an alternative return value with the data:
++     recover_error(err$data)
++   }
++ )
++ 
++ # If you call low-level APIs it is good practice to handle
++ # technical errors and rethrow them with a more meaningful
++ # message. Always prefer doing this from `withCallinghandlers()`
++ # rather than `tryCatch()` because the former preserves the stack
++ # on error and makes it possible for users to use `recover()`.
++ file <- "http://foo.bar/baz"
++ try(withCallinghandlers(
++   download(file),
++   error = function(err) {
++     msg <- sprintf("Can't download `%s`", file)
++     abort(msg, parent = err)
++ }))
++ # Note how we supplied the parent error to `abort()` as `parent` to
++ # get a decomposition of error messages across error contexts.
++ 
++ # Unhandled errors are saved automatically by `abort()` and can be
++ # retrieved with `last_error()`. The error prints with a simplified
++ # backtrace:
++ abort("Saved error?")
++ last_error()
++ 
++ # Use `summary()` to print the full backtrace and the condition fields:
++ summary(last_error())
++ 
++ }
+> 
+> 
+> 
+> cleanEx()
+> nameEx("are_na")
+> ### * are_na
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: are_na
+> ### Title: Test for missing values
+> ### Aliases: are_na is_na is_lgl_na is_int_na is_dbl_na is_chr_na is_cpl_na
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # are_na() is vectorised and works regardless of the type
+> are_na(c(1, 2, NA))
+[1] FALSE FALSE  TRUE
+> are_na(c(1L, NA, 3L))
+[1] FALSE  TRUE FALSE
+> 
+> # is_na() checks for scalar input and works for all types
+> is_na(NA)
+[1] TRUE
+> is_na(na_dbl)
+[1] TRUE
+> is_na(character(0))
+[1] FALSE
+> 
+> # There are typed versions as well:
+> is_lgl_na(NA)
+[1] TRUE
+> is_lgl_na(na_dbl)
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("arg_match")
+> ### * arg_match
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: arg_match
+> ### Title: Match an argument to a character vector
+> ### Aliases: arg_match arg_match0
+> 
+> ### ** Examples
+> 
+> fn <- function(x = c("foo", "bar")) arg_match(x)
+> fn("bar")
+[1] "bar"
+> 
+> # Throws an informative error for mismatches:
+> try(fn("b"))
+Error : `x` must be one of "foo" or "bar".
+Did you mean "bar"?
+> try(fn("baz"))
+Error : `x` must be one of "foo" or "bar".
+Did you mean "bar"?
+> 
+> # Use the bare-bones version with explicit values for speed:
+> arg_match0("bar", c("foo", "bar", "baz"))
+[1] "bar"
+> 
+> # For convenience:
+> fn1 <- function(x = c("bar", "baz", "foo")) fn3(x)
+> fn2 <- function(x = c("baz", "bar", "foo")) fn3(x)
+> fn3 <- function(x) arg_match0(x, c("foo", "bar", "baz"))
+> fn1()
+[1] "bar"
+> fn2("bar")
+[1] "bar"
+> try(fn3("zoo"))
+Error : `x` must be one of "foo", "bar", or "baz".
+Did you mean "foo"?
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_data_mask")
+> ### * as_data_mask
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_data_mask
+> ### Title: Create a data mask
+> ### Aliases: as_data_mask as_data_pronoun new_data_mask
+> 
+> ### ** Examples
+> 
+> # Evaluating in a tidy evaluation environment enables all tidy
+> # features:
+> mask <- as_data_mask(mtcars)
+> eval_tidy(quo(letters), mask)
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+> 
+> # You can install new pronouns in the mask:
+> mask$.pronoun <- as_data_pronoun(list(foo = "bar", baz = "bam"))
+> eval_tidy(quo(.pronoun$foo), mask)
+[1] "bar"
+> 
+> # In some cases the data mask can leak to the user, for example if
+> # a function or formula is created in the data mask environment:
+> cyl <- "user variable from the context"
+> fn <- eval_tidy(quote(function() cyl), mask)
+> fn()
+ [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
+> 
+> # If new objects are created in the mask, they persist in the
+> # subsequent calls:
+> eval_tidy(quote(new <- cyl + am), mask)
+> eval_tidy(quote(new * 2), mask)
+ [1] 14 14 10 12 16 12 16  8  8 12 12 16 16 16 16 16 16 10 10 10  8 16 16 16 16
+[26] 10 10 10 18 14 18 10
+> 
+> 
+> # In some cases your data mask is a whole chain of environments
+> # rather than a single environment. You'll have to use
+> # `new_data_mask()` and let it know about the bottom of the mask
+> # (the last child of the environment chain) and the topmost parent.
+> 
+> # A common situation where you'll want a multiple-environment mask
+> # is when you include functions in your mask. In that case you'll
+> # put functions in the top environment and data in the bottom. This
+> # will prevent the data from overwriting the functions.
+> top <- new_environment(list(`+` = base::paste, c = base::paste))
+> 
+> # Let's add a middle environment just for sport:
+> middle <- env(top)
+> 
+> # And finally the bottom environment containing data:
+> bottom <- env(middle, a = "a", b = "b", c = "c")
+> 
+> # We can now create a mask by supplying the top and bottom
+> # environments:
+> mask <- new_data_mask(bottom, top = top)
+> 
+> # This data mask can be passed to eval_tidy() instead of a list or
+> # data frame:
+> eval_tidy(quote(a + b + c), data = mask)
+[1] "a b c"
+> 
+> # Note how the function `c()` and the object `c` are looked up
+> # properly because of the multi-level structure:
+> eval_tidy(quote(c(a, b, c)), data = mask)
+[1] "a b c"
+> 
+> # new_data_mask() does not create data pronouns, but
+> # data pronouns can be added manually:
+> mask$.fns <- as_data_pronoun(top)
+> 
+> # The `.data` pronoun should generally be created from the
+> # mask. This will ensure data is looked up throughout the whole
+> # ancestry. Only non-function objects are looked up from this
+> # pronoun:
+> mask$.data <- as_data_pronoun(mask)
+> mask$.data$c
+[1] "c"
+> 
+> # Now we can reference the values with the pronouns:
+> eval_tidy(quote(c(.data$a, .data$b, .data$c)), data = mask)
+[1] "a b c"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_environment")
+> ### * as_environment
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_environment
+> ### Title: Coerce to an environment
+> ### Aliases: as_environment
+> 
+> ### ** Examples
+> 
+> # Coerce a named vector to an environment:
+> env <- as_environment(mtcars)
+> 
+> # By default it gets the empty environment as parent:
+> identical(env_parent(env), empty_env())
+[1] TRUE
+> 
+> 
+> # With strings it is a handy shortcut for pkg_env():
+> as_environment("base")
+<environment: base>
+> as_environment("rlang")
+<environment: package:rlang>
+attr(,"name")
+[1] "package:rlang"
+attr(,"path")
+[1] "/usr/local/lib/R/site-library/rlang"
+> 
+> # With NULL it returns the empty environment:
+> as_environment(NULL)
+<environment: R_EmptyEnv>
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_function")
+> ### * as_function
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_function
+> ### Title: Convert to function or closure
+> ### Aliases: as_function is_lambda as_closure
+> 
+> ### ** Examples
+> 
+> f <- as_function(~ .x + 1)
+> f(10)
+[1] 11
+> 
+> g <- as_function(~ -1 * .)
+> g(4)
+[1] -4
+> 
+> h <- as_function(~ .x - .y)
+> h(6, 3)
+[1] 3
+> 
+> # Functions created from a formula have a special class:
+> is_lambda(f)
+[1] TRUE
+> is_lambda(as_function(function() "foo"))
+[1] FALSE
+> 
+> # Primitive functions are regularised as closures
+> as_closure(list)
+function (...) 
+.Primitive("list")(...)
+> as_closure("list")
+function (...) 
+.Primitive("list")(...)
+> 
+> # Operators have `.x` and `.y` as arguments, just like lambda
+> # functions created with the formula syntax:
+> as_closure(`+`)
+function (e1, e2, .x = e1, .y = e2) 
+{
+    if (missing(.x)) {
+        if (missing(e1)) {
+            abort("Must supply `e1` or `.x` to binary operator")
+        }
+        .x <- e1
+    }
+    else if (!missing(e1)) {
+        abort("Can't supply both `e1` and `.x` to binary operator")
+    }
+    if (missing(.y) && !missing(e2)) {
+        .y <- e2
+    }
+    else if (!missing(e2)) {
+        abort("Can't supply both `e2` and `.y` to binary operator")
+    }
+    if (missing(.y)) 
+        .x
+    else .x + .y
+}
+<environment: 0x5578c699f7d8>
+> as_closure(`~`)
+function (.x, .y) 
+{
+    if (is_missing(substitute(.y))) {
+        new_formula(NULL, substitute(.x), caller_env())
+    }
+    else {
+        new_formula(substitute(.x), substitute(.y), caller_env())
+    }
+}
+<bytecode: 0x5578c6979988>
+<environment: 0x5578c69bb6b8>
+> 
+> # Use a regular function for tidy evaluation, also when calling functions
+> # that use tidy evaluation:
+> ## Bad:
+> e <- as_function(~ as_label(ensym(.x)))
+> ## Good:
+> e <- as_function(function(x) as_label(ensym(x)))
+> 
+> e(y)
+[1] "y"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_label")
+> ### * as_label
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_label
+> ### Title: Create a default name for an R object
+> ### Aliases: as_label
+> 
+> ### ** Examples
+> 
+> # as_label() is useful with quoted expressions:
+> as_label(expr(foo(bar)))
+[1] "foo(bar)"
+> as_label(expr(foobar))
+[1] "foobar"
+> 
+> # It works with any R object. This is also useful for quoted
+> # arguments because the user might unquote constant objects:
+> as_label(1:3)
+[1] "<int>"
+> as_label(base::list)
+[1] "<fn>"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_name")
+> ### * as_name
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_name
+> ### Title: Extract names from symbols
+> ### Aliases: as_name
+> 
+> ### ** Examples
+> 
+> # Let's create some symbols:
+> foo <- quote(foo)
+> bar <- sym("bar")
+> 
+> # as_name() converts symbols to strings:
+> foo
+foo
+> as_name(foo)
+[1] "foo"
+> 
+> typeof(bar)
+[1] "symbol"
+> typeof(as_name(bar))
+[1] "character"
+> 
+> # as_name() unwraps quosured symbols automatically:
+> as_name(quo(foo))
+[1] "foo"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_quosure")
+> ### * as_quosure
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_quosure
+> ### Title: Coerce object to quosure
+> ### Aliases: as_quosure new_quosure
+> 
+> ### ** Examples
+> 
+> # as_quosure() converts expressions or any R object to a validly
+> # scoped quosure:
+> env <- env(var = "thing")
+> as_quosure(quote(var), env)
+<quosure>
+expr: ^var
+env:  0x5578c45fa658
+> 
+> 
+> # The environment is ignored for formulas:
+> as_quosure(~foo, env)
+<quosure>
+expr: ^foo
+env:  global
+> as_quosure(~foo)
+<quosure>
+expr: ^foo
+env:  global
+> 
+> # However you must supply it for symbols and calls:
+> try(as_quosure(quote(var)))
+Warning: `as_quosure()` requires an explicit environment as of rlang 0.3.0.
+Please supply `env`.
+This warning is displayed once per session.
+<quosure>
+expr: ^var
+env:  global
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_string")
+> ### * as_string
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_string
+> ### Title: Cast symbol to string
+> ### Aliases: as_string
+> 
+> ### ** Examples
+> 
+> # Let's create some symbols:
+> foo <- quote(foo)
+> bar <- sym("bar")
+> 
+> # as_string() converts symbols to strings:
+> foo
+foo
+> as_string(foo)
+[1] "foo"
+> 
+> typeof(bar)
+[1] "symbol"
+> typeof(as_string(bar))
+[1] "character"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_utf8_character")
+> ### * as_utf8_character
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_utf8_character
+> ### Title: Coerce to a character vector and attempt encoding conversion
+> ### Aliases: as_utf8_character
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Let's create a string marked as UTF-8 (which is guaranteed by the
+> # Unicode escaping in the string):
+> utf8 <- "caf\uE9"
+> Encoding(utf8)
+[1] "UTF-8"
+> as_bytes(utf8)
+[1] 63 61 66 c3 a9
+> 
+> 
+> 
+> cleanEx()
+> nameEx("box")
+> ### * box
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: box
+> ### Title: Box a value
+> ### Aliases: box new_box is_box unbox
+> 
+> ### ** Examples
+> 
+> boxed <- new_box(letters, "mybox")
+> is_box(boxed)
+[1] TRUE
+> is_box(boxed, "mybox")
+[1] TRUE
+> is_box(boxed, "otherbox")
+[1] FALSE
+> 
+> unbox(boxed)
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+> 
+> # as_box() avoids double-boxing:
+> boxed2 <- as_box(boxed, "mybox")
+> boxed2
+[[1]]
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+
+attr(,"class")
+[1] "mybox"     "rlang_box"
+> unbox(boxed2)
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+> 
+> # Compare to:
+> boxed_boxed <- new_box(boxed, "mybox")
+> boxed_boxed
+[[1]]
+[[1]]
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+
+attr(,"class")
+[1] "mybox"     "rlang_box"
+
+attr(,"class")
+[1] "mybox"     "rlang_box"
+> unbox(unbox(boxed_boxed))
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+> 
+> # Use `as_box_if()` with a predicate if you need to ensure a box
+> # only for a subset of values:
+> as_box_if(NULL, is_null, "null_box")
+[[1]]
+NULL
+
+attr(,"class")
+[1] "null_box"  "rlang_box"
+> as_box_if("foo", is_null, "null_box")
+[1] "foo"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("call2")
+> ### * call2
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: call2
+> ### Title: Create a call
+> ### Aliases: call2
+> 
+> ### ** Examples
+> 
+> # fn can either be a string, a symbol or a call
+> call2("f", a = 1)
+f(a = 1)
+> call2(quote(f), a = 1)
+f(a = 1)
+> call2(quote(f()), a = 1)
+f()(a = 1)
+> 
+> #' Can supply arguments individually or in a list
+> call2(quote(f), a = 1, b = 2)
+f(a = 1, b = 2)
+> call2(quote(f), !!!list(a = 1, b = 2))
+f(a = 1, b = 2)
+> 
+> # Creating namespaced calls is easy:
+> call2("fun", arg = quote(baz), .ns = "mypkg")
+mypkg::fun(arg = baz)
+> 
+> # Empty arguments are preserved:
+> call2("[", quote(x), , drop = )
+x[, drop = ]
+> 
+> 
+> 
+> cleanEx()
+> nameEx("call_args")
+> ### * call_args
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: call_args
+> ### Title: Extract arguments from a call
+> ### Aliases: call_args call_args_names
+> 
+> ### ** Examples
+> 
+> call <- quote(f(a, b))
+> 
+> # Subsetting a call returns the arguments converted to a language
+> # object:
+> call[-1]
+a(b)
+> 
+> # On the other hand, call_args() returns a regular list that is
+> # often easier to work with:
+> str(call_args(call))
+List of 2
+ $ : symbol a
+ $ : symbol b
+> 
+> # When the arguments are unnamed, a vector of empty strings is
+> # supplied (rather than NULL):
+> call_args_names(call)
+[1] "" ""
+> 
+> 
+> 
+> cleanEx()
+> nameEx("call_fn")
+> ### * call_fn
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: call_fn
+> ### Title: Extract function from a call
+> ### Aliases: call_fn
+> 
+> ### ** Examples
+> 
+> # Extract from a quoted call:
+> call_fn(quote(matrix()))
+function (data = NA, nrow = 1, ncol = 1, byrow = FALSE, dimnames = NULL) 
+{
+    if (is.object(data) || !is.atomic(data)) 
+        data <- as.vector(data)
+    .Internal(matrix(data, nrow, ncol, byrow, dimnames, missing(nrow), 
+        missing(ncol)))
+}
+<bytecode: 0x5578c494a210>
+<environment: namespace:base>
+> call_fn(quo(matrix()))
+function (data = NA, nrow = 1, ncol = 1, byrow = FALSE, dimnames = NULL) 
+{
+    if (is.object(data) || !is.atomic(data)) 
+        data <- as.vector(data)
+    .Internal(matrix(data, nrow, ncol, byrow, dimnames, missing(nrow), 
+        missing(ncol)))
+}
+<bytecode: 0x5578c494a210>
+<environment: namespace:base>
+> 
+> # Extract the calling function
+> test <- function() call_fn(call_frame())
+> test()
+function () 
+call_fn(call_frame())
+> 
+> 
+> 
+> cleanEx()
+> nameEx("call_inspect")
+> ### * call_inspect
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: call_inspect
+> ### Title: Inspect a call
+> ### Aliases: call_inspect
+> 
+> ### ** Examples
+> 
+> call_inspect(foo(bar), "" %>% identity())
+call_inspect(foo(bar), "" %>% identity())
+> 
+> 
+> 
+> cleanEx()
+> nameEx("call_modify")
+> ### * call_modify
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: call_modify
+> ### Title: Modify the arguments of a call
+> ### Aliases: call_modify
+> 
+> ### ** Examples
+> 
+> call <- quote(mean(x, na.rm = TRUE))
+> 
+> # Modify an existing argument
+> call_modify(call, na.rm = FALSE)
+mean(x, na.rm = FALSE)
+> call_modify(call, x = quote(y))
+mean(x, na.rm = TRUE, x = y)
+> 
+> # Remove an argument
+> call_modify(call, na.rm = zap())
+mean(x)
+> 
+> # Add a new argument
+> call_modify(call, trim = 0.1)
+mean(x, na.rm = TRUE, trim = 0.1)
+> 
+> # Add an explicit missing argument:
+> call_modify(call, na.rm = )
+mean(x, na.rm = )
+> 
+> # Supply a list of new arguments with `!!!`
+> newargs <- list(na.rm = NULL, trim = 0.1)
+> call <- call_modify(call, !!!newargs)
+> call
+mean(x, na.rm = NULL, trim = 0.1)
+> 
+> # Remove multiple arguments by splicing zaps:
+> newargs <- rep_named(c("na.rm", "trim"), list(zap()))
+> call <- call_modify(call, !!!newargs)
+> call
+mean(x)
+> 
+> 
+> # Modify the `...` arguments as if it were a named argument:
+> call <- call_modify(call, ... = )
+> call
+mean(x, ...)
+> 
+> call <- call_modify(call, ... = zap())
+> call
+mean(x)
+> 
+> 
+> # When you're working with a user-supplied call, standardise it
+> # beforehand because it might contain unmatched arguments:
+> user_call <- quote(matrix(x, nc = 3))
+> call_modify(user_call, ncol = 1)
+matrix(x, nc = 3, ncol = 1)
+> 
+> # Standardising applies the usual argument matching rules:
+> user_call <- call_standardise(user_call)
+> user_call
+matrix(data = x, ncol = 3)
+> call_modify(user_call, ncol = 1)
+matrix(data = x, ncol = 1)
+> 
+> 
+> # You can also modify quosures inplace:
+> f <- quo(matrix(bar))
+> call_modify(f, quote(foo))
+<quosure>
+expr: ^matrix(bar, foo)
+env:  global
+> 
+> 
+> # By default, arguments with the same name are kept. This has
+> # subtle implications, for instance you can move an argument to
+> # last position by removing it and remapping it:
+> call <- quote(foo(bar = , baz))
+> call_modify(call, bar = NULL, bar = missing_arg())
+foo(bar = , baz)
+> 
+> # You can also choose to keep only the first or last homonym
+> # arguments:
+> args <-  list(bar = NULL, bar = missing_arg())
+> call_modify(call, !!!args, .homonyms = "first")
+foo(bar = NULL, baz)
+> call_modify(call, !!!args, .homonyms = "last")
+foo(bar = , baz)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("call_name")
+> ### * call_name
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: call_name
+> ### Title: Extract function name or namespace of a call
+> ### Aliases: call_name call_ns
+> 
+> ### ** Examples
+> 
+> # Extract the function name from quoted calls:
+> call_name(quote(foo(bar)))
+[1] "foo"
+> call_name(quo(foo(bar)))
+[1] "foo"
+> 
+> # Namespaced calls are correctly handled:
+> call_name(~base::matrix(baz))
+[1] "matrix"
+> 
+> # Anonymous and subsetted functions return NULL:
+> call_name(quote(foo$bar()))
+NULL
+> call_name(quote(foo[[bar]]()))
+NULL
+> call_name(quote(foo()()))
+NULL
+> 
+> # Extract namespace of a call with call_ns():
+> call_ns(quote(base::bar()))
+[1] "base"
+> 
+> # If not namespaced, call_ns() returns NULL:
+> call_ns(quote(bar()))
+NULL
+> 
+> 
+> 
+> cleanEx()
+> nameEx("caller_env")
+> ### * caller_env
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: caller_env
+> ### Title: Get the current or caller environment
+> ### Aliases: caller_env current_env
+> 
+> ### ** Examples
+> 
+> if (FALSE) {
++ 
++ # Let's create a function that returns its current environment and
++ # its caller environment:
++ fn <- function() list(current = current_env(), caller = caller_env())
++ 
++ # The current environment is an unique execution environment
++ # created when `fn()` was called. The caller environment is the
++ # global env because that's where we called `fn()`.
++ fn()
++ 
++ # Let's call `fn()` again but this time within a function:
++ g <- function() fn()
++ 
++ # Now the caller environment is also a unique execution environment.
++ # This is the exec env created by R for our call to g():
++ g()
++ 
++ }
+> 
+> 
+> 
+> cleanEx()
+> nameEx("catch_cnd")
+> ### * catch_cnd
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: catch_cnd
+> ### Title: Catch a condition
+> ### Aliases: catch_cnd
+> 
+> ### ** Examples
+> 
+> catch_cnd(10)
+NULL
+> catch_cnd(abort("an error"))
+<error/rlang_error>
+an error
+Backtrace:
+ 1. rlang::catch_cnd(abort("an error"))
+ 7. base::force(expr)
+> catch_cnd(signal("my_condition", message = "a condition"))
+<my_condition: a condition>
+> 
+> 
+> 
+> cleanEx()
+> nameEx("chr_unserialise_unicode")
+> ### * chr_unserialise_unicode
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: chr_unserialise_unicode
+> ### Title: Translate unicode points to UTF-8
+> ### Aliases: chr_unserialise_unicode
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> ascii <- "<U+5E78>"
+> chr_unserialise_unicode(ascii)
+[1] "幸"
+> 
+> identical(chr_unserialise_unicode(ascii), "\u5e78")
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cnd")
+> ### * cnd
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: error_cnd
+> ### Title: Create a condition object
+> ### Aliases: error_cnd cnd warning_cnd message_cnd
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Create a condition inheriting from the s3 type "foo":
+> cnd <- cnd("foo")
+> 
+> # Signal the condition to potential handlers. Since this is a bare
+> # condition the signal has no effect if no handlers are set up:
+> cnd_signal(cnd)
+> 
+> # When a relevant handler is set up, the signal causes the handler
+> # to be called:
+> with_handlers(cnd_signal(cnd), foo = exiting(function(c) "caught!"))
+Warning: `exiting()` is soft-deprecated as of rlang 0.4.0.
+Handlers are now treated as exiting by default.
+This warning is displayed once per session.
+[1] "caught!"
+> 
+> # Handlers can be thrown or executed inplace. See with_handlers()
+> # documentation for more on this.
+> 
+> # Signalling an error condition aborts the current computation:
+> err <- error_cnd("foo", message = "I am an error")
+> try(cnd_signal(err))
+Error : I am an error
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cnd_muffle")
+> ### * cnd_muffle
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cnd_muffle
+> ### Title: Muffle a condition
+> ### Aliases: cnd_muffle
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> fn <- function() {
++   inform("Beware!", "my_particular_msg")
++   inform("On your guard!")
++   "foobar"
++ }
+> 
+> # Let's install a muffling handler for the condition thrown by `fn()`.
+> # This will suppress all `my_particular_wng` warnings but let other
+> # types of warnings go through:
+> with_handlers(fn(),
++   my_particular_msg = calling(function(cnd) {
++     inform("Dealt with this particular message")
++     cnd_muffle(cnd)
++   })
++ )
+Dealt with this particular message
+On your guard!
+[1] "foobar"
+> 
+> # Note how execution of `fn()` continued normally after dealing
+> # with that particular message.
+> 
+> # cnd_muffle() can also be passed to with_handlers() as a calling
+> # handler:
+> with_handlers(fn(),
++   my_particular_msg = calling(cnd_muffle)
++ )
+On your guard!
+[1] "foobar"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cnd_signal")
+> ### * cnd_signal
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cnd_signal
+> ### Title: Signal a condition object
+> ### Aliases: cnd_signal
+> 
+> ### ** Examples
+> 
+> # The type of signal depends on the class. If the condition
+> # inherits from "warning", a warning is issued:
+> cnd <- warning_cnd("my_warning_class", message = "This is a warning")
+> cnd_signal(cnd)
+Warning: This is a warning
+> 
+> # If it inherits from "error", an error is raised:
+> cnd <- error_cnd("my_error_class", message = "This is an error")
+> try(cnd_signal(cnd))
+Error : This is an error
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cnd_type")
+> ### * cnd_type
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cnd_type
+> ### Title: What type is a condition?
+> ### Aliases: cnd_type
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> cnd_type(catch_cnd(abort("Abort!")))
+[1] "error"
+> cnd_type(catch_cnd(interrupt()))
+[1] "interrupt"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("done")
+> ### * done
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: done
+> ### Title: Box a final value for early termination
+> ### Aliases: done is_done_box
+> 
+> ### ** Examples
+> 
+> done(3)
+<done>
+[1] 3
+> 
+> x <- done(3)
+> is_done_box(x)
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("dots_n")
+> ### * dots_n
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: dots_n
+> ### Title: How many arguments are currently forwarded in dots?
+> ### Aliases: dots_n
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> fn <- function(...) dots_n(..., baz)
+> fn(foo, bar)
+[1] 3
+> 
+> 
+> 
+> cleanEx()
+> nameEx("dots_values")
+> ### * dots_values
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: dots_values
+> ### Title: Evaluate dots with preliminary splicing
+> ### Aliases: dots_values
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> dots <- dots_values(!!! list(1, 2), 3)
+> dots
+[[1]]
+<spliced>
+[[1]]
+[1] 1
+
+[[2]]
+[1] 2
+
+
+[[2]]
+[1] 3
+
+> 
+> # Flatten the objects marked as spliced:
+> flatten_if(dots, is_spliced)
+[[1]]
+[1] 1
+
+[[2]]
+[1] 2
+
+[[3]]
+[1] 3
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("dyn-dots")
+> ### * dyn-dots
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: dyn-dots
+> ### Title: Dynamic dots
+> ### Aliases: dyn-dots tidy-dots
+> 
+> ### ** Examples
+> 
+> f <- function(...) {
++   out <- list2(...)
++   rev(out)
++ }
+> 
+> # Splice
+> x <- list(alpha = "first", omega = "last")
+> f(!!!x)
+$omega
+[1] "last"
+
+$alpha
+[1] "first"
+
+> 
+> # Unquote a name, showing both the `!!` bang bang and `{}` glue style
+> nm <- "key"
+> f(!!nm := "value")
+$key
+[1] "value"
+
+> f("{nm}" := "value")
+$key
+[1] "value"
+
+> f("prefix_{nm}" := "value")
+$prefix_key
+[1] "value"
+
+> 
+> # Tolerate a trailing comma
+> f(this = "that", )
+$this
+[1] "that"
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("empty_env")
+> ### * empty_env
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: empty_env
+> ### Title: Get the empty environment
+> ### Aliases: empty_env
+> 
+> ### ** Examples
+> 
+> # Create environments with nothing in scope:
+> child_env(empty_env())
+<environment: 0x5578c44b24e8>
+> 
+> 
+> 
+> cleanEx()
+> nameEx("enquo0")
+> ### * enquo0
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: enquo0
+> ### Title: Defuse arguments without automatic injection
+> ### Aliases: enquo0 enquos0
+> 
+> ### ** Examples
+> 
+> automatic_injection <- function(x) enquo(x)
+> no_injection <- function(x) enquo0(x)
+> 
+> automatic_injection(foo(!!!1:3))
+<quosure>
+expr: ^foo(1L, 2L, 3L)
+env:  global
+> no_injection(foo(!!!1:3))
+<quosure>
+expr: ^foo(!!!1:3)
+env:  global
+> 
+> 
+> 
+> cleanEx()
+> nameEx("entrace")
+> ### * entrace
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: entrace
+> ### Title: Add backtrace from error handler
+> ### Aliases: entrace cnd_entrace
+> 
+> ### ** Examples
+> 
+> if (FALSE) {  # Not run
++ 
++ # Set the error handler in your RProfile like this:
++ if (requireNamespace("rlang", quietly = TRUE)) {
++   options(error = rlang::entrace)
++ }
++ 
++ }
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env")
+> ### * env
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env
+> ### Title: Create a new environment
+> ### Aliases: env child_env new_environment
+> 
+> ### ** Examples
+> 
+> # env() creates a new environment which has the current environment
+> # as parent
+> env <- env(a = 1, b = "foo")
+> env$b
+[1] "foo"
+> identical(env_parent(env), current_env())
+[1] TRUE
+> 
+> # Supply one unnamed argument to override the default:
+> env <- env(base_env(), a = 1, b = "foo")
+> identical(env_parent(env), base_env())
+[1] TRUE
+> 
+> 
+> # child_env() lets you specify a parent:
+> child <- child_env(env, c = "bar")
+> identical(env_parent(child), env)
+[1] TRUE
+> 
+> # This child environment owns `c` but inherits `a` and `b` from `env`:
+> env_has(child, c("a", "b", "c", "d"))
+    a     b     c     d 
+FALSE FALSE  TRUE FALSE 
+> env_has(child, c("a", "b", "c", "d"), inherit = TRUE)
+    a     b     c     d 
+ TRUE  TRUE  TRUE FALSE 
+> 
+> # `parent` is passed to as_environment() to provide handy
+> # shortcuts. Pass a string to create a child of a package
+> # environment:
+> child_env("rlang")
+<environment: 0x5578c605c650>
+> env_parent(child_env("rlang"))
+<environment: package:rlang>
+attr(,"name")
+[1] "package:rlang"
+attr(,"path")
+[1] "/usr/local/lib/R/site-library/rlang"
+> 
+> # Or `NULL` to create a child of the empty environment:
+> child_env(NULL)
+<environment: 0x5578c606b0e0>
+> env_parent(child_env(NULL))
+<environment: R_EmptyEnv>
+> 
+> # The base package environment is often a good default choice for a
+> # parent environment because it contains all standard base
+> # functions. Also note that it will never inherit from other loaded
+> # package environments since R keeps the base package at the tail
+> # of the search path:
+> base_child <- child_env("base")
+> env_has(base_child, c("lapply", "("), inherit = TRUE)
+lapply      ( 
+  TRUE   TRUE 
+> 
+> # On the other hand, a child of the empty environment doesn't even
+> # see a definition for `(`
+> empty_child <- child_env(NULL)
+> env_has(empty_child, c("lapply", "("), inherit = TRUE)
+lapply      ( 
+ FALSE  FALSE 
+> 
+> # Note that all other package environments inherit from base_env()
+> # as well:
+> rlang_child <- child_env("rlang")
+> env_has(rlang_child, "env", inherit = TRUE)     # rlang function
+ env 
+TRUE 
+> env_has(rlang_child, "lapply", inherit = TRUE)  # base function
+lapply 
+  TRUE 
+> 
+> 
+> # Both env() and child_env() support tidy dots features:
+> objs <- list(b = "foo", c = "bar")
+> env <- env(a = 1, !!! objs)
+> env$c
+[1] "bar"
+> 
+> # You can also unquote names with the definition operator `:=`
+> var <- "a"
+> env <- env(!!var := "A")
+> env$a
+[1] "A"
+> 
+> 
+> # Use new_environment() to create containers with the empty
+> # environment as parent:
+> env <- new_environment()
+> env_parent(env)
+<environment: R_EmptyEnv>
+> 
+> # Like other new_ constructors, it takes an object rather than dots:
+> new_environment(list(a = "foo", b = "bar"))
+<environment: 0x5578c60886d0>
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_bind")
+> ### * env_bind
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_bind
+> ### Title: Bind symbols to objects in an environment
+> ### Aliases: env_bind env_bind_lazy env_bind_active %<~%
+> 
+> ### ** Examples
+> 
+> # env_bind() is a programmatic way of assigning values to symbols
+> # with `<-`. We can add bindings in the current environment:
+> env_bind(current_env(), foo = "bar")
+> foo
+[1] "bar"
+> 
+> # Or modify those bindings:
+> bar <- "bar"
+> env_bind(current_env(), bar = "BAR")
+> bar
+[1] "BAR"
+> 
+> # You can remove bindings by supplying zap sentinels:
+> env_bind(current_env(), foo = zap())
+> try(foo)
+Error in try(foo) : object 'foo' not found
+> 
+> # Unquote-splice a named list of zaps
+> zaps <- rep_named(c("foo", "bar"), list(zap()))
+> env_bind(current_env(), !!!zaps)
+> try(bar)
+Error in try(bar) : object 'bar' not found
+> 
+> # It is most useful to change other environments:
+> my_env <- env()
+> env_bind(my_env, foo = "foo")
+> my_env$foo
+[1] "foo"
+> 
+> # A useful feature is to splice lists of named values:
+> vals <- list(a = 10, b = 20)
+> env_bind(my_env, !!!vals, c = 30)
+> my_env$b
+[1] 20
+> my_env$c
+[1] 30
+> 
+> # You can also unquote a variable referring to a symbol or a string
+> # as binding name:
+> var <- "baz"
+> env_bind(my_env, !!var := "BAZ")
+> my_env$baz
+[1] "BAZ"
+> 
+> 
+> # The old values of the bindings are returned invisibly:
+> old <- env_bind(my_env, a = 1, b = 2, baz = "baz")
+> old
+$a
+[1] 10
+
+$b
+[1] 20
+
+$baz
+[1] "BAZ"
+
+> 
+> # You can restore the original environment state by supplying the
+> # old values back:
+> env_bind(my_env, !!!old)
+> 
+> # env_bind_lazy() assigns expressions lazily:
+> env <- env()
+> env_bind_lazy(env, name = { cat("forced!\n"); "value" })
+> 
+> # Referring to the binding will cause evaluation:
+> env$name
+forced!
+[1] "value"
+> 
+> # But only once, subsequent references yield the final value:
+> env$name
+[1] "value"
+> 
+> # You can unquote expressions:
+> expr <- quote(message("forced!"))
+> env_bind_lazy(env, name = !!expr)
+> env$name
+forced!
+NULL
+> 
+> 
+> # By default the expressions are evaluated in the current
+> # environment. For instance we can create a local binding and refer
+> # to it, even though the variable is bound in a different
+> # environment:
+> who <- "mickey"
+> env_bind_lazy(env, name = paste(who, "mouse"))
+> env$name
+[1] "mickey mouse"
+> 
+> # You can specify another evaluation environment with `.eval_env`:
+> eval_env <- env(who = "minnie")
+> env_bind_lazy(env, name = paste(who, "mouse"), .eval_env = eval_env)
+> env$name
+[1] "minnie mouse"
+> 
+> # Or by unquoting a quosure:
+> quo <- local({
++   who <- "fievel"
++   quo(paste(who, "mouse"))
++ })
+> env_bind_lazy(env, name = !!quo)
+> env$name
+[1] "fievel mouse"
+> 
+> # You can create active bindings with env_bind_active(). Active
+> # bindings execute a function each time they are evaluated:
+> fn <- function() {
++   cat("I have been called\n")
++   rnorm(1)
++ }
+> 
+> env <- env()
+> env_bind_active(env, symbol = fn)
+> 
+> # `fn` is executed each time `symbol` is evaluated or retrieved:
+> env$symbol
+I have been called
+[1] -0.6264538
+> env$symbol
+I have been called
+[1] 0.1836433
+> eval_bare(quote(symbol), env)
+I have been called
+[1] -0.8356286
+> eval_bare(quote(symbol), env)
+I have been called
+[1] 1.595281
+> 
+> # All arguments are passed to as_function() so you can use the
+> # formula shortcut:
+> env_bind_active(env, foo = ~ runif(1))
+> env$foo
+[1] 0.629114
+> env$foo
+[1] 0.06178627
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_binding_lock")
+> ### * env_binding_lock
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_binding_lock
+> ### Title: Lock or unlock environment bindings
+> ### Aliases: env_binding_lock env_binding_unlock env_binding_are_locked
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Bindings are unlocked by default:
+> env <- env(a = "A", b = "B")
+> env_binding_are_locked(env)
+    a     b 
+FALSE FALSE 
+> 
+> # But can optionally be locked:
+> env_binding_lock(env, "a")
+> env_binding_are_locked(env)
+    a     b 
+ TRUE FALSE 
+> 
+> # If run, the following would now return an error because `a` is locked:
+> # env_bind(env, a = "foo")
+> # with_env(env, a <- "bar")
+> 
+> # Let's unlock it. Note that the return value indicate which
+> # bindings were locked:
+> were_locked <- env_binding_unlock(env)
+> were_locked
+    a     b 
+ TRUE FALSE 
+> 
+> # Now that it is unlocked we can modify it again:
+> env_bind(env, a = "foo")
+> with_env(env, a <- "bar")
+> env$a
+[1] "bar"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_bury")
+> ### * env_bury
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_bury
+> ### Title: Mask bindings by defining symbols deeper in a scope
+> ### Aliases: env_bury
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> orig_env <- env(a = 10)
+> fn <- set_env(function() a, orig_env)
+> 
+> # fn() currently sees `a` as the value `10`:
+> fn()
+[1] 10
+> 
+> # env_bury() will bury the current scope of fn() behind a new
+> # environment:
+> fn <- env_bury(fn, a = 1000)
+> fn()
+[1] 1000
+> 
+> # Even though the symbol `a` is still defined deeper in the scope:
+> orig_env$a
+[1] 10
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_clone")
+> ### * env_clone
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_clone
+> ### Title: Clone an environment
+> ### Aliases: env_clone
+> 
+> ### ** Examples
+> 
+> env <- env(!!! mtcars)
+> clone <- env_clone(env)
+> identical(env, clone)
+[1] FALSE
+> identical(env$cyl, clone$cyl)
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_depth")
+> ### * env_depth
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_depth
+> ### Title: Depth of an environment chain
+> ### Aliases: env_depth
+> 
+> ### ** Examples
+> 
+> env_depth(empty_env())
+[1] 0
+> env_depth(pkg_env("rlang"))
+[1] 10
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_get")
+> ### * env_get
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_get
+> ### Title: Get an object in an environment
+> ### Aliases: env_get env_get_list
+> 
+> ### ** Examples
+> 
+> parent <- child_env(NULL, foo = "foo")
+> env <- child_env(parent, bar = "bar")
+> 
+> # This throws an error because `foo` is not directly defined in env:
+> # env_get(env, "foo")
+> 
+> # However `foo` can be fetched in the parent environment:
+> env_get(env, "foo", inherit = TRUE)
+[1] "foo"
+> 
+> # You can also avoid an error by supplying a default value:
+> env_get(env, "foo", default = "FOO")
+[1] "FOO"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_has")
+> ### * env_has
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_has
+> ### Title: Does an environment have or see bindings?
+> ### Aliases: env_has
+> 
+> ### ** Examples
+> 
+> parent <- child_env(NULL, foo = "foo")
+> env <- child_env(parent, bar = "bar")
+> 
+> # env does not own `foo` but sees it in its parent environment:
+> env_has(env, "foo")
+  foo 
+FALSE 
+> env_has(env, "foo", inherit = TRUE)
+ foo 
+TRUE 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_lock")
+> ### * env_lock
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_lock
+> ### Title: Lock an environment
+> ### Aliases: env_lock env_is_locked
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # New environments are unlocked by default:
+> env <- env(a = 1)
+> env_is_locked(env)
+[1] FALSE
+> 
+> # Use env_lock() to lock them:
+> env_lock(env)
+> env_is_locked(env)
+[1] TRUE
+> 
+> # Now that `env` is locked, it is no longer possible to remove or
+> # add bindings. If run, the following would fail:
+> # env_unbind(env, "a")
+> # env_bind(env, b = 2)
+> 
+> # Note that even though the environment as a container is locked,
+> # the individual bindings are still unlocked and can be modified:
+> env$a <- 10
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_name")
+> ### * env_name
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_name
+> ### Title: Label of an environment
+> ### Aliases: env_name env_label
+> 
+> ### ** Examples
+> 
+> # Some environments have specific names:
+> env_name(global_env())
+[1] "global"
+> env_name(ns_env("rlang"))
+[1] "namespace:rlang"
+> 
+> # Anonymous environments don't have names but are labelled by their
+> # address in memory:
+> env_name(env())
+[1] ""
+> env_label(env())
+[1] "0x5578c64709e8"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_names")
+> ### * env_names
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_names
+> ### Title: Names and numbers of symbols bound in an environment
+> ### Aliases: env_names env_length
+> 
+> ### ** Examples
+> 
+> env <- env(a = 1, b = 2)
+> env_names(env)
+[1] "a" "b"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_parent")
+> ### * env_parent
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_parent
+> ### Title: Get parent environments
+> ### Aliases: env_parent env_tail env_parents
+> 
+> ### ** Examples
+> 
+> # Get the parent environment with env_parent():
+> env_parent(global_env())
+<environment: package:rlang>
+attr(,"name")
+[1] "package:rlang"
+attr(,"path")
+[1] "/usr/local/lib/R/site-library/rlang"
+> 
+> # Or the tail environment with env_tail():
+> env_tail(global_env())
+<environment: base>
+> 
+> # By default, env_parent() returns the parent environment of the
+> # current evaluation frame. If called at top-level (the global
+> # frame), the following two expressions are equivalent:
+> env_parent()
+<environment: package:rlang>
+attr(,"name")
+[1] "package:rlang"
+attr(,"path")
+[1] "/usr/local/lib/R/site-library/rlang"
+> env_parent(base_env())
+<environment: R_EmptyEnv>
+> 
+> # This default is more handy when called within a function. In this
+> # case, the enclosure environment of the function is returned
+> # (since it is the parent of the evaluation frame):
+> enclos_env <- env()
+> fn <- set_env(function() env_parent(), enclos_env)
+> identical(enclos_env, fn())
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("env_unbind")
+> ### * env_unbind
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: env_unbind
+> ### Title: Remove bindings from an environment
+> ### Aliases: env_unbind
+> 
+> ### ** Examples
+> 
+> env <- env(foo = 1, bar = 2)
+> env_has(env, c("foo", "bar"))
+ foo  bar 
+TRUE TRUE 
+> 
+> # Remove bindings with `env_unbind()`
+> env_unbind(env, c("foo", "bar"))
+> env_has(env, c("foo", "bar"))
+  foo   bar 
+FALSE FALSE 
+> 
+> # With inherit = TRUE, it removes bindings in parent environments
+> # as well:
+> parent <- env(empty_env(), foo = 1, bar = 2)
+> env <- env(parent, foo = "b")
+> 
+> env_unbind(env, "foo", inherit = TRUE)
+> env_has(env, c("foo", "bar"))
+  foo   bar 
+FALSE FALSE 
+> env_has(env, c("foo", "bar"), inherit = TRUE)
+ foo  bar 
+TRUE TRUE 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("eval_bare")
+> ### * eval_bare
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: eval_bare
+> ### Title: Evaluate an expression in an environment
+> ### Aliases: eval_bare
+> 
+> ### ** Examples
+> 
+> # eval_bare() works just like base::eval() but you have to create
+> # the evaluation environment yourself:
+> eval_bare(quote(foo), env(foo = "bar"))
+[1] "bar"
+> 
+> # eval() has different evaluation semantics than eval_bare(). It
+> # can return from the supplied environment even if its an
+> # environment that is not on the call stack (i.e. because you've
+> # created it yourself). The following would trigger an error with
+> # eval_bare():
+> ret <- quote(return("foo"))
+> eval(ret, env())
+[1] "foo"
+> # eval_bare(ret, env())  # "no function to return from" error
+> 
+> # Another feature of eval() is that you can control surround loops:
+> bail <- quote(break)
+> while (TRUE) {
++   eval(bail)
++   # eval_bare(bail)  # "no loop for break/next" error
++ }
+> 
+> # To explore the consequences of stack inconsistent semantics, let's
+> # create a function that evaluates `parent.frame()` deep in the call
+> # stack, in an environment corresponding to a frame in the middle of
+> # the stack. For consistency with R's lazy evaluation semantics, we'd
+> # expect to get the caller of that frame as result:
+> fn <- function(eval_fn) {
++   list(
++     returned_env = middle(eval_fn),
++     actual_env = current_env()
++   )
++ }
+> middle <- function(eval_fn) {
++   deep(eval_fn, current_env())
++ }
+> deep <- function(eval_fn, eval_env) {
++   expr <- quote(parent.frame())
++   eval_fn(expr, eval_env)
++ }
+> 
+> # With eval_bare(), we do get the expected environment:
+> fn(rlang::eval_bare)
+$returned_env
+<environment: 0x5578c67eb9b8>
+
+$actual_env
+<environment: 0x5578c67eb9b8>
+
+> 
+> # But that's not the case with base::eval():
+> fn(base::eval)
+$returned_env
+<environment: 0x5578c5cde6c0>
+
+$actual_env
+<environment: 0x5578c67ed088>
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("eval_tidy")
+> ### * eval_tidy
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: eval_tidy
+> ### Title: Evaluate an expression with quosures and pronoun support
+> ### Aliases: eval_tidy
+> 
+> ### ** Examples
+> 
+> 
+> # With simple quoted expressions eval_tidy() works the same way as
+> # eval():
+> apple <- "apple"
+> kiwi <- "kiwi"
+> expr <- quote(paste(apple, kiwi))
+> expr
+paste(apple, kiwi)
+> 
+> eval(expr)
+[1] "apple kiwi"
+> eval_tidy(expr)
+[1] "apple kiwi"
+> 
+> # Both accept a data mask as argument:
+> data <- list(apple = "CARROT", kiwi = "TOMATO")
+> eval(expr, data)
+[1] "CARROT TOMATO"
+> eval_tidy(expr, data)
+[1] "CARROT TOMATO"
+> 
+> 
+> # In addition eval_tidy() has support for quosures:
+> with_data <- function(data, expr) {
++   quo <- enquo(expr)
++   eval_tidy(quo, data)
++ }
+> with_data(NULL, apple)
+[1] "apple"
+> with_data(data, apple)
+[1] "CARROT"
+> with_data(data, list(apple, kiwi))
+[[1]]
+[1] "CARROT"
+
+[[2]]
+[1] "TOMATO"
+
+> 
+> # Secondly eval_tidy() installs handy pronouns that allow users to
+> # be explicit about where to find symbols:
+> with_data(data, .data$apple)
+[1] "CARROT"
+> with_data(data, .env$apple)
+[1] "apple"
+> 
+> 
+> # Note that instead of using `.env` it is often equivalent and may
+> # be preferred to unquote a value. There are two differences. First
+> # unquoting happens earlier, when the quosure is created. Secondly,
+> # subsetting `.env` with the `$` operator may be brittle because
+> # `$` does not look through the parents of the environment.
+> #
+> # For instance using `.env$name` in a magrittr pipeline is an
+> # instance where this poses problem, because the magrittr pipe
+> # currently (as of v1.5.0) evaluates its operands in a *child* of
+> # the current environment (this child environment is where it
+> # defines the pronoun `.`).
+> ## Not run: 
+> ##D   data %>% with_data(!!kiwi)     # "kiwi"
+> ##D   data %>% with_data(.env$kiwi)  # NULL
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("exec")
+> ### * exec
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: exec
+> ### Title: Execute a function
+> ### Aliases: exec
+> 
+> ### ** Examples
+> 
+> args <- list(x = c(1:10, 100, NA), na.rm = TRUE)
+> exec("mean", !!!args)
+[1] 14.09091
+> exec("mean", !!!args, trim = 0.2)
+[1] 6
+> 
+> fs <- list(a = function() "a", b = function() "b")
+> lapply(fs, exec)
+$a
+[1] "a"
+
+$b
+[1] "b"
+
+> 
+> # Compare to do.call it will not automatically inline expressions
+> # into the evaluated call.
+> x <- 10
+> args <- exprs(x1 = x + 1, x2 = x * 2)
+> exec(list, !!!args)
+$x1
+x + 1
+
+$x2
+x * 2
+
+> do.call(list, args)
+$x1
+[1] 11
+
+$x2
+[1] 20
+
+> 
+> # exec() is not designed to generate pretty function calls. This is
+> # most easily seen if you call a function that captures the call:
+> f <- disp ~ cyl
+> exec("lm", f, data = mtcars)
+
+Call:
+lm(formula = .Primitive("quote")(disp ~ cyl), data = structure(list(
+    mpg = c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3, 24.4, 22.8, 
+    19.2, 17.8, 16.4, 17.3, 15.2, 10.4, 10.4, 14.7, 32.4, 30.4, 
+    33.9, 21.5, 15.5, 15.2, 13.3, 19.2, 27.3, 26, 30.4, 15.8, 
+    19.7, 15, 21.4), cyl = c(6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 
+    8, 8, 8, 8, 8, 8, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 8, 6, 
+    8, 4), disp = c(160, 160, 108, 258, 360, 225, 360, 146.7, 
+    140.8, 167.6, 167.6, 275.8, 275.8, 275.8, 472, 460, 440, 
+    78.7, 75.7, 71.1, 120.1, 318, 304, 350, 400, 79, 120.3, 95.1, 
+    351, 145, 301, 121), hp = c(110, 110, 93, 110, 175, 105, 
+    245, 62, 95, 123, 123, 180, 180, 180, 205, 215, 230, 66, 
+    52, 65, 97, 150, 150, 245, 175, 66, 91, 113, 264, 175, 335, 
+    109), drat = c(3.9, 3.9, 3.85, 3.08, 3.15, 2.76, 3.21, 3.69, 
+    3.92, 3.92, 3.92, 3.07, 3.07, 3.07, 2.93, 3, 3.23, 4.08, 
+    4.93, 4.22, 3.7, 2.76, 3.15, 3.73, 3.08, 4.08, 4.43, 3.77, 
+    4.22, 3.62, 3.54, 4.11), wt = c(2.62, 2.875, 2.32, 3.215, 
+    3.44, 3.46, 3.57, 3.19, 3.15, 3.44, 3.44, 4.07, 3.73, 3.78, 
+    5.25, 5.424, 5.345, 2.2, 1.615, 1.835, 2.465, 3.52, 3.435, 
+    3.84, 3.845, 1.935, 2.14, 1.513, 3.17, 2.77, 3.57, 2.78), 
+    qsec = c(16.46, 17.02, 18.61, 19.44, 17.02, 20.22, 15.84, 
+    20, 22.9, 18.3, 18.9, 17.4, 17.6, 18, 17.98, 17.82, 17.42, 
+    19.47, 18.52, 19.9, 20.01, 16.87, 17.3, 15.41, 17.05, 18.9, 
+    16.7, 16.9, 14.5, 15.5, 14.6, 18.6), vs = c(0, 0, 1, 1, 0, 
+    1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 
+    0, 1, 0, 1, 0, 0, 0, 1), am = c(1, 1, 1, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 
+    1, 1, 1, 1), gear = c(4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 3, 
+    3, 3, 3, 3, 3, 4, 4, 4, 3, 3, 3, 3, 3, 4, 5, 5, 5, 5, 5, 
+    4), carb = c(4, 4, 1, 1, 2, 1, 4, 2, 2, 4, 4, 3, 3, 3, 4, 
+    4, 4, 1, 2, 1, 1, 2, 2, 4, 2, 1, 2, 2, 4, 6, 8, 2)), row.names = c("Mazda RX4", 
+"Mazda RX4 Wag", "Datsun 710", "Hornet 4 Drive", "Hornet Sportabout", 
+"Valiant", "Duster 360", "Merc 240D", "Merc 230", "Merc 280", 
+"Merc 280C", "Merc 450SE", "Merc 450SL", "Merc 450SLC", "Cadillac Fleetwood", 
+"Lincoln Continental", "Chrysler Imperial", "Fiat 128", "Honda Civic", 
+"Toyota Corolla", "Toyota Corona", "Dodge Challenger", "AMC Javelin", 
+"Camaro Z28", "Pontiac Firebird", "Fiat X1-9", "Porsche 914-2", 
+"Lotus Europa", "Ford Pantera L", "Ferrari Dino", "Maserati Bora", 
+"Volvo 142E"), class = "data.frame"))
+
+Coefficients:
+(Intercept)          cyl  
+     -156.6         62.6  
+
+> 
+> # If you need finer control over the generated call, you'll need to
+> # construct it yourself. This may require creating a new environment
+> # with carefully constructed bindings
+> data_env <- env(data = mtcars)
+> eval(expr(lm(!!f, data)), data_env)
+
+Call:
+lm(formula = disp ~ cyl, data = data)
+
+Coefficients:
+(Intercept)          cyl  
+     -156.6         62.6  
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("expr_interp")
+> ### * expr_interp
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: expr_interp
+> ### Title: Process unquote operators in a captured expression
+> ### Aliases: expr_interp
+> 
+> ### ** Examples
+> 
+> # All tidy NSE functions like quo() unquote on capture:
+> quo(list(!!(1 + 2)))
+<quosure>
+expr: ^list(3)
+env:  global
+> 
+> # expr_interp() is meant to provide the same functionality when you
+> # have a formula or expression that might contain unquoting
+> # operators:
+> f <- ~list(!!(1 + 2))
+> expr_interp(f)
+~list(3)
+> 
+> # Note that only the outer formula is unquoted (which is a reason
+> # to use expr_interp() as early as possible in all user-facing
+> # functions):
+> f <- ~list(~!!(1 + 2), !!(1 + 2))
+> expr_interp(f)
+~list(~3, 3)
+> 
+> 
+> # Another purpose for expr_interp() is to interpolate a closure's
+> # body. This is useful to inline a function within another. The
+> # important limitation is that all formal arguments of the inlined
+> # function should be defined in the receiving function:
+> other_fn <- function(x) toupper(x)
+> 
+> fn <- expr_interp(function(x) {
++   x <- paste0(x, "_suffix")
++   !!! body(other_fn)
++ })
+Warning: Unquoting language objects with `!!!` is deprecated as of rlang 0.4.0.
+Please use `!!` instead.
+
+  # Bad:
+  dplyr::select(data, !!!enquo(x))
+
+  # Good:
+  dplyr::select(data, !!enquo(x))    # Unquote single quosure
+  dplyr::select(data, !!!enquos(x))  # Splice list of quosures
+
+This warning is displayed once per session.
+> fn
+function (x) 
+{
+    x <- paste0(x, "_suffix")
+    toupper(x)
+}
+> fn("foo")
+[1] "FOO_SUFFIX"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("expr_label")
+> ### * expr_label
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: expr_label
+> ### Title: Turn an expression to a label
+> ### Aliases: expr_label expr_name expr_text
+> 
+> ### ** Examples
+> 
+> # To labellise a function argument, first capture it with
+> # substitute():
+> fn <- function(x) expr_label(substitute(x))
+> fn(x:y)
+[1] "`x:y`"
+> 
+> # Strings are encoded
+> expr_label("a\nb")
+[1] "\"a\\nb\""
+> 
+> # Names and expressions are quoted with ``
+> expr_label(quote(x))
+[1] "`x`"
+> expr_label(quote(a + b + c))
+[1] "`a + b + c`"
+> 
+> # Long expressions are collapsed
+> expr_label(quote(foo({
++   1 + 2
++   print(x)
++ })))
+[1] "`foo(...)`"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("expr_print")
+> ### * expr_print
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: expr_print
+> ### Title: Print an expression
+> ### Aliases: expr_print expr_deparse
+> 
+> ### ** Examples
+> 
+> # It supports any object. Non-symbolic objects are always printed
+> # within angular brackets:
+> expr_print(1:3)
+<int: 1L, 2L, 3L>
+> expr_print(function() NULL)
+<function() NULL>
+> 
+> # Contrast this to how the code to create these objects is printed:
+> expr_print(quote(1:3))
+1:3
+> expr_print(quote(function() NULL))
+function() NULL
+> 
+> # The main cause of non-symbolic objects in expressions is
+> # quasiquotation:
+> expr_print(expr(foo(!!(1:3))))
+foo(<int: 1L, 2L, 3L>)
+> 
+> 
+> # Quosures from the global environment are printed normally:
+> expr_print(quo(foo))
+^foo
+> expr_print(quo(foo(!!quo(bar))))
+^foo(^bar)
+> 
+> # Quosures from local environments are colourised according to
+> # their environments (if you have crayon installed):
+> local_quo <- local(quo(foo))
+> expr_print(local_quo)
+^foo
+> 
+> wrapper_quo <- local(quo(bar(!!local_quo, baz)))
+> expr_print(wrapper_quo)
+^bar(^foo, baz)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("f_rhs")
+> ### * f_rhs
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: f_rhs
+> ### Title: Get or set formula components
+> ### Aliases: f_rhs f_rhs<- f_lhs f_lhs<- f_env f_env<-
+> 
+> ### ** Examples
+> 
+> f_rhs(~ 1 + 2 + 3)
+1 + 2 + 3
+> f_rhs(~ x)
+x
+> f_rhs(~ "A")
+[1] "A"
+> f_rhs(1 ~ 2)
+[1] 2
+> 
+> f_lhs(~ y)
+NULL
+> f_lhs(x ~ y)
+x
+> 
+> f_env(~ x)
+<environment: R_GlobalEnv>
+> 
+> 
+> 
+> cleanEx()
+> nameEx("f_text")
+> ### * f_text
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: f_text
+> ### Title: Turn RHS of formula into a string or label
+> ### Aliases: f_text f_name f_label
+> 
+> ### ** Examples
+> 
+> f <- ~ a + b + bc
+> f_text(f)
+[1] "a + b + bc"
+> f_label(f)
+[1] "`a + b + bc`"
+> 
+> # Names a quoted with ``
+> f_label(~ x)
+[1] "`x`"
+> # Strings are encoded
+> f_label(~ "a\nb")
+[1] "\"a\\nb\""
+> # Long expressions are collapsed
+> f_label(~ foo({
++   1 + 2
++   print(x)
++ }))
+[1] "`foo(...)`"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("flatten")
+> ### * flatten
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: flatten
+> ### Title: Flatten or squash a list of lists into a simpler vector
+> ### Aliases: flatten flatten_lgl flatten_int flatten_dbl flatten_cpl
+> ###   flatten_chr flatten_raw squash squash_lgl squash_int squash_dbl
+> ###   squash_cpl squash_chr squash_raw flatten_if squash_if
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> x <- replicate(2, sample(4), simplify = FALSE)
+> x
+[[1]]
+[1] 1 3 4 2
+
+[[2]]
+[1] 1 3 4 2
+
+> 
+> flatten(x)
+[[1]]
+[1] 1 3 4 2
+
+[[2]]
+[1] 1 3 4 2
+
+> flatten_int(x)
+[1] 1 3 4 2 1 3 4 2
+> 
+> # With flatten(), only one level gets removed at a time:
+> deep <- list(1, list(2, list(3)))
+> flatten(deep)
+[[1]]
+[1] 1
+
+[[2]]
+[1] 2
+
+[[3]]
+[[3]][[1]]
+[1] 3
+
+
+> flatten(flatten(deep))
+[[1]]
+[1] 1
+
+[[2]]
+[1] 2
+
+[[3]]
+[1] 3
+
+> 
+> # But squash() removes all levels:
+> squash(deep)
+[[1]]
+[1] 1
+
+[[2]]
+[1] 2
+
+[[3]]
+[1] 3
+
+> squash_dbl(deep)
+[1] 1 2 3
+> 
+> # The typed flatten functions remove one level and coerce to an atomic
+> # vector at the same time:
+> flatten_dbl(list(1, list(2)))
+[1] 1 2
+> 
+> # Only bare lists are flattened, but you can splice S3 lists
+> # explicitly:
+> foo <- set_attrs(list("bar"), class = "foo")
+Warning: `set_attrs()` is deprecated as of rlang 0.3.0
+This warning is displayed once per session.
+> str(flatten(list(1, foo, list(100))))
+List of 3
+ $ : num 1
+ $ :List of 1
+  ..$ : chr "bar"
+  ..- attr(*, "class")= chr "foo"
+ $ : num 100
+> str(flatten(list(1, splice(foo), list(100))))
+List of 3
+ $ : num 1
+ $ : chr "bar"
+ $ : num 100
+> 
+> # Instead of splicing manually, flatten_if() and squash_if() let
+> # you specify a predicate function:
+> is_foo <- function(x) inherits(x, "foo") || is_bare_list(x)
+> str(flatten_if(list(1, foo, list(100)), is_foo))
+List of 3
+ $ : num 1
+ $ : chr "bar"
+ $ : num 100
+> 
+> # squash_if() does the same with deep lists:
+> deep_foo <- list(1, list(foo, list(foo, 100)))
+> str(deep_foo)
+List of 2
+ $ : num 1
+ $ :List of 2
+  ..$ :List of 1
+  .. ..$ : chr "bar"
+  .. ..- attr(*, "class")= chr "foo"
+  ..$ :List of 2
+  .. ..$ :List of 1
+  .. .. ..$ : chr "bar"
+  .. .. ..- attr(*, "class")= chr "foo"
+  .. ..$ : num 100
+> 
+> str(squash(deep_foo))
+List of 4
+ $ : num 1
+ $ :List of 1
+  ..$ : chr "bar"
+  ..- attr(*, "class")= chr "foo"
+ $ :List of 1
+  ..$ : chr "bar"
+  ..- attr(*, "class")= chr "foo"
+ $ : num 100
+> str(squash_if(deep_foo, is_foo))
+List of 4
+ $ : num 1
+ $ : chr "bar"
+ $ : chr "bar"
+ $ : num 100
+> 
+> 
+> 
+> cleanEx()
+> nameEx("fn_body")
+> ### * fn_body
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: fn_body
+> ### Title: Get or set function body
+> ### Aliases: fn_body fn_body<-
+> 
+> ### ** Examples
+> 
+> # fn_body() is like body() but always returns a block:
+> fn <- function() do()
+> body(fn)
+do()
+> fn_body(fn)
+{
+    do()
+}
+> 
+> # It also throws an error when used on a primitive function:
+> try(fn_body(base::list))
+Error : `fn` is not a closure
+> 
+> 
+> 
+> cleanEx()
+> nameEx("fn_env")
+> ### * fn_env
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: fn_env
+> ### Title: Return the closure environment of a function
+> ### Aliases: fn_env fn_env<-
+> 
+> ### ** Examples
+> 
+> env <- child_env("base")
+> fn <- with_env(env, function() NULL)
+> identical(fn_env(fn), env)
+[1] TRUE
+> 
+> other_env <- child_env("base")
+> fn_env(fn) <- other_env
+> identical(fn_env(fn), other_env)
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("fn_fmls")
+> ### * fn_fmls
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: fn_fmls
+> ### Title: Extract arguments from a function
+> ### Aliases: fn_fmls fn_fmls_names fn_fmls_syms fn_fmls<- fn_fmls_names<-
+> 
+> ### ** Examples
+> 
+> # Extract from current call:
+> fn <- function(a = 1, b = 2) fn_fmls()
+> fn()
+$a
+[1] 1
+
+$b
+[1] 2
+
+> 
+> # fn_fmls_syms() makes it easy to forward arguments:
+> call2("apply", !!! fn_fmls_syms(lapply))
+apply(X = X, FUN = FUN, ...)
+> 
+> # You can also change the formals:
+> fn_fmls(fn) <- list(A = 10, B = 20)
+> fn()
+$A
+[1] 10
+
+$B
+[1] 20
+
+> 
+> fn_fmls_names(fn) <- c("foo", "bar")
+> fn()
+$foo
+[1] 10
+
+$bar
+[1] 20
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("frame_position")
+> ### * frame_position
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: frame_position
+> ### Title: Find the position or distance of a frame on the evaluation stack
+> ### Aliases: frame_position
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> fn <- function() g(environment())
+> g <- function(env) frame_position(env)
+> 
+> # frame_position() returns the position of the frame on the evaluation stack:
+> fn()
+Warning: `frame_position()` is deprecated as of rlang 0.3.0.
+This warning is displayed once per session.
+Warning: `stack_trim()` is deprecated as of rlang 0.3.0.
+This warning is displayed once per session.
+Warning: `ctxt_stack()` is deprecated as of rlang 0.3.0.
+This warning is displayed once per session.
+Warning: `global_frame()` is deprecated as of rlang 0.3.0.
+This warning is displayed once per session.
+[1] 1
+> identity(identity(fn()))
+[1] 3
+> 
+> # Note that it trims off intervening calls before counting so you
+> # can safely nest it within other calls:
+> g <- function(env) identity(identity(frame_position(env)))
+> fn()
+[1] 1
+> 
+> # You can also ask for the position from the current frame rather
+> # than the global frame:
+> fn <- function() g(environment())
+> g <- function(env) h(env)
+> h <- function(env) frame_position(env, from = "current")
+> fn()
+[1] 3
+> 
+> 
+> 
+> cleanEx()
+> nameEx("friendly_type")
+> ### * friendly_type
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: friendly_type
+> ### Title: Format a type for error messages
+> ### Aliases: friendly_type
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> friendly_type("logical")
+[1] "a logical vector"
+> friendly_type("integer")
+[1] "an integer vector"
+> friendly_type("string")
+[1] "a string"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("get_env")
+> ### * get_env
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: get_env
+> ### Title: Get or set the environment of an object
+> ### Aliases: get_env set_env env_poke_parent
+> 
+> ### ** Examples
+> 
+> # Environment of closure functions:
+> fn <- function() "foo"
+> get_env(fn)
+<environment: R_GlobalEnv>
+> 
+> # Or of quosures or formulas:
+> get_env(~foo)
+<environment: R_GlobalEnv>
+> get_env(quo(foo))
+<environment: R_GlobalEnv>
+> 
+> 
+> # Provide a default in case the object doesn't bundle an environment.
+> # Let's create an unevaluated formula:
+> f <- quote(~foo)
+> 
+> # The following line would fail if run because unevaluated formulas
+> # don't bundle an environment (they didn't have the chance to
+> # record one yet):
+> # get_env(f)
+> 
+> # It is often useful to provide a default when you're writing
+> # functions accepting formulas as input:
+> default <- env()
+> identical(get_env(f, default), default)
+[1] TRUE
+> 
+> # set_env() can be used to set the enclosure of functions and
+> # formulas. Let's create a function with a particular environment:
+> env <- child_env("base")
+> fn <- set_env(function() NULL, env)
+> 
+> # That function now has `env` as enclosure:
+> identical(get_env(fn), env)
+[1] TRUE
+> identical(get_env(fn), current_env())
+[1] FALSE
+> 
+> # set_env() does not work by side effect. Setting a new environment
+> # for fn has no effect on the original function:
+> other_env <- child_env(NULL)
+> set_env(fn, other_env)
+function () 
+NULL
+<environment: 0x5578c60ec328>
+> identical(get_env(fn), other_env)
+[1] FALSE
+> 
+> # Since set_env() returns a new function with a different
+> # environment, you'll need to reassign the result:
+> fn <- set_env(fn, other_env)
+> identical(get_env(fn), other_env)
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("has_length")
+> ### * has_length
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: has_length
+> ### Title: How long is an object?
+> ### Aliases: has_length
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> has_length(list())
+[1] FALSE
+> has_length(list(), 0)
+[1] TRUE
+> 
+> has_length(letters)
+[1] TRUE
+> has_length(letters, 20)
+[1] FALSE
+> has_length(letters, 26)
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("has_name")
+> ### * has_name
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: has_name
+> ### Title: Does an object have an element with this name?
+> ### Aliases: has_name
+> 
+> ### ** Examples
+> 
+> has_name(iris, "Species")
+[1] TRUE
+> has_name(mtcars, "gears")
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("hash")
+> ### * hash
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: hash
+> ### Title: Hash an object
+> ### Aliases: hash
+> 
+> ### ** Examples
+> 
+> hash(c(1, 2, 3))
+[1] "702f7dd6e81ea41d26ea3b248627ece4"
+> hash(mtcars)
+[1] "d0487363db4e6cc64fdb740cb6617fc0"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("inherits_any")
+> ### * inherits_any
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: inherits_any
+> ### Title: Does an object inherit from a set of classes?
+> ### Aliases: inherits_any inherits_all inherits_only
+> 
+> ### ** Examples
+> 
+> obj <- structure(list(), class = c("foo", "bar", "baz"))
+> 
+> # With the _any variant only one class must match:
+> inherits_any(obj, c("foobar", "bazbaz"))
+[1] FALSE
+> inherits_any(obj, c("foo", "bazbaz"))
+[1] TRUE
+> 
+> # With the _all variant all classes must match:
+> inherits_all(obj, c("foo", "bazbaz"))
+[1] FALSE
+> inherits_all(obj, c("foo", "baz"))
+[1] TRUE
+> 
+> # The order of classes must match as well:
+> inherits_all(obj, c("baz", "foo"))
+[1] FALSE
+> 
+> # inherits_only() checks that the class vectors are identical:
+> inherits_only(obj, c("foo", "baz"))
+[1] FALSE
+> inherits_only(obj, c("foo", "bar", "baz"))
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("inject")
+> ### * inject
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: inject
+> ### Title: Inject objects in an R expression
+> ### Aliases: inject
+> 
+> ### ** Examples
+> 
+> # inject() simply evaluates its argument with injection
+> # support. These expressions are equivalent:
+> 2 * 3
+[1] 6
+> inject(2 * 3)
+[1] 6
+> inject(!!2 * !!3)
+[1] 6
+> 
+> # Injection with `!!` can be useful to insert objects or
+> # expressions within other expressions, like formulas:
+> lhs <- sym("foo")
+> rhs <- sym("bar")
+> inject(!!lhs ~ !!rhs + 10)
+foo ~ bar + 10
+> 
+> # Injection with `!!!` splices lists of arguments in function
+> # calls:
+> args <- list(na.rm = TRUE, finite = 0.2)
+> inject(mean(1:10, !!!args))
+[1] 5.5
+> 
+> 
+> 
+> cleanEx()
+> nameEx("invoke")
+> ### * invoke
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: invoke
+> ### Title: Invoke a function with a list of arguments
+> ### Aliases: invoke
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # invoke() has the same purpose as do.call():
+> invoke(paste, letters)
+Warning: `invoke()` is deprecated as of rlang 0.4.0.
+Please use `exec()` or `eval(expr())`instead.
+This warning is displayed once per session.
+[1] "a b c d e f g h i j k l m n o p q r s t u v w x y z"
+> 
+> # But it creates much cleaner calls:
+> invoke(call_inspect, mtcars)
+.fn(mpg = `1`, cyl = `2`, disp = `3`, hp = `4`, drat = `5`, wt = `6`, 
+    qsec = `7`, vs = `8`, am = `9`, gear = `10`, carb = `11`)
+> 
+> # and stacktraces:
+> fn <- function(...) sys.calls()
+> invoke(fn, list(mtcars))
+[[1]]
+invoke(fn, list(mtcars))
+
+[[2]]
+.fn(`1`)
+
+> 
+> # Compare to do.call():
+> do.call(call_inspect, mtcars)
+(function (...) 
+match.call())(mpg = c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3, 24.4, 
+22.8, 19.2, 17.8, 16.4, 17.3, 15.2, 10.4, 10.4, 14.7, 32.4, 30.4, 
+33.9, 21.5, 15.5, 15.2, 13.3, 19.2, 27.3, 26, 30.4, 15.8, 19.7, 
+15, 21.4), cyl = c(6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 8, 8, 
+8, 8, 8, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 8, 6, 8, 4), disp = c(160, 
+160, 108, 258, 360, 225, 360, 146.7, 140.8, 167.6, 167.6, 275.8, 
+275.8, 275.8, 472, 460, 440, 78.7, 75.7, 71.1, 120.1, 318, 304, 
+350, 400, 79, 120.3, 95.1, 351, 145, 301, 121), hp = c(110, 110, 
+93, 110, 175, 105, 245, 62, 95, 123, 123, 180, 180, 180, 205, 
+215, 230, 66, 52, 65, 97, 150, 150, 245, 175, 66, 91, 113, 264, 
+175, 335, 109), drat = c(3.9, 3.9, 3.85, 3.08, 3.15, 2.76, 3.21, 
+3.69, 3.92, 3.92, 3.92, 3.07, 3.07, 3.07, 2.93, 3, 3.23, 4.08, 
+4.93, 4.22, 3.7, 2.76, 3.15, 3.73, 3.08, 4.08, 4.43, 3.77, 4.22, 
+3.62, 3.54, 4.11), wt = c(2.62, 2.875, 2.32, 3.215, 3.44, 3.46, 
+3.57, 3.19, 3.15, 3.44, 3.44, 4.07, 3.73, 3.78, 5.25, 5.424, 
+5.345, 2.2, 1.615, 1.835, 2.465, 3.52, 3.435, 3.84, 3.845, 1.935, 
+2.14, 1.513, 3.17, 2.77, 3.57, 2.78), qsec = c(16.46, 17.02, 
+18.61, 19.44, 17.02, 20.22, 15.84, 20, 22.9, 18.3, 18.9, 17.4, 
+17.6, 18, 17.98, 17.82, 17.42, 19.47, 18.52, 19.9, 20.01, 16.87, 
+17.3, 15.41, 17.05, 18.9, 16.7, 16.9, 14.5, 15.5, 14.6, 18.6), 
+    vs = c(0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 
+    1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1), am = c(1, 1, 
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 
+    0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1), gear = c(4, 4, 4, 3, 3, 
+    3, 3, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 3, 3, 3, 3, 
+    3, 4, 5, 5, 5, 5, 5, 4), carb = c(4, 4, 1, 1, 2, 1, 4, 2, 
+    2, 4, 4, 3, 3, 3, 4, 4, 4, 1, 2, 1, 1, 2, 2, 4, 2, 1, 2, 
+    2, 4, 6, 8, 2))
+> do.call(fn, list(mtcars))
+[[1]]
+do.call(fn, list(mtcars))
+
+[[2]]
+(function (...) 
+sys.calls())(list(mpg = c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3, 
+24.4, 22.8, 19.2, 17.8, 16.4, 17.3, 15.2, 10.4, 10.4, 14.7, 32.4, 
+30.4, 33.9, 21.5, 15.5, 15.2, 13.3, 19.2, 27.3, 26, 30.4, 15.8, 
+19.7, 15, 21.4), cyl = c(6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 
+8, 8, 8, 8, 8, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 8, 6, 8, 4), 
+    disp = c(160, 160, 108, 258, 360, 225, 360, 146.7, 140.8, 
+    167.6, 167.6, 275.8, 275.8, 275.8, 472, 460, 440, 78.7, 75.7, 
+    71.1, 120.1, 318, 304, 350, 400, 79, 120.3, 95.1, 351, 145, 
+    301, 121), hp = c(110, 110, 93, 110, 175, 105, 245, 62, 95, 
+    123, 123, 180, 180, 180, 205, 215, 230, 66, 52, 65, 97, 150, 
+    150, 245, 175, 66, 91, 113, 264, 175, 335, 109), drat = c(3.9, 
+    3.9, 3.85, 3.08, 3.15, 2.76, 3.21, 3.69, 3.92, 3.92, 3.92, 
+    3.07, 3.07, 3.07, 2.93, 3, 3.23, 4.08, 4.93, 4.22, 3.7, 2.76, 
+    3.15, 3.73, 3.08, 4.08, 4.43, 3.77, 4.22, 3.62, 3.54, 4.11
+    ), wt = c(2.62, 2.875, 2.32, 3.215, 3.44, 3.46, 3.57, 3.19, 
+    3.15, 3.44, 3.44, 4.07, 3.73, 3.78, 5.25, 5.424, 5.345, 2.2, 
+    1.615, 1.835, 2.465, 3.52, 3.435, 3.84, 3.845, 1.935, 2.14, 
+    1.513, 3.17, 2.77, 3.57, 2.78), qsec = c(16.46, 17.02, 18.61, 
+    19.44, 17.02, 20.22, 15.84, 20, 22.9, 18.3, 18.9, 17.4, 17.6, 
+    18, 17.98, 17.82, 17.42, 19.47, 18.52, 19.9, 20.01, 16.87, 
+    17.3, 15.41, 17.05, 18.9, 16.7, 16.9, 14.5, 15.5, 14.6, 18.6
+    ), vs = c(0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 
+    0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1), am = c(1, 
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 
+    0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1), gear = c(4, 4, 4, 3, 
+    3, 3, 3, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 3, 3, 3, 
+    3, 3, 4, 5, 5, 5, 5, 5, 4), carb = c(4, 4, 1, 1, 2, 1, 4, 
+    2, 2, 4, 4, 3, 3, 3, 4, 4, 4, 1, 2, 1, 1, 2, 2, 4, 2, 1, 
+    2, 2, 4, 6, 8, 2)))
+
+> 
+> 
+> # Specify the function name either by supplying a string
+> # identifying the function (it should be visible in .env):
+> invoke("call_inspect", letters)
+call_inspect(`1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`, 
+    `11`, `12`, `13`, `14`, `15`, `16`, `17`, `18`, `19`, `20`, 
+    `21`, `22`, `23`, `24`, `25`, `26`)
+> 
+> # Or by changing the .bury argument, with which you can also change
+> # the argument prefix:
+> invoke(call_inspect, mtcars, .bury = c("inspect!", "col"))
+`inspect!`(mpg = col1, cyl = col2, disp = col3, hp = col4, drat = col5, 
+    wt = col6, qsec = col7, vs = col8, am = col9, gear = col10, 
+    carb = col11)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_call")
+> ### * is_call
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_call
+> ### Title: Is object a call?
+> ### Aliases: is_call
+> 
+> ### ** Examples
+> 
+> is_call(quote(foo(bar)))
+[1] TRUE
+> 
+> # You can pattern-match the call with additional arguments:
+> is_call(quote(foo(bar)), "foo")
+[1] TRUE
+> is_call(quote(foo(bar)), "bar")
+[1] FALSE
+> is_call(quote(foo(bar)), quote(foo))
+[1] TRUE
+> 
+> # Match the number of arguments with is_call():
+> is_call(quote(foo(bar)), "foo", 1)
+[1] TRUE
+> is_call(quote(foo(bar)), "foo", 2)
+[1] FALSE
+> 
+> 
+> # By default, namespaced calls are tested unqualified:
+> ns_expr <- quote(base::list())
+> is_call(ns_expr, "list")
+[1] TRUE
+> 
+> # You can also specify whether the call shouldn't be namespaced by
+> # supplying an empty string:
+> is_call(ns_expr, "list", ns = "")
+[1] FALSE
+> 
+> # Or if it should have a namespace:
+> is_call(ns_expr, "list", ns = "utils")
+[1] FALSE
+> is_call(ns_expr, "list", ns = "base")
+[1] TRUE
+> 
+> # You can supply multiple namespaces:
+> is_call(ns_expr, "list", ns = c("utils", "base"))
+[1] TRUE
+> is_call(ns_expr, "list", ns = c("utils", "stats"))
+[1] FALSE
+> 
+> # If one of them is "", unnamespaced calls will match as well:
+> is_call(quote(list()), "list", ns = "base")
+[1] FALSE
+> is_call(quote(list()), "list", ns = c("base", ""))
+[1] TRUE
+> is_call(quote(base::list()), "list", ns = c("base", ""))
+[1] TRUE
+> 
+> 
+> # The name argument is vectorised so you can supply a list of names
+> # to match with:
+> is_call(quote(foo(bar)), c("bar", "baz"))
+[1] FALSE
+> is_call(quote(foo(bar)), c("bar", "foo"))
+[1] TRUE
+> is_call(quote(base::list), c("::", ":::", "$", "@"))
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_callable")
+> ### * is_callable
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_callable
+> ### Title: Is an object callable?
+> ### Aliases: is_callable
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Symbolic objects and functions are callable:
+> is_callable(quote(foo))
+[1] TRUE
+> is_callable(base::identity)
+[1] TRUE
+> 
+> # node_poke_car() lets you modify calls without any checking:
+> lang <- quote(foo(10))
+> node_poke_car(lang, current_env())
+> 
+> # Use is_callable() to check an input object is safe to put as CAR:
+> obj <- base::identity
+> 
+> if (is_callable(obj)) {
++   lang <- node_poke_car(lang, obj)
++ } else {
++   abort("`obj` must be callable")
++ }
+> 
+> eval_bare(lang)
+[1] 10
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_copyable")
+> ### * is_copyable
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_copyable
+> ### Title: Is an object copyable?
+> ### Aliases: is_copyable
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Let's add attributes with structure() to uncopyable types. Since
+> # they are not copied, the attributes are changed in place:
+> env <- env()
+> structure(env, foo = "bar")
+<environment: 0x5578c662c018>
+attr(,"foo")
+[1] "bar"
+> env
+<environment: 0x5578c662c018>
+attr(,"foo")
+[1] "bar"
+> 
+> # These objects that can only be changed with side effect are not
+> # copyable:
+> is_copyable(env)
+[1] FALSE
+> 
+> structure(base::list, foo = "bar")
+function (...)  .Primitive("list")
+attr(,"foo")
+[1] "bar"
+> str(base::list)
+function (...)  
+ - attr(*, "foo")= chr "bar"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_empty")
+> ### * is_empty
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_empty
+> ### Title: Is object an empty vector or NULL?
+> ### Aliases: is_empty
+> 
+> ### ** Examples
+> 
+> is_empty(NULL)
+[1] TRUE
+> is_empty(list())
+[1] TRUE
+> is_empty(list(NULL))
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_expression")
+> ### * is_expression
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_expression
+> ### Title: Is an object an expression?
+> ### Aliases: is_expression is_syntactic_literal is_symbolic
+> 
+> ### ** Examples
+> 
+> q1 <- quote(1)
+> is_expression(q1)
+[1] TRUE
+> is_syntactic_literal(q1)
+[1] TRUE
+> 
+> q2 <- quote(x)
+> is_expression(q2)
+[1] TRUE
+> is_symbol(q2)
+[1] TRUE
+> 
+> q3 <- quote(x + 1)
+> is_expression(q3)
+[1] TRUE
+> is_call(q3)
+[1] TRUE
+> 
+> 
+> # Atomic expressions are the terminating nodes of a call tree:
+> # NULL or a scalar atomic vector:
+> is_syntactic_literal("string")
+[1] TRUE
+> is_syntactic_literal(NULL)
+[1] TRUE
+> 
+> is_syntactic_literal(letters)
+[1] FALSE
+> is_syntactic_literal(quote(call()))
+[1] FALSE
+> 
+> # Parsable literals have the property of being self-quoting:
+> identical("foo", quote("foo"))
+[1] TRUE
+> identical(1L, quote(1L))
+[1] TRUE
+> identical(NULL, quote(NULL))
+[1] TRUE
+> 
+> # Like any literals, they can be evaluated within the empty
+> # environment:
+> eval_bare(quote(1L), empty_env())
+[1] 1
+> 
+> # Whereas it would fail for symbolic expressions:
+> # eval_bare(quote(c(1L, 2L)), empty_env())
+> 
+> 
+> # Pairlists are also language objects representing argument lists.
+> # You will usually encounter them with extracted formals:
+> fmls <- formals(is_expression)
+> typeof(fmls)
+[1] "pairlist"
+> 
+> # Since they are mostly an internal data structure, is_expression()
+> # returns FALSE for pairlists, so you will have to check explicitly
+> # for them:
+> is_expression(fmls)
+[1] FALSE
+> is_pairlist(fmls)
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_formula")
+> ### * is_formula
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_formula
+> ### Title: Is object a formula?
+> ### Aliases: is_formula is_bare_formula
+> 
+> ### ** Examples
+> 
+> x <- disp ~ am
+> is_formula(x)
+[1] TRUE
+> 
+> is_formula(~10)
+[1] TRUE
+> is_formula(10)
+[1] FALSE
+> 
+> is_formula(quo(foo))
+[1] TRUE
+> is_bare_formula(quo(foo))
+[1] FALSE
+> 
+> # Note that unevaluated formulas are treated as bare formulas even
+> # though they don't inherit from "formula":
+> f <- quote(~foo)
+> is_bare_formula(f)
+[1] FALSE
+> 
+> # However you can specify `scoped` if you need the predicate to
+> # return FALSE for these unevaluated formulas:
+> is_bare_formula(f, scoped = TRUE)
+[1] FALSE
+> is_bare_formula(eval(f), scoped = TRUE)
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_function")
+> ### * is_function
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_function
+> ### Title: Is object a function?
+> ### Aliases: is_function is_closure is_primitive is_primitive_eager
+> ###   is_primitive_lazy
+> 
+> ### ** Examples
+> 
+> # Primitive functions are not closures:
+> is_closure(base::c)
+[1] FALSE
+> is_primitive(base::c)
+[1] TRUE
+> 
+> # On the other hand, internal functions are wrapped in a closure
+> # and appear as such from the R side:
+> is_closure(base::eval)
+[1] TRUE
+> 
+> # Both closures and primitives are functions:
+> is_function(base::c)
+[1] TRUE
+> is_function(base::eval)
+[1] TRUE
+> 
+> # Primitive functions never appear in evaluation stacks:
+> is_primitive(base::`[[`)
+[1] TRUE
+> is_primitive(base::list)
+[1] TRUE
+> list(ctxt_stack())[[1]]
+[[1]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> # While closures do:
+> identity(identity(ctxt_stack()))
+[[1]]
+<frame 2> (0)
+expr: identity(ctxt_stack())
+env:  [local 0x5578c68533a0]
+
+[[2]]
+<frame 1> (0)
+expr: identity(identity(ctxt_stack()))
+env:  [local 0x5578c68534b8]
+
+[[3]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> # Many primitive functions evaluate arguments eagerly:
+> is_primitive_eager(base::c)
+[1] TRUE
+> is_primitive_eager(base::list)
+[1] TRUE
+> is_primitive_eager(base::`+`)
+[1] TRUE
+> 
+> # However, primitives that operate on expressions, like quote() or
+> # substitute(), are lazy:
+> is_primitive_lazy(base::quote)
+[1] TRUE
+> is_primitive_lazy(base::substitute)
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_installed")
+> ### * is_installed
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_installed
+> ### Title: Are packages installed in any of the libraries?
+> ### Aliases: is_installed check_installed
+> 
+> ### ** Examples
+> 
+> is_installed("utils")
+[1] TRUE
+> is_installed(c("base", "ggplot5"))
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_integerish")
+> ### * is_integerish
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_integerish
+> ### Title: Is a vector integer-like?
+> ### Aliases: is_integerish is_bare_integerish is_scalar_integerish
+> 
+> ### ** Examples
+> 
+> is_integerish(10L)
+[1] TRUE
+> is_integerish(10.0)
+[1] TRUE
+> is_integerish(10.0, n = 2)
+[1] FALSE
+> is_integerish(10.000001)
+[1] FALSE
+> is_integerish(TRUE)
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_named")
+> ### * is_named
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_named
+> ### Title: Is object named?
+> ### Aliases: is_named is_dictionaryish have_name
+> 
+> ### ** Examples
+> 
+> # A data frame usually has valid, unique names
+> is_named(mtcars)
+[1] TRUE
+> have_name(mtcars)
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+> is_dictionaryish(mtcars)
+[1] TRUE
+> 
+> # But data frames can also have duplicated columns:
+> dups <- cbind(mtcars, cyl = seq_len(nrow(mtcars)))
+> is_dictionaryish(dups)
+[1] FALSE
+> 
+> # The names are still valid:
+> is_named(dups)
+[1] TRUE
+> have_name(dups)
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+> 
+> 
+> # For empty objects the semantics are slightly different.
+> # is_dictionaryish() returns TRUE for empty objects:
+> is_dictionaryish(list())
+[1] TRUE
+> 
+> # But is_named() will only return TRUE if there is a names
+> # attribute (a zero-length character vector in this case):
+> x <- set_names(list(), character(0))
+> is_named(x)
+[1] TRUE
+> 
+> 
+> # Empty and missing names are invalid:
+> invalid <- dups
+> names(invalid)[2] <- ""
+> names(invalid)[5] <- NA
+> 
+> # is_named() performs a global check while have_name() can show you
+> # where the problem is:
+> is_named(invalid)
+[1] FALSE
+> have_name(invalid)
+ [1]  TRUE FALSE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+> 
+> # have_name() will work even with vectors that don't have a names
+> # attribute:
+> have_name(letters)
+ [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[25] FALSE FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_reference")
+> ### * is_reference
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_reference
+> ### Title: Is an object referencing another?
+> ### Aliases: is_reference
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Reassigning an uncopyable object such as an environment creates a
+> # reference:
+> env <- env()
+> ref <- env
+> is_reference(ref, env)
+[1] TRUE
+> 
+> # Due to copy-on-write optimisation, a copied vector can
+> # temporarily reference the original vector:
+> vec <- 1:10
+> copy <- vec
+> is_reference(copy, vec)
+[1] TRUE
+> 
+> # Once you modify on of them, the copy is triggered in the
+> # background and the objects cease to reference each other:
+> vec[[1]] <- 100
+> is_reference(copy, vec)
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_true")
+> ### * is_true
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_true
+> ### Title: Is object identical to TRUE or FALSE?
+> ### Aliases: is_true is_false
+> 
+> ### ** Examples
+> 
+> is_true(TRUE)
+[1] TRUE
+> is_true(1)
+[1] FALSE
+> 
+> is_false(FALSE)
+[1] TRUE
+> is_false(0)
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("list2")
+> ### * list2
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: list2
+> ### Title: Collect dots in a list
+> ### Aliases: list2 ll dots_list
+> 
+> ### ** Examples
+> 
+> # Let's create a function that takes a variable number of arguments:
+> numeric <- function(...) {
++   dots <- list2(...)
++   num <- as.numeric(dots)
++   set_names(num, names(dots))
++ }
+> numeric(1, 2, 3)
+[1] 1 2 3
+> 
+> # The main difference with list(...) is that list2(...) enables
+> # the `!!!` syntax to splice lists:
+> x <- list(2, 3)
+> numeric(1, !!! x, 4)
+[1] 1 2 3 4
+> 
+> # As well as unquoting of names:
+> nm <- "yup!"
+> numeric(!!nm := 1)
+yup! 
+   1 
+> 
+> 
+> # One useful application of splicing is to work around exact and
+> # partial matching of arguments. Let's create a function taking
+> # named arguments and dots:
+> fn <- function(data, ...) {
++   list2(...)
++ }
+> 
+> # You normally cannot pass an argument named `data` through the dots
+> # as it will match `fn`'s `data` argument. The splicing syntax
+> # provides a workaround:
+> fn("wrong!", data = letters)  # exact matching of `data`
+[[1]]
+[1] "wrong!"
+
+> fn("wrong!", dat = letters)   # partial matching of `data`
+[[1]]
+[1] "wrong!"
+
+> fn(some_data, !!!list(data = letters))  # no matching
+$data
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+
+> 
+> 
+> # Empty arguments trigger an error by default:
+> try(fn(, ))
+list()
+> 
+> # You can choose to preserve empty arguments instead:
+> list3 <- function(...) dots_list(..., .preserve_empty = TRUE)
+> 
+> # Note how the last empty argument is still ignored because
+> # `.ignore_empty` defaults to "trailing":
+> list3(, )
+[[1]]
+
+
+> 
+> # The list with preserved empty arguments is equivalent to:
+> list(missing_arg())
+[[1]]
+
+
+> 
+> 
+> # Arguments with duplicated names are kept by default:
+> list2(a = 1, a = 2, b = 3, b = 4, 5, 6)
+$a
+[1] 1
+
+$a
+[1] 2
+
+$b
+[1] 3
+
+$b
+[1] 4
+
+[[5]]
+[1] 5
+
+[[6]]
+[1] 6
+
+> 
+> # Use the `.homonyms` argument to keep only the first of these:
+> dots_list(a = 1, a = 2, b = 3, b = 4, 5, 6, .homonyms = "first")
+$a
+[1] 1
+
+$b
+[1] 3
+
+[[3]]
+[1] 5
+
+[[4]]
+[1] 6
+
+> 
+> # Or the last:
+> dots_list(a = 1, a = 2, b = 3, b = 4, 5, 6, .homonyms = "last")
+$a
+[1] 2
+
+$b
+[1] 4
+
+[[3]]
+[1] 5
+
+[[4]]
+[1] 6
+
+> 
+> # Or raise an informative error:
+> try(dots_list(a = 1, a = 2, b = 3, b = 4, 5, 6, .homonyms = "error"))
+Error : Arguments can't have the same name. We found these problems:
+* Multiple arguments named `a` at positions 1 and 2
+* Multiple arguments named `b` at positions 3 and 4
+> 
+> 
+> # dots_list() can be configured to warn when a `<-` call is
+> # detected:
+> my_list <- function(...) dots_list(..., .check_assign = TRUE)
+> my_list(a <- 1)
+Warning: Using `<-` as argument is often a mistake.
+Do you need to use `=` to match an argument?
+
+If you really want to use `<-`, please wrap in braces:
+
+  # Bad:
+  fn(a <- 1)
+
+  # Good:
+  fn(a = 1)       # Match 1 to parameter `a`
+  fn({ a <- 1 })  # Assign 1 to variable `a`
+[[1]]
+[1] 1
+
+> 
+> # There is no warning if the assignment is wrapped in braces.
+> # This requires users to be explicit about their intent:
+> my_list({ a <- 1 })
+[[1]]
+[1] 1
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("local_bindings")
+> ### * local_bindings
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: local_bindings
+> ### Title: Temporarily change bindings of an environment
+> ### Aliases: local_bindings with_bindings
+> 
+> ### ** Examples
+> 
+> foo <- "foo"
+> bar <- "bar"
+> 
+> # `foo` will be temporarily rebinded while executing `expr`
+> with_bindings(paste(foo, bar), foo = "rebinded")
+[1] "rebinded bar"
+> paste(foo, bar)
+[1] "foo bar"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("local_options")
+> ### * local_options
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: local_options
+> ### Title: Change global options
+> ### Aliases: local_options with_options push_options peek_options
+> ###   peek_option
+> ### Keywords: experimental
+> 
+> ### ** Examples
+> 
+> # Store and retrieve a global option:
+> push_options(my_option = 10)
+> peek_option("my_option")
+[1] 10
+> 
+> # Change the option temporarily:
+> with_options(my_option = 100, peek_option("my_option"))
+[1] 100
+> peek_option("my_option")
+[1] 10
+> 
+> # The scoped variant is useful within functions:
+> fn <- function() {
++   local_options(my_option = 100)
++   peek_option("my_option")
++ }
+> fn()
+[1] 100
+> peek_option("my_option")
+[1] 10
+> 
+> # The plural peek returns a named list:
+> peek_options("my_option")
+$my_option
+[1] 10
+
+> peek_options("my_option", "digits")
+$my_option
+[1] 10
+
+$digits
+[1] 7
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("missing")
+> ### * missing
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: missing
+> ### Title: Missing values
+> ### Aliases: missing na_lgl na_int na_dbl na_chr na_cpl
+> ### Keywords: datasets internal
+> 
+> ### ** Examples
+> 
+> typeof(NA)
+[1] "logical"
+> typeof(na_lgl)
+[1] "logical"
+> typeof(na_int)
+[1] "integer"
+> 
+> # Note that while the base R missing symbols cannot be overwritten,
+> # that's not the case for rlang's aliases:
+> na_dbl <- NA
+> typeof(na_dbl)
+[1] "logical"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("missing_arg")
+> ### * missing_arg
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: missing_arg
+> ### Title: Generate or handle a missing argument
+> ### Aliases: missing_arg is_missing maybe_missing
+> 
+> ### ** Examples
+> 
+> # The missing argument usually arises inside a function when the
+> # user omits an argument that does not have a default:
+> fn <- function(x) is_missing(x)
+> fn()
+[1] TRUE
+> 
+> # Creating a missing argument can also be useful to generate calls
+> args <- list(1, missing_arg(), 3, missing_arg())
+> quo(fn(!!! args))
+<quosure>
+expr: ^fn(1, , 3, )
+env:  global
+> 
+> # Other ways to create that object include:
+> quote(expr = )
+
+> expr()
+
+> 
+> # It is perfectly valid to generate and assign the missing
+> # argument in a list.
+> x <- missing_arg()
+> l <- list(missing_arg())
+> 
+> # Just don't evaluate a symbol that contains the empty argument.
+> # Evaluating the object `x` that we created above would trigger an
+> # error.
+> # x  # Not run
+> 
+> # On the other hand accessing a missing argument contained in a
+> # list does not trigger an error because subsetting is a function
+> # call:
+> l[[1]]
+
+> is.null(l[[1]])
+[1] FALSE
+> 
+> # In case you really need to access a symbol that might contain the
+> # empty argument object, use maybe_missing():
+> maybe_missing(x)
+
+> is.null(maybe_missing(x))
+[1] FALSE
+> is_missing(maybe_missing(x))
+[1] TRUE
+> 
+> 
+> # Note that base::missing() only works on symbols and does not
+> # support complex expressions. For this reason the following lines
+> # would throw an error:
+> 
+> #> missing(missing_arg())
+> #> missing(l[[1]])
+> 
+> # while is_missing() will work as expected:
+> is_missing(missing_arg())
+[1] TRUE
+> is_missing(l[[1]])
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("names2")
+> ### * names2
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: names2
+> ### Title: Get names of a vector
+> ### Aliases: names2
+> 
+> ### ** Examples
+> 
+> names2(letters)
+ [1] "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""
+[26] ""
+> 
+> # It also takes care of standardising missing names:
+> x <- set_names(1:3, c("a", NA, "b"))
+> names2(x)
+[1] "a" ""  "b"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("new-vector")
+> ### * new-vector
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: new-vector
+> ### Title: Create vectors matching a given length
+> ### Aliases: new-vector new_logical new_integer new_double new_character
+> ###   new_complex new_raw new_list
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> new_list(10)
+[[1]]
+NULL
+
+[[2]]
+NULL
+
+[[3]]
+NULL
+
+[[4]]
+NULL
+
+[[5]]
+NULL
+
+[[6]]
+NULL
+
+[[7]]
+NULL
+
+[[8]]
+NULL
+
+[[9]]
+NULL
+
+[[10]]
+NULL
+
+> new_logical(10)
+ [1] NA NA NA NA NA NA NA NA NA NA
+> 
+> 
+> 
+> cleanEx()
+> nameEx("new_formula")
+> ### * new_formula
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: new_formula
+> ### Title: Create a formula
+> ### Aliases: new_formula
+> 
+> ### ** Examples
+> 
+> new_formula(quote(a), quote(b))
+a ~ b
+> new_formula(NULL, quote(b))
+~b
+> 
+> 
+> 
+> cleanEx()
+> nameEx("new_function")
+> ### * new_function
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: new_function
+> ### Title: Create a function
+> ### Aliases: new_function
+> 
+> ### ** Examples
+> 
+> f <- function() letters
+> g <- new_function(NULL, quote(letters))
+> identical(f, g)
+[1] TRUE
+> 
+> # Pass a list or pairlist of named arguments to create a function
+> # with parameters. The name becomes the parameter name and the
+> # argument the default value for this parameter:
+> new_function(list(x = 10), quote(x))
+function (x = 10) 
+x
+> new_function(pairlist2(x = 10), quote(x))
+function (x = 10) 
+x
+> 
+> # Use `exprs()` to create quoted defaults. Compare:
+> new_function(pairlist2(x = 5 + 5), quote(x))
+function (x = 10) 
+x
+> new_function(exprs(x = 5 + 5), quote(x))
+function (x = 5 + 5) 
+x
+> 
+> # Pass empty arguments to omit defaults. `list()` doesn't allow
+> # empty arguments but `pairlist2()` does:
+> new_function(pairlist2(x = , y = 5 + 5), quote(x + y))
+function (x, y = 10) 
+x + y
+> new_function(exprs(x = , y = 5 + 5), quote(x + y))
+function (x, y = 5 + 5) 
+x + y
+> 
+> 
+> 
+> cleanEx()
+> nameEx("new_weakref")
+> ### * new_weakref
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: new_weakref
+> ### Title: Create a weak reference
+> ### Aliases: new_weakref
+> ### Keywords: experimental
+> 
+> ### ** Examples
+> 
+> e <- env()
+> 
+> # Create a weak reference to e
+> w <- new_weakref(e, finalizer = function(e) message("finalized"))
+> 
+> # Get the key object from the weak reference
+> identical(wref_key(w), e)
+[1] TRUE
+> 
+> # When the regular reference (the `e` binding) is removed and a GC occurs,
+> # the weak reference will not keep the object alive.
+> rm(e)
+> gc()
+finalized
+         used (Mb) gc trigger (Mb) max used (Mb)
+Ncells 494925 26.5    1086970 58.1   654202 35.0
+Vcells 896769  6.9    8388608 64.0  1770362 13.6
+> identical(wref_key(w), NULL)
+[1] TRUE
+> 
+> 
+> # A weak reference with a key and value. The value contains data about the
+> # key.
+> k <- env()
+> v <- list(1, 2, 3)
+> w <- new_weakref(k, v)
+> 
+> identical(wref_key(w), k)
+[1] TRUE
+> identical(wref_value(w), v)
+[1] TRUE
+> 
+> # When v is removed, the weak ref keeps it alive because k is still reachable.
+> rm(v)
+> gc()
+         used (Mb) gc trigger (Mb) max used (Mb)
+Ncells 494940 26.5    1086970 58.1   654202 35.0
+Vcells 896667  6.9    8388608 64.0  1770362 13.6
+> identical(wref_value(w), list(1, 2, 3))
+[1] TRUE
+> 
+> # When k is removed, the weak ref does not keep k or v alive.
+> rm(k)
+> gc()
+         used (Mb) gc trigger (Mb) max used (Mb)
+Ncells 494939 26.5    1086970 58.1   654202 35.0
+Vcells 896667  6.9    8388608 64.0  1770362 13.6
+> identical(wref_key(w), NULL)
+[1] TRUE
+> identical(wref_value(w), NULL)
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("nse-defuse")
+> ### * nse-defuse
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: nse-defuse
+> ### Title: Defuse R expressions
+> ### Aliases: nse-defuse quotation expr enexpr exprs enexprs ensym ensyms
+> ###   quo enquo quos enquos
+> 
+> ### ** Examples
+> 
+> # expr() and exprs() capture expressions that you supply:
+> expr(symbol)
+symbol
+> exprs(several, such, symbols)
+[[1]]
+several
+
+[[2]]
+such
+
+[[3]]
+symbols
+
+> 
+> # enexpr() and enexprs() capture expressions that your user supplied:
+> expr_inputs <- function(arg, ...) {
++   user_exprs <- enexprs(arg, ...)
++   user_exprs
++ }
+> expr_inputs(hello)
+[[1]]
+hello
+
+> expr_inputs(hello, bonjour, ciao)
+[[1]]
+hello
+
+[[2]]
+bonjour
+
+[[3]]
+ciao
+
+> 
+> # ensym() and ensyms() provide additional type checking to ensure
+> # the user calling your function has supplied bare object names:
+> sym_inputs <- function(...) {
++   user_symbols <- ensyms(...)
++   user_symbols
++ }
+> sym_inputs(hello, "bonjour")
+[[1]]
+hello
+
+[[2]]
+bonjour
+
+> ## sym_inputs(say(hello))  # Error: Must supply symbols or strings
+> expr_inputs(say(hello))
+[[1]]
+say(hello)
+
+> 
+> 
+> # All these quoting functions have quasiquotation support. This
+> # means that you can unquote (evaluate and inline) part of the
+> # captured expression:
+> what <- sym("bonjour")
+> expr(say(what))
+say(what)
+> expr(say(!!what))
+say(bonjour)
+> 
+> # This also applies to expressions supplied by the user. This is
+> # like an escape hatch that allows control over the captured
+> # expression:
+> expr_inputs(say(!!what), !!what)
+[[1]]
+say(bonjour)
+
+[[2]]
+bonjour
+
+> 
+> 
+> # Finally, you can capture expressions as quosures. A quosure is an
+> # object that contains both the expression and its environment:
+> quo <- quo(letters)
+> quo
+<quosure>
+expr: ^letters
+env:  global
+> 
+> get_expr(quo)
+letters
+> get_env(quo)
+<environment: R_GlobalEnv>
+> 
+> # Quosures can be evaluated with eval_tidy():
+> eval_tidy(quo)
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+> 
+> # They have the nice property that you can pass them around from
+> # context to context (that is, from function to function) and they
+> # still evaluate in their original environment:
+> multiply_expr_by_10 <- function(expr) {
++   # We capture the user expression and its environment:
++   expr <- enquo(expr)
++ 
++   # Then create an object that only exists in this function:
++   local_ten <- 10
++ 
++   # Now let's create a multiplication expression that (a) inlines
++   # the user expression as LHS (still wrapped in its quosure) and
++   # (b) refers to the local object in the RHS:
++   quo(!!expr * local_ten)
++ }
+> quo <- multiply_expr_by_10(2 + 3)
+> 
+> # The local parts of the quosure are printed in colour if your
+> # terminal is capable of displaying colours:
+> quo
+<quosure>
+expr: ^(^2 + 3) * local_ten
+env:  0x5578c6c4a5a0
+> 
+> # All the quosures in the expression evaluate in their original
+> # context. The local objects are looked up properly and we get the
+> # expected result:
+> eval_tidy(quo)
+[1] 50
+> 
+> 
+> 
+> cleanEx()
+> nameEx("nse-force")
+> ### * nse-force
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: nse-force
+> ### Title: Force parts of an expression
+> ### Aliases: nse-force quasiquotation UQ UQS {{}} {{ !! !!! := qq_show
+> 
+> ### ** Examples
+> 
+> # Interpolation with {{  }} is the easiest way to forward
+> # arguments to tidy eval functions:
+> if (is_attached("package:dplyr")) {
++ 
++ # Forward all arguments involving data frame columns by
++ # interpolating them within other data masked arguments.
++ # Here we interpolate `arg` in a `summarise()` call:
++ my_function <- function(data, arg) {
++   summarise(data, avg = mean({{ arg }}, na.rm = TRUE))
++ }
++ 
++ my_function(mtcars, cyl)
++ my_function(mtcars, cyl * 10)
++ 
++ # The  operator is just a shortcut for `!!enquo()`:
++ my_function <- function(data, arg) {
++   summarise(data, avg = mean(!!enquo(arg), na.rm = TRUE))
++ }
++ 
++ my_function(mtcars, cyl)
++ 
++ }
+> 
+> # Quasiquotation functions quote expressions like base::quote()
+> quote(how_many(this))
+how_many(this)
+> expr(how_many(this))
+how_many(this)
+> quo(how_many(this))
+<quosure>
+expr: ^how_many(this)
+env:  global
+> 
+> # In addition, they support unquoting. Let's store symbols
+> # (i.e. object names) in variables:
+> this <- sym("apples")
+> that <- sym("oranges")
+> 
+> # With unquotation you can insert the contents of these variables
+> # inside the quoted expression:
+> expr(how_many(!!this))
+how_many(apples)
+> expr(how_many(!!that))
+how_many(oranges)
+> 
+> # You can also insert values:
+> expr(how_many(!!(1 + 2)))
+how_many(3)
+> quo(how_many(!!(1 + 2)))
+<quosure>
+expr: ^how_many(3)
+env:  global
+> 
+> 
+> # Note that when you unquote complex objects into an expression,
+> # the base R printer may be a bit misleading. For instance compare
+> # the output of `expr()` and `quo()` (which uses a custom printer)
+> # when we unquote an integer vector:
+> expr(how_many(!!(1:10)))
+how_many(1:10)
+> quo(how_many(!!(1:10)))
+<quosure>
+expr: ^how_many(<int: 1L, 2L, 3L, 4L, 5L, ...>)
+env:  global
+> 
+> # This is why it's often useful to use qq_show() to examine the
+> # result of unquotation operators. It uses the same printer as
+> # quosures but does not return anything:
+> qq_show(how_many(!!(1:10)))
+how_many(<int: 1L, 2L, 3L, 4L, 5L, ...>)
+> 
+> 
+> # Use `!!!` to add multiple arguments to a function. Its argument
+> # should evaluate to a list or vector:
+> args <- list(1:3, na.rm = TRUE)
+> quo(mean(!!!args))
+<quosure>
+expr: ^mean(<int: 1L, 2L, 3L>, na.rm = TRUE)
+env:  global
+> 
+> # You can combine the two
+> var <- quote(xyz)
+> extra_args <- list(trim = 0.9, na.rm = TRUE)
+> quo(mean(!!var , !!!extra_args))
+<quosure>
+expr: ^mean(xyz, trim = 0.9, na.rm = TRUE)
+env:  global
+> 
+> 
+> # The plural versions have support for the `:=` operator.
+> # Like `=`, `:=` creates named arguments:
+> quos(mouse1 := bernard, mouse2 = bianca)
+<list_of<quosure>>
+
+$mouse1
+<quosure>
+expr: ^bernard
+env:  global
+
+$mouse2
+<quosure>
+expr: ^bianca
+env:  global
+
+> 
+> # The `:=` is mainly useful to unquote names. Unlike `=` it
+> # supports `!!` on its LHS:
+> var <- "unquote me!"
+> quos(!!var := bernard, mouse2 = bianca)
+<list_of<quosure>>
+
+$`unquote me!`
+<quosure>
+expr: ^bernard
+env:  global
+
+$mouse2
+<quosure>
+expr: ^bianca
+env:  global
+
+> 
+> 
+> # All these features apply to dots captured by enquos():
+> fn <- function(...) enquos(...)
+> fn(!!!args, !!var := penny)
+<list_of<quosure>>
+
+[[1]]
+<quosure>
+expr: ^<int: 1L, 2L, 3L>
+env:  empty
+
+$na.rm
+<quosure>
+expr: ^TRUE
+env:  empty
+
+$`unquote me!`
+<quosure>
+expr: ^penny
+env:  global
+
+> 
+> 
+> # Unquoting is especially useful for building an expression by
+> # expanding around a variable part (the unquoted part):
+> quo1 <- quo(toupper(foo))
+> quo1
+<quosure>
+expr: ^toupper(foo)
+env:  global
+> 
+> quo2 <- quo(paste(!!quo1, bar))
+> quo2
+<quosure>
+expr: ^paste(^toupper(foo), bar)
+env:  global
+> 
+> quo3 <- quo(list(!!quo2, !!!syms(letters[1:5])))
+> quo3
+<quosure>
+expr: ^list(^paste(^toupper(foo), bar), a, b, c, d, e)
+env:  global
+> 
+> 
+> 
+> cleanEx()
+> nameEx("op-definition")
+> ### * op-definition
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: op-definition
+> ### Title: Definition operator
+> ### Aliases: op-definition is_definition new_definition is_formulaish
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> 
+> # A predicate is provided to distinguish formulas from the
+> # colon-equals operator:
+> is_definition(quote(a := b))
+[1] TRUE
+> is_definition(a ~ b)
+[1] FALSE
+> 
+> 
+> # is_formulaish() tests for both definitions and formulas:
+> is_formulaish(a ~ b)
+[1] TRUE
+> is_formulaish(quote(a := b))
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("op-get-attr")
+> ### * op-get-attr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: op-get-attr
+> ### Title: Infix attribute accessor and setter
+> ### Aliases: op-get-attr %@% %@%<-
+> 
+> ### ** Examples
+> 
+> # Unlike `@`, this operator extracts attributes for any kind of
+> # objects:
+> factor(1:3) %@% "levels"
+[1] "1" "2" "3"
+> mtcars %@% class
+[1] "data.frame"
+> 
+> mtcars %@% class <- NULL
+> mtcars
+$mpg
+ [1] 21.0 21.0 22.8 21.4 18.7 18.1 14.3 24.4 22.8 19.2 17.8 16.4 17.3 15.2 10.4
+[16] 10.4 14.7 32.4 30.4 33.9 21.5 15.5 15.2 13.3 19.2 27.3 26.0 30.4 15.8 19.7
+[31] 15.0 21.4
+
+$cyl
+ [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
+
+$disp
+ [1] 160.0 160.0 108.0 258.0 360.0 225.0 360.0 146.7 140.8 167.6 167.6 275.8
+[13] 275.8 275.8 472.0 460.0 440.0  78.7  75.7  71.1 120.1 318.0 304.0 350.0
+[25] 400.0  79.0 120.3  95.1 351.0 145.0 301.0 121.0
+
+$hp
+ [1] 110 110  93 110 175 105 245  62  95 123 123 180 180 180 205 215 230  66  52
+[20]  65  97 150 150 245 175  66  91 113 264 175 335 109
+
+$drat
+ [1] 3.90 3.90 3.85 3.08 3.15 2.76 3.21 3.69 3.92 3.92 3.92 3.07 3.07 3.07 2.93
+[16] 3.00 3.23 4.08 4.93 4.22 3.70 2.76 3.15 3.73 3.08 4.08 4.43 3.77 4.22 3.62
+[31] 3.54 4.11
+
+$wt
+ [1] 2.620 2.875 2.320 3.215 3.440 3.460 3.570 3.190 3.150 3.440 3.440 4.070
+[13] 3.730 3.780 5.250 5.424 5.345 2.200 1.615 1.835 2.465 3.520 3.435 3.840
+[25] 3.845 1.935 2.140 1.513 3.170 2.770 3.570 2.780
+
+$qsec
+ [1] 16.46 17.02 18.61 19.44 17.02 20.22 15.84 20.00 22.90 18.30 18.90 17.40
+[13] 17.60 18.00 17.98 17.82 17.42 19.47 18.52 19.90 20.01 16.87 17.30 15.41
+[25] 17.05 18.90 16.70 16.90 14.50 15.50 14.60 18.60
+
+$vs
+ [1] 0 0 1 1 0 1 0 1 1 1 1 0 0 0 0 0 0 1 1 1 1 0 0 0 0 1 0 1 0 0 0 1
+
+$am
+ [1] 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 1 1 1 1 1 1 1
+
+$gear
+ [1] 4 4 4 3 3 3 3 4 4 4 4 3 3 3 3 3 3 4 4 4 3 3 3 3 3 4 5 5 5 5 5 4
+
+$carb
+ [1] 4 4 1 1 2 1 4 2 2 4 4 3 3 3 4 4 4 1 2 1 1 2 2 4 2 1 2 2 4 6 8 2
+
+attr(,"row.names")
+ [1] "Mazda RX4"           "Mazda RX4 Wag"       "Datsun 710"         
+ [4] "Hornet 4 Drive"      "Hornet Sportabout"   "Valiant"            
+ [7] "Duster 360"          "Merc 240D"           "Merc 230"           
+[10] "Merc 280"            "Merc 280C"           "Merc 450SE"         
+[13] "Merc 450SL"          "Merc 450SLC"         "Cadillac Fleetwood" 
+[16] "Lincoln Continental" "Chrysler Imperial"   "Fiat 128"           
+[19] "Honda Civic"         "Toyota Corolla"      "Toyota Corona"      
+[22] "Dodge Challenger"    "AMC Javelin"         "Camaro Z28"         
+[25] "Pontiac Firebird"    "Fiat X1-9"           "Porsche 914-2"      
+[28] "Lotus Europa"        "Ford Pantera L"      "Ferrari Dino"       
+[31] "Maserati Bora"       "Volvo 142E"         
+> 
+> # It also works on S4 objects:
+> .Person <- setClass("Person", slots = c(name = "character", species = "character"))
+> fievel <- .Person(name = "Fievel", species = "mouse")
+> fievel %@% name
+[1] "Fievel"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("op-na-default")
+> ### * op-na-default
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: op-na-default
+> ### Title: Replace missing values
+> ### Aliases: op-na-default %|%
+> 
+> ### ** Examples
+> 
+> c("a", "b", NA, "c") %|% "default"
+[1] "a"       "b"       "default" "c"      
+> c(1L, NA, 3L, NA, NA) %|% (6L:10L)
+[1]  1  7  3  9 10
+> 
+> 
+> 
+> cleanEx()
+> nameEx("op-null-default")
+> ### * op-null-default
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: op-null-default
+> ### Title: Default value for 'NULL'
+> ### Aliases: op-null-default %||%
+> 
+> ### ** Examples
+> 
+> 1 %||% 2
+[1] 1
+> NULL %||% 2
+[1] 2
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pairlist2")
+> ### * pairlist2
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pairlist2
+> ### Title: Create pairlists with splicing support
+> ### Aliases: pairlist2
+> 
+> ### ** Examples
+> 
+> # Unlike `exprs()`, `pairlist2()` evaluates its arguments.
+> new_function(pairlist2(x = 1, y = 3 * 6), quote(x * y))
+function (x = 1, y = 18) 
+x * y
+> new_function(exprs(x = 1, y = 3 * 6), quote(x * y))
+function (x = 1, y = 3 * 6) 
+x * y
+> 
+> # It preserves missing arguments, which is useful for creating
+> # parameters without defaults:
+> new_function(pairlist2(x = , y = 3 * 6), quote(x * y))
+function (x, y = 18) 
+x * y
+> 
+> 
+> 
+> cleanEx()
+> nameEx("parse_expr")
+> ### * parse_expr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: parse_expr
+> ### Title: Parse R code
+> ### Aliases: parse_expr parse_exprs parse_quo parse_quos
+> 
+> ### ** Examples
+> 
+> # parse_expr() can parse any R expression:
+> parse_expr("mtcars %>% dplyr::mutate(cyl_prime = cyl / sd(cyl))")
+mtcars %>% dplyr::mutate(cyl_prime = cyl/sd(cyl))
+> 
+> # A string can contain several expressions separated by ; or \n
+> parse_exprs("NULL; list()\n foo(bar)")
+[[1]]
+NULL
+
+[[2]]
+list()
+
+[[3]]
+foo(bar)
+
+> 
+> # Use names to figure out which input produced an expression:
+> parse_exprs(c(foo = "1; 2", bar = "3"))
+$foo
+[1] 1
+
+$foo
+[1] 2
+
+$bar
+[1] 3
+
+> 
+> # You can also parse source files by passing a R connection. Let's
+> # create a file containing R code:
+> path <- tempfile("my-file.R")
+> cat("1; 2; mtcars", file = path)
+> 
+> # We can now parse it by supplying a connection:
+> parse_exprs(file(path))
+[[1]]
+[1] 1
+
+[[2]]
+[1] 2
+
+[[3]]
+mtcars
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("quo_label")
+> ### * quo_label
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: quo_label
+> ### Title: Format quosures for printing or labelling
+> ### Aliases: quo_label quo_text quo_name
+> 
+> ### ** Examples
+> 
+> # Quosures can contain nested quosures:
+> quo <- quo(foo(!! quo(bar)))
+> quo
+<quosure>
+expr: ^foo(^bar)
+env:  global
+> 
+> # quo_squash() unwraps all quosures and returns a raw expression:
+> quo_squash(quo)
+foo(bar)
+> 
+> # This is used by quo_text() and quo_label():
+> quo_text(quo)
+[1] "foo(bar)"
+> 
+> # Compare to the unwrapped expression:
+> expr_text(quo)
+[1] "~foo(~bar)"
+> 
+> # quo_name() is helpful when you need really short labels:
+> quo_name(quo(sym))
+[1] "sym"
+> quo_name(quo(!! sym))
+[1] "function (x) ..."
+> 
+> 
+> 
+> cleanEx()
+> nameEx("quo_squash")
+> ### * quo_squash
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: quo_squash
+> ### Title: Squash a quosure
+> ### Aliases: quo_squash
+> 
+> ### ** Examples
+> 
+> # Quosures can contain nested quosures:
+> quo <- quo(wrapper(!!quo(wrappee)))
+> quo
+<quosure>
+expr: ^wrapper(^wrappee)
+env:  global
+> 
+> # quo_squash() flattens all the quosures and returns a simple expression:
+> quo_squash(quo)
+wrapper(wrappee)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("quosure")
+> ### * quosure
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: quosure
+> ### Title: Quosure getters, setters and testers
+> ### Aliases: quosure is_quosure quo_is_missing quo_is_symbol quo_is_call
+> ###   quo_is_symbolic quo_is_null quo_get_expr quo_get_env quo_set_expr
+> ###   quo_set_env
+> 
+> ### ** Examples
+> 
+> quo <- quo(my_quosure)
+> quo
+<quosure>
+expr: ^my_quosure
+env:  global
+> 
+> 
+> # Access and set the components of a quosure:
+> quo_get_expr(quo)
+my_quosure
+> quo_get_env(quo)
+<environment: R_GlobalEnv>
+> 
+> quo <- quo_set_expr(quo, quote(baz))
+> quo <- quo_set_env(quo, empty_env())
+> quo
+<quosure>
+expr: ^baz
+env:  empty
+> 
+> # Test wether an object is a quosure:
+> is_quosure(quo)
+[1] TRUE
+> 
+> # If it is a quosure, you can use the specialised type predicates
+> # to check what is inside it:
+> quo_is_symbol(quo)
+[1] TRUE
+> quo_is_call(quo)
+[1] FALSE
+> quo_is_null(quo)
+[1] FALSE
+> 
+> # quo_is_missing() checks for a special kind of quosure, the one
+> # that contains the missing argument:
+> quo()
+<quosure>
+expr: ^
+env:  empty
+> quo_is_missing(quo())
+[1] TRUE
+> 
+> fn <- function(arg) enquo(arg)
+> fn()
+<quosure>
+expr: ^
+env:  empty
+> quo_is_missing(fn())
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("raw_deparse_str")
+> ### * raw_deparse_str
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: raw_deparse_str
+> ### Title: Serialize a raw vector to a string
+> ### Aliases: raw_deparse_str
+> 
+> ### ** Examples
+> 
+> raw_deparse_str(raw())
+[1] ""
+> raw_deparse_str(charToRaw("string"))
+[1] "737472696e67"
+> raw_deparse_str(raw(10), prefix = "'0x", suffix = "'")
+[1] "'0x00000000000000000000'"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rep_along")
+> ### * rep_along
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rep_along
+> ### Title: Create vectors matching the length of a given vector
+> ### Aliases: rep_along rep_named
+> 
+> ### ** Examples
+> 
+> x <- 0:5
+> rep_along(x, 1:2)
+[1] 1 2 1 2 1 2
+> rep_along(x, 1)
+[1] 1 1 1 1 1 1
+> 
+> # Create fresh vectors by repeating missing values:
+> rep_along(x, na_int)
+[1] NA NA NA NA NA NA
+> rep_along(x, na_chr)
+[1] NA NA NA NA NA NA
+> 
+> # rep_named() repeats a value along a names vectors
+> rep_named(c("foo", "bar"), list(letters))
+$foo
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+
+$bar
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("restarting")
+> ### * restarting
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: restarting
+> ### Title: Create a restarting handler
+> ### Aliases: restarting
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # This is a restart that takes a data frame and names as arguments
+> rst_bar <- function(df, nms) {
++   stats::setNames(df, nms)
++ }
+> 
+> # This restart is simpler and does not take arguments
+> rst_baz <- function() "baz"
+> 
+> # Signalling a condition parameterised with a data frame
+> fn <- function() {
++   with_restarts(signal("A foobar condition occurred", "foo", foo_field = mtcars),
++     rst_bar = rst_bar,
++     rst_baz = rst_baz
++   )
++ }
+> 
+> # Creating a restarting handler that passes arguments `nms` and
+> # `df`, the latter taken from a data field of the condition object
+> restart_bar <- restarting("rst_bar",
++   nms = LETTERS[1:11], .fields = c(df = "foo_field")
++ )
+> 
+> # The restarting handlers jumps to `rst_bar` when `foo` is signalled:
+> with_handlers(fn(), foo = restart_bar)
+                       A B     C   D    E     F     G H I J K
+Mazda RX4           21.0 6 160.0 110 3.90 2.620 16.46 0 1 4 4
+Mazda RX4 Wag       21.0 6 160.0 110 3.90 2.875 17.02 0 1 4 4
+Datsun 710          22.8 4 108.0  93 3.85 2.320 18.61 1 1 4 1
+Hornet 4 Drive      21.4 6 258.0 110 3.08 3.215 19.44 1 0 3 1
+Hornet Sportabout   18.7 8 360.0 175 3.15 3.440 17.02 0 0 3 2
+Valiant             18.1 6 225.0 105 2.76 3.460 20.22 1 0 3 1
+Duster 360          14.3 8 360.0 245 3.21 3.570 15.84 0 0 3 4
+Merc 240D           24.4 4 146.7  62 3.69 3.190 20.00 1 0 4 2
+Merc 230            22.8 4 140.8  95 3.92 3.150 22.90 1 0 4 2
+Merc 280            19.2 6 167.6 123 3.92 3.440 18.30 1 0 4 4
+Merc 280C           17.8 6 167.6 123 3.92 3.440 18.90 1 0 4 4
+Merc 450SE          16.4 8 275.8 180 3.07 4.070 17.40 0 0 3 3
+Merc 450SL          17.3 8 275.8 180 3.07 3.730 17.60 0 0 3 3
+Merc 450SLC         15.2 8 275.8 180 3.07 3.780 18.00 0 0 3 3
+Cadillac Fleetwood  10.4 8 472.0 205 2.93 5.250 17.98 0 0 3 4
+Lincoln Continental 10.4 8 460.0 215 3.00 5.424 17.82 0 0 3 4
+Chrysler Imperial   14.7 8 440.0 230 3.23 5.345 17.42 0 0 3 4
+Fiat 128            32.4 4  78.7  66 4.08 2.200 19.47 1 1 4 1
+Honda Civic         30.4 4  75.7  52 4.93 1.615 18.52 1 1 4 2
+Toyota Corolla      33.9 4  71.1  65 4.22 1.835 19.90 1 1 4 1
+Toyota Corona       21.5 4 120.1  97 3.70 2.465 20.01 1 0 3 1
+Dodge Challenger    15.5 8 318.0 150 2.76 3.520 16.87 0 0 3 2
+AMC Javelin         15.2 8 304.0 150 3.15 3.435 17.30 0 0 3 2
+Camaro Z28          13.3 8 350.0 245 3.73 3.840 15.41 0 0 3 4
+Pontiac Firebird    19.2 8 400.0 175 3.08 3.845 17.05 0 0 3 2
+Fiat X1-9           27.3 4  79.0  66 4.08 1.935 18.90 1 1 4 1
+Porsche 914-2       26.0 4 120.3  91 4.43 2.140 16.70 0 1 5 2
+Lotus Europa        30.4 4  95.1 113 3.77 1.513 16.90 1 1 5 2
+Ford Pantera L      15.8 8 351.0 264 4.22 3.170 14.50 0 1 5 4
+Ferrari Dino        19.7 6 145.0 175 3.62 2.770 15.50 0 1 5 6
+Maserati Bora       15.0 8 301.0 335 3.54 3.570 14.60 0 1 5 8
+Volvo 142E          21.4 4 121.0 109 4.11 2.780 18.60 1 1 4 2
+> 
+> # The restarting() constructor is especially nice to use with
+> # restarts that do not need arguments:
+> with_handlers(fn(), foo = restarting("rst_baz"))
+[1] "baz"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("return_from")
+> ### * return_from
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: return_from
+> ### Title: Jump to or from a frame
+> ### Aliases: return_from return_to
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Passing fn() evaluation frame to g():
+> fn <- function() {
++   val <- g(current_env())
++   cat("g returned:", val, "\n")
++   "normal return"
++ }
+> g <- function(env) h(env)
+> 
+> # Here we return from fn() with a new return value:
+> h <- function(env) return_from(env, "early return")
+> fn()
+[1] "early return"
+> 
+> # Here we return to fn(). The call stack unwinds until the last frame
+> # called by fn(), which is g() in that case.
+> h <- function(env) return_to(env, "early return")
+> fn()
+g returned: early return 
+[1] "normal return"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rlang_backtrace_on_error")
+> ### * rlang_backtrace_on_error
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rlang_backtrace_on_error
+> ### Title: Display backtrace on error
+> ### Aliases: rlang_backtrace_on_error add_backtrace
+> 
+> ### ** Examples
+> 
+> # Display a simplified backtrace on error for both base and rlang
+> # errors:
+> 
+> # options(
+> #   rlang_backtrace_on_error = "branch",
+> #   error = rlang::entrace
+> # )
+> # stop("foo")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rst_abort")
+> ### * rst_abort
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rst_abort
+> ### Title: Jump to the abort restart
+> ### Aliases: rst_abort
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # The `abort` restart is a bit special in that it is always
+> # registered in a R session. You will always find it on the restart
+> # stack because it is established at top level:
+> rst_list()
+[[1]]
+<restart: abort >
+
+> 
+> # You can use the `above` restart to jump to top level without
+> # signalling an error:
+> ## Not run: 
+> ##D fn <- function() {
+> ##D   cat("aborting...\n")
+> ##D   rst_abort()
+> ##D   cat("This is never called\n")
+> ##D }
+> ##D {
+> ##D   fn()
+> ##D   cat("This is never called\n")
+> ##D }
+> ## End(Not run)
+> 
+> # The `above` restart is the target that R uses to jump to top
+> # level when critical errors are signalled:
+> ## Not run: 
+> ##D {
+> ##D   abort("error")
+> ##D   cat("This is never called\n")
+> ##D }
+> ## End(Not run)
+> 
+> # If another `abort` restart is specified, errors are signalled as
+> # usual but then control flow resumes with from the new restart:
+> ## Not run: 
+> ##D out <- NULL
+> ##D {
+> ##D   out <- with_restarts(abort("error"), abort = function() "restart!")
+> ##D   cat("This is called\n")
+> ##D }
+> ##D cat("`out` has now become:", out, "\n")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("search_envs")
+> ### * search_envs
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: search_envs
+> ### Title: Search path environments
+> ### Aliases: search_envs search_env pkg_env pkg_env_name is_attached
+> ###   base_env global_env
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # List the search names of environments attached to the search path:
+> search()
+ [1] ".GlobalEnv"        "package:rlang"     "CheckExEnv"       
+ [4] "package:stats"     "package:graphics"  "package:grDevices"
+ [7] "package:utils"     "package:datasets"  "package:methods"  
+[10] "Autoloads"         "package:base"     
+> 
+> # Get the corresponding environments:
+> search_envs()
+ [[1]] $ <env: global>
+ [[2]] $ <env: package:rlang>
+ [[3]] $ <env: CheckExEnv>
+ [[4]] $ <env: package:stats>
+ [[5]] $ <env: package:graphics>
+ [[6]] $ <env: package:grDevices>
+ [[7]] $ <env: package:utils>
+ [[8]] $ <env: package:datasets>
+ [[9]] $ <env: package:methods>
+[[10]] $ <env: Autoloads>
+[[11]] $ <env: package:base>
+> 
+> # The global environment and the base package are always first and
+> # last in the chain, respectively:
+> envs <- search_envs()
+> envs[[1]]
+<environment: R_GlobalEnv>
+> envs[[length(envs)]]
+<environment: base>
+> 
+> # These two environments have their own shortcuts:
+> global_env()
+<environment: R_GlobalEnv>
+> base_env()
+<environment: base>
+> 
+> # Packages appear in the search path with a special name. Use
+> # pkg_env_name() to create that name:
+> pkg_env_name("rlang")
+[1] "package:rlang"
+> search_env(pkg_env_name("rlang"))
+<environment: package:rlang>
+attr(,"name")
+[1] "package:rlang"
+attr(,"path")
+[1] "/usr/local/lib/R/site-library/rlang"
+> 
+> # Alternatively, get the scoped environment of a package with
+> # pkg_env():
+> pkg_env("utils")
+<environment: package:utils>
+attr(,"name")
+[1] "package:utils"
+attr(,"path")
+[1] "/usr/local/lib/R/library/utils"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("seq2")
+> ### * seq2
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: seq2
+> ### Title: Increasing sequence of integers in an interval
+> ### Aliases: seq2 seq2_along
+> 
+> ### ** Examples
+> 
+> seq2(2, 10)
+[1]  2  3  4  5  6  7  8  9 10
+> seq2(10, 2)
+integer(0)
+> seq(10, 2)
+[1] 10  9  8  7  6  5  4  3  2
+> 
+> seq2_along(10, letters)
+ [1] 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
+> 
+> 
+> 
+> cleanEx()
+> nameEx("set_attrs")
+> ### * set_attrs
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: set_attrs
+> ### Title: Add attributes to an object
+> ### Aliases: set_attrs mut_attrs
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> set_attrs(letters, names = 1:26, class = "my_chr")
+  1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20 
+"a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" 
+ 21  22  23  24  25  26 
+"u" "v" "w" "x" "y" "z" 
+attr(,"class")
+[1] "my_chr"
+> 
+> # Splice a list of attributes:
+> attrs <- list(attr = "attr", names = 1:26, class = "my_chr")
+> obj <- set_attrs(letters, splice(attrs))
+> obj
+  1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20 
+"a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" 
+ 21  22  23  24  25  26 
+"u" "v" "w" "x" "y" "z" 
+attr(,"attr")
+[1] "attr"
+attr(,"class")
+[1] "my_chr"
+> 
+> # Zap attributes by passing a single unnamed NULL argument:
+> set_attrs(obj, NULL)
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+> set_attrs(obj, !!! list(NULL))
+ [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+[20] "t" "u" "v" "w" "x" "y" "z"
+> 
+> # Note that set_attrs() never modifies objects in place:
+> obj
+  1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20 
+"a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" 
+ 21  22  23  24  25  26 
+"u" "v" "w" "x" "y" "z" 
+attr(,"attr")
+[1] "attr"
+attr(,"class")
+[1] "my_chr"
+> 
+> # For uncopyable types, mut_attrs() lets you modify in place:
+> env <- env()
+> mut_attrs(env, foo = "bar")
+> env
+<environment: 0x5578c8927468>
+attr(,"foo")
+[1] "bar"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("set_expr")
+> ### * set_expr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: set_expr
+> ### Title: Set and get an expression
+> ### Aliases: set_expr get_expr
+> 
+> ### ** Examples
+> 
+> f <- ~foo(bar)
+> e <- quote(foo(bar))
+> frame <- identity(identity(ctxt_frame()))
+Warning: `ctxt_frame()` is deprecated as of rlang 0.3.0.
+This warning is displayed once per session.
+> 
+> get_expr(f)
+foo(bar)
+> get_expr(e)
+foo(bar)
+> get_expr(frame)
+identity(ctxt_frame())
+> 
+> set_expr(f, quote(baz))
+~baz
+> set_expr(e, quote(baz))
+baz
+> 
+> 
+> 
+> cleanEx()
+> nameEx("set_names")
+> ### * set_names
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: set_names
+> ### Title: Set names of a vector
+> ### Aliases: set_names
+> 
+> ### ** Examples
+> 
+> set_names(1:4, c("a", "b", "c", "d"))
+a b c d 
+1 2 3 4 
+> set_names(1:4, letters[1:4])
+a b c d 
+1 2 3 4 
+> set_names(1:4, "a", "b", "c", "d")
+a b c d 
+1 2 3 4 
+> 
+> # If the second argument is ommitted a vector is named with itself
+> set_names(letters[1:5])
+  a   b   c   d   e 
+"a" "b" "c" "d" "e" 
+> 
+> # Alternatively you can supply a function
+> set_names(1:10, ~ letters[seq_along(.)])
+ a  b  c  d  e  f  g  h  i  j 
+ 1  2  3  4  5  6  7  8  9 10 
+> set_names(head(mtcars), toupper)
+                   MPG CYL DISP  HP DRAT    WT  QSEC VS AM GEAR CARB
+Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
+Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1
+> 
+> # If the input vector is unnamed, it is first named after itself
+> # before the function is applied:
+> set_names(letters, toupper)
+  A   B   C   D   E   F   G   H   I   J   K   L   M   N   O   P   Q   R   S   T 
+"a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" 
+  U   V   W   X   Y   Z 
+"u" "v" "w" "x" "y" "z" 
+> 
+> # `...` is passed to the function:
+> set_names(head(mtcars), paste0, "_foo")
+                  mpg_foo cyl_foo disp_foo hp_foo drat_foo wt_foo qsec_foo
+Mazda RX4            21.0       6      160    110     3.90  2.620    16.46
+Mazda RX4 Wag        21.0       6      160    110     3.90  2.875    17.02
+Datsun 710           22.8       4      108     93     3.85  2.320    18.61
+Hornet 4 Drive       21.4       6      258    110     3.08  3.215    19.44
+Hornet Sportabout    18.7       8      360    175     3.15  3.440    17.02
+Valiant              18.1       6      225    105     2.76  3.460    20.22
+                  vs_foo am_foo gear_foo carb_foo
+Mazda RX4              0      1        4        4
+Mazda RX4 Wag          0      1        4        4
+Datsun 710             1      1        4        1
+Hornet 4 Drive         1      0        3        1
+Hornet Sportabout      0      0        3        2
+Valiant                1      0        3        1
+> 
+> 
+> 
+> cleanEx()
+> nameEx("stack")
+> ### * stack
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: stack
+> ### Title: Call stack information
+> ### Aliases: stack global_frame current_frame ctxt_frame call_frame
+> ###   ctxt_depth call_depth ctxt_stack call_stack
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Expressions within arguments count as contexts
+> identity(identity(ctxt_depth())) # returns 2
+Warning: `ctxt_depth()` is deprecated as of rlang 0.3.0.
+This warning is displayed once per session.
+[1] 3
+> 
+> # But they are not part of the call stack because arguments are
+> # evaluated within the calling function (or the global environment
+> # if called at top level)
+> identity(identity(call_depth())) # returns 0
+Warning: `call_depth()` is deprecated as of rlang 0.3.0.
+This warning is displayed once per session.
+[1] 1
+> 
+> # The context stacks includes all intervening execution frames. The
+> # call stack doesn't:
+> f <- function(x) identity(x)
+> f(f(ctxt_stack()))
+[[1]]
+<frame 4> (3)
+expr: identity(x)
+env:  [local 0x5578c6b2f178]
+
+[[2]]
+<frame 3> (0)
+expr: f(ctxt_stack())
+env:  [local 0x5578c6c8d018]
+
+[[3]]
+<frame 2> (1)
+expr: identity(x)
+env:  [local 0x5578c6c8cf00]
+
+[[4]]
+<frame 1> (0)
+expr: f(f(ctxt_stack()))
+env:  [local 0x5578c6c8cde8]
+
+[[5]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> f(f(call_stack()))
+Warning: `call_stack()` is deprecated as of rlang 0.3.0.
+This warning is displayed once per session.
+[[1]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "call_stack" "stack"     
+> 
+> g <- function(cmd) cmd()
+> f(g(ctxt_stack))
+[[1]]
+<frame 3> (0)
+expr: g(ctxt_stack)
+env:  [local 0x5578c69ab798]
+
+[[2]]
+<frame 2> (1)
+expr: identity(x)
+env:  [local 0x5578c69ab680]
+
+[[3]]
+<frame 1> (0)
+expr: f(g(ctxt_stack))
+env:  [local 0x5578c69ab5a0]
+
+[[4]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> f(g(call_stack))
+[[1]]
+<frame 3> (0)
+expr: g(call_stack)
+env:  [local 0x5578c688a738]
+
+[[2]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "call_stack" "stack"     
+> 
+> # The rlang _stack() functions return a list of frame
+> # objects. Use purrr::transpose() or index a field with
+> # purrr::map()'s to extract a particular field from a stack:
+> 
+> # stack <- f(f(call_stack()))
+> # purrr::map(stack, "env")
+> # purrr::transpose(stack)$expr
+> 
+> # current_frame() is an alias for ctxt_frame(1)
+> fn <- function() list(current = current_frame(), first = ctxt_frame(1))
+> fn()
+Warning: `current_frame()` is deprecated as of rlang 0.3.0.
+This warning is displayed once per session.
+$current
+<frame 1> (0)
+expr: fn()
+env:  [local 0x5578c67ae1b8]
+
+$first
+<frame 1> (0)
+expr: fn()
+env:  [local 0x5578c67ae1b8]
+
+> 
+> # While current_frame() is the top of the stack, global_frame() is
+> # the bottom:
+> fn <- function() {
++   n <- ctxt_depth()
++   ctxt_frame(n)
++ }
+> identical(fn(), global_frame())
+[1] TRUE
+> 
+> 
+> # ctxt_stack() returns a stack with all intervening frames. You can
+> # trim layers of intervening frames with the trim argument:
+> identity(identity(ctxt_stack()))
+[[1]]
+<frame 2> (0)
+expr: identity(ctxt_stack())
+env:  [local 0x5578c6573f40]
+
+[[2]]
+<frame 1> (0)
+expr: identity(identity(ctxt_stack()))
+env:  [local 0x5578c6573e28]
+
+[[3]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> identity(identity(ctxt_stack(trim = 1)))
+[[1]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> # ctxt_stack() is called within fn() with intervening frames:
+> fn <- function(trim) identity(identity(ctxt_stack(trim = trim)))
+> fn(0)
+[[1]]
+<frame 3> (1)
+expr: identity(ctxt_stack(trim = trim))
+env:  [local 0x5578c63c8d40]
+
+[[2]]
+<frame 2> (1)
+expr: identity(identity(ctxt_stack(trim = trim)))
+env:  [local 0x5578c63c8c28]
+
+[[3]]
+<frame 1> (0)
+expr: fn(0)
+env:  [local 0x5578c63c8b10]
+
+[[4]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> # We can trim the first layer of those:
+> fn(1)
+[[1]]
+<frame 1> (0)
+expr: fn(1)
+env:  [local 0x5578c6303ac0]
+
+[[2]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> # The outside intervening frames (at the fn() call site) are still
+> # returned, but can be trimmed as well:
+> identity(identity(fn(1)))
+[[1]]
+<frame 3> (0)
+expr: fn(1)
+env:  [local 0x5578c60b6dd0]
+
+[[2]]
+<frame 2> (0)
+expr: identity(fn(1))
+env:  [local 0x5578c60b6cb8]
+
+[[3]]
+<frame 1> (0)
+expr: identity(identity(fn(1)))
+env:  [local 0x5578c60b6ba0]
+
+[[4]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> identity(identity(fn(2)))
+[[1]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> g <- function(trim) identity(identity(fn(trim)))
+> g(2)
+[[1]]
+<frame 1> (0)
+expr: g(2)
+env:  [local 0x5578c511fcf0]
+
+[[2]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> g(3)
+[[1]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> 
+> 
+> cleanEx()
+> nameEx("stack_trim")
+> ### * stack_trim
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: stack_trim
+> ### Title: Trim top call layers from the evaluation stack
+> ### Aliases: stack_trim
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Intervening frames appear on the evaluation stack:
+> identity(identity(ctxt_stack()))
+[[1]]
+<frame 2> (0)
+expr: identity(ctxt_stack())
+env:  [local 0x5578c4b23578]
+
+[[2]]
+<frame 1> (0)
+expr: identity(identity(ctxt_stack()))
+env:  [local 0x5578c4b23460]
+
+[[3]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> # stack_trim() will trim the first n layers of calls:
+> stack_trim(identity(identity(ctxt_stack())))
+[[1]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> # Note that it also takes care of calls intervening at its own call
+> # site:
+> identity(identity(
++   stack_trim(identity(identity(ctxt_stack())))
++ ))
+[[1]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> # It is especially useful when used within a function that needs to
+> # inspect the evaluation stack but should nonetheless be callable
+> # within nested calls without side effects:
+> stack_util <- function() {
++   # n = 2 means that two layers of intervening calls should be
++   # removed: The layer at ctxt_stack()'s call site (including the
++   # stack_trim() call), and the layer at stack_util()'s call.
++   stack <- stack_trim(ctxt_stack(), n = 2)
++   stack
++ }
+> user_fn <- function() {
++   # A user calls your stack utility with intervening frames:
++   identity(identity(stack_util()))
++ }
+> # These intervening frames won't appear in the evaluation stack
+> identity(user_fn())
+[[1]]
+<frame 2> (0)
+expr: user_fn()
+env:  [local 0x5578c5cc03e8]
+
+[[2]]
+<frame 1> (0)
+expr: identity(user_fn())
+env:  [local 0x5578c5cc0340]
+
+[[3]]
+<frame 0> [global]
+expr: NULL
+env:  [global]
+
+attr(,"class")
+[1] "ctxt_stack" "stack"     
+> 
+> 
+> 
+> cleanEx()
+> nameEx("string")
+> ### * string
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: string
+> ### Title: Create a string
+> ### Aliases: string
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # As everywhere in R, you can specify a string with Unicode
+> # escapes. The characters corresponding to Unicode codepoints will
+> # be encoded in UTF-8, and the string will be marked as UTF-8
+> # automatically:
+> cafe <- string("caf\uE9")
+> Encoding(cafe)
+[1] "UTF-8"
+> as_bytes(cafe)
+[1] 63 61 66 c3 a9
+> 
+> # In addition, string() provides useful conversions to let
+> # programmers control how the string is represented in memory. For
+> # encodings other than UTF-8, you'll need to supply the bytes in
+> # hexadecimal form. If it is a latin1 encoding, you can mark the
+> # string explicitly:
+> cafe_latin1 <- string(c(0x63, 0x61, 0x66, 0xE9), "latin1")
+> Encoding(cafe_latin1)
+[1] "latin1"
+> as_bytes(cafe_latin1)
+[1] 63 61 66 e9
+> 
+> 
+> 
+> cleanEx()
+> nameEx("switch_type")
+> ### * switch_type
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: switch_type
+> ### Title: Dispatch on base types
+> ### Aliases: switch_type coerce_type switch_class coerce_class
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> switch_type(3L,
++   double = "foo",
++   integer = "bar",
++   "default"
++ )
+Warning: `switch_type()` is soft-deprecated as of rlang 0.4.0.
+Please use `switch(typeof())` or `switch(my_typeof())` instead.
+This warning is displayed once per session.
+[1] "bar"
+> 
+> # Use the coerce_ version to get standardised error handling when no
+> # type matches:
+> to_chr <- function(x) {
++   coerce_type(x, "a chr",
++     integer = as.character(x),
++     double = as.character(x)
++   )
++ }
+> to_chr(3L)
+Warning: `coerce_type()` is soft-deprecated as of rlang 0.4.0.
+This warning is displayed once per session.
+[1] "3"
+> 
+> # Strings have their own type:
+> switch_type("str",
++   character = "foo",
++   string = "bar",
++   "default"
++ )
+[1] "bar"
+> 
+> # Use a fallthrough clause if you need to dispatch on all character
+> # vectors, including strings:
+> switch_type("str",
++   string = ,
++   character = "foo",
++   "default"
++ )
+[1] "foo"
+> 
+> # special and builtin functions are treated as primitive, since
+> # there is usually no reason to treat them differently:
+> switch_type(base::list,
++   primitive = "foo",
++   "default"
++ )
+[1] "foo"
+> switch_type(base::`$`,
++   primitive = "foo",
++   "default"
++ )
+[1] "foo"
+> 
+> # closures are not primitives:
+> switch_type(rlang::switch_type,
++   primitive = "foo",
++   "default"
++ )
+[1] "default"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("sym")
+> ### * sym
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: sym
+> ### Title: Create a symbol or list of symbols
+> ### Aliases: sym syms
+> 
+> ### ** Examples
+> 
+> # The empty string returns the missing argument:
+> sym("")
+
+> 
+> # This way sym() and as_string() are inverse of each other:
+> as_string(missing_arg())
+[1] ""
+> sym(as_string(missing_arg()))
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("trace_back")
+> ### * trace_back
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: trace_back
+> ### Title: Capture a backtrace
+> ### Aliases: trace_back trace_length
+> 
+> ### ** Examples
+> 
+> # Trim backtraces automatically (this improves the generated
+> # documentation for the rlang website and the same trick can be
+> # useful within knitr documents):
+> options(rlang_trace_top_env = current_env())
+> 
+> f <- function() g()
+> g <- function() h()
+> h <- function() trace_back()
+> 
+> # When no lazy evaluation is involved the backtrace is linear
+> # (i.e. every call has only one child)
+> f()
+    █
+ 1. └─global::f()
+ 2.   └─global::g()
+ 3.     └─global::h()
+> 
+> # Lazy evaluation introduces a tree like structure
+> identity(identity(f()))
+    █
+ 1. ├─base::identity(identity(f()))
+ 2. ├─base::identity(f())
+ 3. └─global::f()
+ 4.   └─global::g()
+ 5.     └─global::h()
+> identity(try(f()))
+    █
+ 1. ├─base::identity(try(f()))
+ 2. ├─base::try(f())
+ 3. │ └─base::tryCatch(...)
+ 4. │   └─base:::tryCatchList(expr, classes, parentenv, handlers)
+ 5. │     └─base:::tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 6. │       └─base:::doTryCatch(return(expr), name, parentenv, handler)
+ 7. └─global::f()
+ 8.   └─global::g()
+ 9.     └─global::h()
+> try(identity(f()))
+    █
+ 1. ├─base::try(identity(f()))
+ 2. │ └─base::tryCatch(...)
+ 3. │   └─base:::tryCatchList(expr, classes, parentenv, handlers)
+ 4. │     └─base:::tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 5. │       └─base:::doTryCatch(return(expr), name, parentenv, handler)
+ 6. ├─base::identity(f())
+ 7. └─global::f()
+ 8.   └─global::g()
+ 9.     └─global::h()
+> 
+> # When printing, you can request to simplify this tree to only show
+> # the direct sequence of calls that lead to `trace_back()`
+> x <- try(identity(f()))
+> x
+    █
+ 1. ├─base::try(identity(f()))
+ 2. │ └─base::tryCatch(...)
+ 3. │   └─base:::tryCatchList(expr, classes, parentenv, handlers)
+ 4. │     └─base:::tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 5. │       └─base:::doTryCatch(return(expr), name, parentenv, handler)
+ 6. ├─base::identity(f())
+ 7. └─global::f()
+ 8.   └─global::g()
+ 9.     └─global::h()
+> print(x, simplify = "branch")
+ 1. base::try(identity(f()))
+ 7. global::f()
+ 8. global::g()
+ 9. global::h()
+> 
+> # With a little cunning you can also use it to capture the
+> # tree from within a base NSE function
+> x <- NULL
+> with(mtcars, {x <<- f(); 10})
+[1] 10
+> x
+    █
+ 1. ├─base::with(...)
+ 2. └─base::with.default(...)
+ 3.   └─base::eval(substitute(expr), data, enclos = parent.frame())
+ 4.     └─base::eval(substitute(expr), data, enclos = parent.frame())
+ 5.       └─global::f()
+ 6.         └─global::g()
+ 7.           └─global::h()
+> 
+> 
+> # Restore default top env for next example
+> options(rlang_trace_top_env = NULL)
+> 
+> # When code is executed indirectly, i.e. via source or within an
+> # RMarkdown document, you'll tend to get a lot of guff at the beginning
+> # related to the execution environment:
+> conn <- textConnection("summary(f())")
+> source(conn, echo = TRUE, local = TRUE)
+
+> summary(f())
+    █
+ 1. ├─base::source(conn, echo = TRUE, local = TRUE)
+ 2. │ ├─base::withVisible(eval(ei, envir))
+ 3. │ └─base::eval(ei, envir)
+ 4. │   └─base::eval(ei, envir)
+ 5. ├─base::summary(f())
+ 6. └─global::f()
+ 7.   └─global::g()
+ 8.     └─global::h()
+> close(conn)
+> 
+> # To automatically strip this off, specify which frame should be
+> # the top of the backtrace. This will automatically trim off calls
+> # prior to that frame:
+> top <- current_env()
+> h <- function() trace_back(top)
+> 
+> conn <- textConnection("summary(f())")
+> source(conn, echo = TRUE, local = TRUE)
+
+> summary(f())
+    █
+ 1. ├─base::summary(f())
+ 2. └─global::f()
+ 3.   └─global::g()
+ 4.     └─global::h()
+> close(conn)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("type_of")
+> ### * type_of
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: type_of
+> ### Title: Base type of an object
+> ### Aliases: type_of
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> type_of(10L)
+Warning: `type_of()` is deprecated as of rlang 0.4.0.
+Please use `typeof()` or your own version instead.
+This warning is displayed once per session.
+[1] "integer"
+> 
+> # Quosures are treated as a new base type but not formulas:
+> type_of(quo(10L))
+[1] "formula"
+> type_of(~10L)
+[1] "formula"
+> 
+> # Compare to base::typeof():
+> typeof(quo(10L))
+[1] "language"
+> 
+> # Strings are treated as a new base type:
+> type_of(letters)
+[1] "character"
+> type_of(letters[[1]])
+[1] "string"
+> 
+> # This is a bit inconsistent with the core language tenet that data
+> # types are vectors. However, treating strings as a different
+> # scalar type is quite helpful for switching on function inputs
+> # since so many arguments expect strings:
+> switch_type("foo", character = abort("vector!"), string = "result")
+[1] "result"
+> 
+> # Special and builtin primitives are both treated as primitives.
+> # That's because it is often irrelevant which type of primitive an
+> # input is:
+> typeof(list)
+[1] "builtin"
+> typeof(`$`)
+[1] "special"
+> type_of(list)
+[1] "primitive"
+> type_of(`$`)
+[1] "primitive"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vector-coercion")
+> ### * vector-coercion
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vector-coercion
+> ### Title: Coerce an object to a base type
+> ### Aliases: vector-coercion as_logical as_integer as_double as_complex
+> ###   as_character as_list
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Coercing atomic vectors removes attributes with both base R and rlang:
+> x <- structure(TRUE, class = "foo", bar = "baz")
+> as.logical(x)
+[1] TRUE
+> 
+> # But coercing lists preserves attributes in base R but not rlang:
+> l <- structure(list(TRUE), class = "foo", bar = "baz")
+> as.list(l)
+[[1]]
+[1] TRUE
+
+attr(,"class")
+[1] "foo"
+attr(,"bar")
+[1] "baz"
+> as_list(l)
+Warning: `as_list()` is deprecated as of rlang 0.4.0
+Please use `vctrs::vec_cast()` instead.
+This warning is displayed once per session.
+[[1]]
+[1] TRUE
+
+> 
+> # Implicit conversions are performed in base R but not rlang:
+> as.logical(l)
+[1] TRUE
+> ## Not run: 
+> ##D as_logical(l)
+> ## End(Not run)
+> 
+> # Conversion methods are bypassed, making the result of the
+> # coercion more predictable:
+> as.list.foo <- function(x) "wrong"
+> as.list(l)
+[1] "wrong"
+> as_list(l)
+[[1]]
+[1] TRUE
+
+> 
+> # The input is never parsed. E.g. character vectors of numbers are
+> # not converted to numeric types:
+> as.integer("33")
+[1] 33
+> ## Not run: 
+> ##D as_integer("33")
+> ## End(Not run)
+> 
+> 
+> # With base R tools there is no way to convert an environment to a
+> # list without either triggering method dispatch, or changing the
+> # original environment. as_list() makes it easy:
+> x <- structure(as_environment(mtcars[1:2]), class = "foobar")
+> as.list.foobar <- function(x) abort("dont call me")
+> as_list(x)
+$cyl
+ [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
+
+$mpg
+ [1] 21.0 21.0 22.8 21.4 18.7 18.1 14.3 24.4 22.8 19.2 17.8 16.4 17.3 15.2 10.4
+[16] 10.4 14.7 32.4 30.4 33.9 21.5 15.5 15.2 13.3 19.2 27.3 26.0 30.4 15.8 19.7
+[31] 15.0 21.4
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vector-construction")
+> ### * vector-construction
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vector-construction
+> ### Title: Create vectors
+> ### Aliases: vector-construction lgl int dbl cpl chr bytes
+> 
+> ### ** Examples
+> 
+> # These constructors are like a typed version of c():
+> c(TRUE, FALSE)
+[1]  TRUE FALSE
+> lgl(TRUE, FALSE)
+[1]  TRUE FALSE
+> 
+> # They follow a restricted set of coercion rules:
+> int(TRUE, FALSE, 20)
+[1]  1  0 20
+> 
+> # Lists can be spliced:
+> dbl(10, !!! list(1, 2L), TRUE)
+[1] 10  1  2  1
+> 
+> 
+> # They splice names a bit differently than c(). The latter
+> # automatically composes inner and outer names:
+> c(a = c(A = 10), b = c(B = 20, C = 30))
+a.A b.B b.C 
+ 10  20  30 
+> 
+> # On the other hand, rlang's ctors use the inner names and issue a
+> # warning to inform the user that the outer names are ignored:
+> dbl(a = c(A = 10), b = c(B = 20, C = 30))
+Warning: Outer names are only allowed for unnamed scalar atomic inputs
+ A  B  C 
+10 20 30 
+> dbl(a = c(1, 2))
+Warning: Outer names are only allowed for unnamed scalar atomic inputs
+[1] 1 2
+> 
+> # As an exception, it is allowed to provide an outer name when the
+> # inner vector is an unnamed scalar atomic:
+> dbl(a = 1)
+a 
+1 
+> 
+> # Spliced lists behave the same way:
+> dbl(!!! list(a = 1))
+a 
+1 
+> dbl(!!! list(a = c(A = 1)))
+Warning: Outer names are only allowed for unnamed scalar atomic inputs
+A 
+1 
+> 
+> # bytes() accepts integerish inputs
+> bytes(1:10)
+ [1] 01 02 03 04 05 06 07 08 09 0a
+> bytes(0x01, 0xff, c(0x03, 0x05), list(10, 20, 30L))
+[1] 01 ff 03 05 0a 14 1e
+> 
+> 
+> 
+> cleanEx()
+> nameEx("with_abort")
+> ### * with_abort
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: with_abort
+> ### Title: Promote all errors to rlang errors
+> ### Aliases: with_abort
+> 
+> ### ** Examples
+> 
+> # with_abort() automatically casts simple errors thrown by stop()
+> # to rlang errors. It is is handy for rethrowing low level
+> # errors. The backtraces are then segmented between the low level
+> # and high level contexts.
+> f <- function() g()
+> g <- function() stop("Low level error")
+> 
+> high_level <- function() {
++   with_handlers(
++     with_abort(f()),
++     error = ~ abort("High level error", parent = .)
++   )
++ }
+> 
+> 
+> 
+> cleanEx()
+> nameEx("with_env")
+> ### * with_env
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: with_env
+> ### Title: Evaluate an expression within a given environment
+> ### Aliases: with_env locally
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # with_env() is handy to create formulas with a given environment:
+> env <- child_env("rlang")
+> f <- with_env(env, ~new_formula())
+> identical(f_env(f), env)
+[1] TRUE
+> 
+> # Or functions with a given enclosure:
+> fn <- with_env(env, function() NULL)
+> identical(get_env(fn), env)
+[1] TRUE
+> 
+> 
+> # Unlike eval() it doesn't create duplicates on the evaluation
+> # stack. You can thus use it e.g. to create non-local returns:
+> fn <- function() {
++   g(current_env())
++   "normal return"
++ }
+> g <- function(env) {
++   with_env(env, return("early return"))
++ }
+> fn()
+[1] "early return"
+> 
+> 
+> # Since env is passed to as_environment(), it can be any object with an
+> # as_environment() method. For strings, the pkg_env() is returned:
+> with_env("base", ~mtcars)
+~mtcars
+<environment: base>
+> 
+> # This can be handy to put dictionaries in scope:
+> with_env(mtcars, cyl)
+ [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
+> 
+> 
+> 
+> cleanEx()
+> nameEx("with_handlers")
+> ### * with_handlers
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: with_handlers
+> ### Title: Establish handlers on the stack
+> ### Aliases: with_handlers calling
+> 
+> ### ** Examples
+> 
+> # Signal a condition with signal():
+> fn <- function() {
++   g()
++   cat("called?\n")
++   "fn() return value"
++ }
+> g <- function() {
++   h()
++   cat("called?\n")
++ }
+> h <- function() {
++   signal("A foobar condition occurred", "foo")
++   cat("called?\n")
++ }
+> 
+> # Exiting handlers jump to with_handlers() before being
+> # executed. Their return value is handed over:
+> handler <- function(c) "handler return value"
+> with_handlers(fn(), foo = handler)
+[1] "handler return value"
+> 
+> # Calling handlers are called in turn and their return value is
+> # ignored. Returning just means they are declining to take charge of
+> # the condition. However, they can produce side-effects such as
+> # displaying a message:
+> some_handler <- function(c) cat("some handler!\n")
+> other_handler <- function(c) cat("other handler!\n")
+> with_handlers(fn(), foo = calling(some_handler), foo = calling(other_handler))
+some handler!
+other handler!
+called?
+called?
+called?
+[1] "fn() return value"
+> 
+> # If a calling handler jumps to an earlier context, it takes
+> # charge of the condition and no other handler gets a chance to
+> # deal with it. The canonical way of transferring control is by
+> # jumping to a restart. See with_restarts() and restarting()
+> # documentation for more on this:
+> exiting_handler <- function(c) rst_jump("rst_foo")
+> fn2 <- function() {
++   with_restarts(g(), rst_foo = function() "restart value")
++ }
+> with_handlers(fn2(), foo = calling(exiting_handler), foo = calling(other_handler))
+[1] "restart value"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("with_restarts")
+> ### * with_restarts
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: with_restarts
+> ### Title: Establish a restart point on the stack
+> ### Aliases: with_restarts
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Restarts are not the only way to jump to a previous frame, but
+> # they have the advantage of being callable by name:
+> fn <- function() with_restarts(g(), my_restart = function() "returned")
+> g <- function() h()
+> h <- function() { rst_jump("my_restart"); "not returned" }
+> fn()
+[1] "returned"
+> 
+> # Whereas a non-local return requires to manually pass the calling
+> # frame to the return function:
+> fn <- function() g(current_env())
+> g <- function(env) h(env)
+> h <- function(env) { return_from(env, "returned"); "not returned" }
+> fn()
+[1] "returned"
+> 
+> 
+> # rst_maybe_jump() checks that a restart exists before trying to jump:
+> fn <- function() {
++   g()
++   cat("will this be called?\n")
++ }
+> g <- function() {
++   rst_maybe_jump("my_restart")
++   cat("will this be called?\n")
++ }
+> 
+> # Here no restart are on the stack:
+> fn()
+will this be called?
+will this be called?
+> 
+> # If a restart point called `my_restart` was established on the
+> # stack before calling fn(), the control flow will jump there:
+> rst <- function() {
++   cat("restarting...\n")
++   "return value"
++ }
+> with_restarts(fn(), my_restart = rst)
+restarting...
+[1] "return value"
+> 
+> 
+> # Restarts are particularly useful to provide alternative default
+> # values when the normal output cannot be computed:
+> 
+> fn <- function(valid_input) {
++   if (valid_input) {
++     return("normal value")
++   }
++ 
++   # We decide to return the empty string "" as default value. An
++   # altenative strategy would be to signal an error. In any case,
++   # we want to provide a way for the caller to get a different
++   # output. For this purpose, we provide two restart functions that
++   # returns alternative defaults:
++   restarts <- list(
++     rst_empty_chr = function() character(0),
++     rst_null = function() NULL
++   )
++ 
++   with_restarts(splice(restarts), .expr = {
++ 
++     # Signal a typed condition to let the caller know that we are
++     # about to return an empty string as default value:
++     cnd_signal("default_empty_string")
++ 
++     # If no jump to with_restarts, return default value:
++     ""
++   })
++ }
+> 
+> # Normal value for valid input:
+> fn(TRUE)
+[1] "normal value"
+> 
+> # Default value for bad input:
+> fn(FALSE)
+Warning: Creating a condition with `cnd_signal()` is deprecated as of rlang 0.3.0.
+Please use `signal()` instead.
+This warning is displayed once per session.
+[1] ""
+> 
+> # Change the default value if you need an empty character vector by
+> # defining a calling handler that jumps to the restart. It has to
+> # be calling because exiting handlers jump to the place where they
+> # are established before being executed, and the restart is not
+> # defined anymore at that point:
+> rst_handler <- calling(function(c) rst_jump("rst_empty_chr"))
+> with_handlers(fn(FALSE), default_empty_string = rst_handler)
+character(0)
+> 
+> # You can use restarting() to create restarting handlers easily:
+> with_handlers(fn(FALSE), default_empty_string = restarting("rst_null"))
+NULL
+> 
+> 
+> 
+> cleanEx()
+> nameEx("zap")
+> ### * zap
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: zap
+> ### Title: Create zap objects
+> ### Aliases: zap is_zap
+> 
+> ### ** Examples
+> 
+> # Create one zap object:
+> zap()
+<zap>
+> 
+> # Create a list of zaps:
+> rep(list(zap()), 3)
+[[1]]
+<zap>
+
+[[2]]
+<zap>
+
+[[3]]
+<zap>
+
+> rep_named(c("foo", "bar"), list(zap()))
+$foo
+<zap>
+
+$bar
+<zap>
+
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.721 0.093 0.815 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

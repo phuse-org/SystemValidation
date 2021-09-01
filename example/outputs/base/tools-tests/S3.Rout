@@ -1,0 +1,27 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## check that all S3 methods in base are registered.
+> ## See the end of src/library/base/R/zzz.R ...
+> (function() {
++   old <-  Sys.getlocale("LC_COLLATE")
++   on.exit(Sys.setlocale("LC_COLLATE", old))
++           Sys.setlocale("LC_COLLATE", "C")
++   stopifnot(identical(base:::.S3_methods_table,
++                       tools:::.make_S3_methods_table_for_base()))
++ })()
+> 

@@ -1,0 +1,249 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## glm.nb with weights
+> library(MASS)
+> yeast <- data.frame(cbind(numbers = 0:5, fr = c(213, 128, 37, 18, 3, 1)))
+> 
+> attach(yeast)
+> n <- rep(numbers, fr)
+> 
+> ## fitting using glm.nb with weights - wrong results in 7.2-18
+> yeast2.fit <- glm.nb(numbers~1, link = log, weights=fr)
+> summary(yeast2.fit)
+
+Call:
+glm.nb(formula = numbers ~ 1, weights = fr, link = log, init.theta = 3.586087428)
+
+Deviance Residuals: 
+      1        2        3        4        5        6  
+-16.314    3.682    6.923    7.555    4.033    2.813  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -0.38199    0.06603  -5.785 7.25e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for Negative Binomial(3.5861) family taken to be 1)
+
+    Null deviance: 408.9  on 5  degrees of freedom
+Residual deviance: 408.9  on 5  degrees of freedom
+AIC: 897.06
+
+Number of Fisher Scoring iterations: 1
+
+
+              Theta:  3.59 
+          Std. Err.:  1.75 
+
+ 2 x log-likelihood:  -893.063 
+> 
+> ## fitting extending the vector and using glm.nb - correct result ##
+> yeast3.fit<-glm.nb(n~1, link = log)
+> summary(yeast3.fit)
+
+Call:
+glm.nb(formula = n ~ 1, link = log, init.theta = 3.586087428)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.1178  -1.1178  -1.1178   0.3255   2.8131  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -0.38199    0.06603  -5.785 7.25e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for Negative Binomial(3.5861) family taken to be 1)
+
+    Null deviance: 408.9  on 399  degrees of freedom
+Residual deviance: 408.9  on 399  degrees of freedom
+AIC: 897.06
+
+Number of Fisher Scoring iterations: 1
+
+
+              Theta:  3.59 
+          Std. Err.:  1.75 
+
+ 2 x log-likelihood:  -893.063 
+> 
+> stopifnot(all.equal(deviance(yeast2.fit), deviance(yeast3.fit)))
+> stopifnot(all.equal(yeast2.fit$theta, yeast3.fit$theta))
+> 
+> detach(yeast)
+> 
+> # another one, corrected in 7.2-43
+> set.seed(13245)
+> x <- c(-5:5)
+> mu <- exp(1 + 0.1*x)
+> y <- rnegbin(length(mu), mu = mu, theta = 1.5)
+> dat <- data.frame(x, y)
+> dat2 <- dat[rep(1:11, each=2), ]
+> w <- round(runif(11),2)
+> dat2$w <- as.vector(rbind(w, 1-w))
+> fm2 <- glm.nb(y ~ x, dat)
+> gm2 <- glm.nb(y ~ x, dat2, weights = w)
+> summary(fm2)
+
+Call:
+glm.nb(formula = y ~ x, data = dat, init.theta = 1.053022308, 
+    link = log)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-1.95271  -1.17141   0.03712   0.26155   1.25529  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  1.54532    0.32586   4.742 2.11e-06 ***
+x            0.06913    0.10316   0.670    0.503    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for Negative Binomial(1.053) family taken to be 1)
+
+    Null deviance: 13.103  on 10  degrees of freedom
+Residual deviance: 12.592  on  9  degrees of freedom
+AIC: 64.235
+
+Number of Fisher Scoring iterations: 1
+
+
+              Theta:  1.053 
+          Std. Err.:  0.600 
+
+ 2 x log-likelihood:  -58.235 
+> summary(gm2) # failed before
+
+Call:
+glm.nb(formula = y ~ x, data = dat2, weights = w, init.theta = 1.053022308, 
+    link = log)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-1.53756  -0.82819   0.02594   0.15505   1.24268  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  1.54532    0.32586   4.742 2.11e-06 ***
+x            0.06913    0.10316   0.670    0.503    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for Negative Binomial(1.053) family taken to be 1)
+
+    Null deviance: 13.103  on 21  degrees of freedom
+Residual deviance: 12.592  on 20  degrees of freedom
+AIC: 64.235
+
+Number of Fisher Scoring iterations: 1
+
+
+              Theta:  1.053 
+          Std. Err.:  0.600 
+
+ 2 x log-likelihood:  -58.235 
+> stopifnot(all.equal(fm2$theta, gm2$theta)) # differed
+> stopifnot(all.equal(deviance(fm2), deviance(gm2)))
+> fm3 <- glm(y ~ x, negative.binomial(theta = fm2$theta), dat)
+> gm3 <- glm(y ~ x, negative.binomial(theta = fm2$theta), dat2, weights =w)
+> summary(fm3)
+
+Call:
+glm(formula = y ~ x, family = negative.binomial(theta = fm2$theta), 
+    data = dat)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-1.95271  -1.17142   0.03711   0.26156   1.25527  
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  1.54532    0.30987   4.987 0.000752 ***
+x            0.06914    0.09809   0.705 0.498765    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for Negative Binomial(1.053) family taken to be 0.9042695)
+
+    Null deviance: 13.103  on 10  degrees of freedom
+Residual deviance: 12.592  on  9  degrees of freedom
+AIC: 62.235
+
+Number of Fisher Scoring iterations: 6
+
+> summary(gm3)
+
+Call:
+glm(formula = y ~ x, family = negative.binomial(theta = fm2$theta), 
+    data = dat2, weights = w)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-1.53756  -0.82818   0.02594   0.15506   1.24266  
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  1.54532    0.20786   7.434 3.55e-07 ***
+x            0.06914    0.06580   1.051    0.306    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for Negative Binomial(1.053) family taken to be 0.4069213)
+
+    Null deviance: 13.103  on 21  degrees of freedom
+Residual deviance: 12.592  on 20  degrees of freedom
+AIC: 62.235
+
+Number of Fisher Scoring iterations: 6
+
+> stopifnot(all.equal(deviance(fm3), deviance(gm3)))
+> 
+> fit <- glm.nb(Days ~ Sex/(Age + Eth*Lrn), data = quine)
+> set.seed(1)
+> simulate(fit, nsim=5)[1:10, ]
+   sim_1 sim_2 sim_3 sim_4 sim_5
+1      3     9    35     6    18
+2     30    25    77     0     1
+3     28    36    40    10     6
+4     12     4     4     5     3
+5     29     1     6     3    18
+6     20     6    16     1    46
+7     15    15    52    20    15
+8      5    32     0     1    17
+9      0    17     3     3     8
+10     5     2     0     1    32
+> if(getRversion() >= "2.9.0") {
++     fit2 <- glm.convert(fit)
++     set.seed(1)
++     print(simulate(fit2, nsim=5)[1:10, ])
++ }
+   sim_1 sim_2 sim_3 sim_4 sim_5
+1      3     9    35     6    18
+2     30    25    77     0     1
+3     28    36    40    10     6
+4     12     4     4     5     3
+5     29     1     6     3    18
+6     20     6    16     1    46
+7     15    15    52    20    15
+8      5    32     0     1    17
+9      0    17     3     3     8
+10     5     2     0     1    32
+> 

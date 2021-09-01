@@ -1,0 +1,55 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## Tests for handling classes with same name & different package slots
+> ## First:  Can we define the classes and get the separate definitions
+> ## from the appropriate namespace or from the package slot in class(x)?
+> if(!require(Matrix)) q()
+Loading required package: Matrix
+> 
+> ## from: example(chol)
+> sy2 <- new("dsyMatrix", Dim = as.integer(c(2,2)), x = c(14, NA,32,77))
+> c2 <- chol(sy2)
+> 
+> clM <- getClass("Cholesky")
+> 
+> setClass("Cholesky", contains = "numeric", representation(size = "integer"))
+> 
+> clG <- getClass("Cholesky", where = .GlobalEnv)
+> 
+> stopifnot(identical(getClass("Cholesky", where = asNamespace("Matrix")),
++                     clM))
+> 
+> stopifnot(identical(getClass(class(c2)), clM))
+> 
+> stopifnot(identical(evalq(getClass("Cholesky"), asNamespace("Matrix")),
++                     clM))
+> stopifnot(identical(getClass("Cholesky"), clG))
+> 
+> ## Second:  tests of methods defined for the same generic
+> ## (NOT YET!)
+> 
+> ## Related: retaining package slots in methods signatures (reported by Martin Morgan)
+> setClass("A")
+> setGeneric("bar", function(x, y) standardGeneric("bar"))
+[1] "bar"
+> setMethod(bar, signature(x="A", y="A"), function(x, y) {})
+> setMethod(bar, signature(x="A", y="ANY"), function(x, y) {})
+> 
+> ## tests one use of .matchSigLength
+> stopifnot(all(nzchar(getMethod("bar", signature(x="A", y="ANY"))@target@package)))
+> 

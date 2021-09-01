@@ -1,0 +1,194 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "highr"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('highr')
+Warning: package ‘highr’ was built under R version 4.0.4
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("hi_andre")
+> ### * hi_andre
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: hi_andre
+> ### Title: A wrapper to Andre Simon's Highlight
+> ### Aliases: hi_andre
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D hi_andre("1+1", language = "R")
+> ##D hi_andre("void main() {\nreturn(0)\n}", language = "c", format = "latex")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("hilight")
+> ### * hilight
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: hilight
+> ### Title: Syntax highlight an R code fragment
+> ### Aliases: hilight hi_latex hi_html
+> 
+> ### ** Examples
+> 
+> library(highr)
+> hilight("x=1 # assignment")
+[1] "\\hlstd{x}\\hlkwb{=}\\hlnum{1} \\hlcom{# assignment}"
+> 
+> txt = c("a <- 1 # something", "c(y=\"world\", z=\"hello\")", "b=function(x=5) {", 
++     "for(i in 1:10) {
++   if (i < x) print(i) else break}}", "z@child # S4 slot", 
++     "'special chars <>#$%&_{}'")
+> cat(hi_latex(txt), sep = "\n")
+\hlstd{a} \hlkwb{<-} \hlnum{1} \hlcom{# something}
+\hlkwd{c}\hlstd{(}\hlkwc{y}\hlstd{=}\hlstr{"world"}\hlstd{,} \hlkwc{z}\hlstd{=}\hlstr{"hello"}\hlstd{)}
+\hlstd{b}\hlkwb{=}\hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{=}\hlnum{5}\hlstd{) \{}
+\hlkwa{for}\hlstd{(i} \hlkwa{in} \hlnum{1}\hlopt{:}\hlnum{10}\hlstd{) \{}
+  \hlkwa{if} \hlstd{(i} \hlopt{<} \hlstd{x)} \hlkwd{print}\hlstd{(i)} \hlkwa{else break}\hlstd{\}\}}
+\hlstd{z}\hlopt{@}\hlkwc{child} \hlcom{# S4 slot}
+\hlstr{'special chars <>#$%&_\{\}'}
+> cat(hi_html(txt), sep = "\n")
+<span class="hl std">a</span> <span class="hl kwb">&lt;-</span> <span class="hl num">1</span> <span class="hl com"># something</span>
+<span class="hl kwd">c</span><span class="hl std">(</span><span class="hl kwc">y</span><span class="hl std">=</span><span class="hl str">&quot;world&quot;</span><span class="hl std">,</span> <span class="hl kwc">z</span><span class="hl std">=</span><span class="hl str">&quot;hello&quot;</span><span class="hl std">)</span>
+<span class="hl std">b</span><span class="hl kwb">=</span><span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">=</span><span class="hl num">5</span><span class="hl std">) {</span>
+<span class="hl kwa">for</span><span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">) {</span>
+  <span class="hl kwa">if</span> <span class="hl std">(i</span> <span class="hl opt">&lt;</span> <span class="hl std">x)</span> <span class="hl kwd">print</span><span class="hl std">(i)</span> <span class="hl kwa">else break</span><span class="hl std">}}</span>
+<span class="hl std">z</span><span class="hl opt">@</span><span class="hl kwc">child</span> <span class="hl com"># S4 slot</span>
+<span class="hl str">'special chars &lt;&gt;#$%&amp;_{}'</span>
+> 
+> # the markup data frames
+> highr:::cmd_latex
+                         cmd1 cmd2
+COMMENT              \\hlcom{    }
+FUNCTION             \\hlkwa{    }
+IF                   \\hlkwa{    }
+ELSE                 \\hlkwa{    }
+WHILE                \\hlkwa{    }
+FOR                  \\hlkwa{    }
+IN                   \\hlkwa{    }
+BREAK                \\hlkwa{    }
+REPEAT               \\hlkwa{    }
+NEXT                 \\hlkwa{    }
+NULL_CONST           \\hlkwa{    }
+LEFT_ASSIGN          \\hlkwb{    }
+EQ_ASSIGN            \\hlkwb{    }
+RIGHT_ASSIGN         \\hlkwb{    }
+SYMBOL_FORMALS       \\hlkwc{    }
+SYMBOL_SUB           \\hlkwc{    }
+SLOT                 \\hlkwc{    }
+SYMBOL_FUNCTION_CALL \\hlkwd{    }
+NUM_CONST            \\hlnum{    }
+'+'                  \\hlopt{    }
+'-'                  \\hlopt{    }
+'*'                  \\hlopt{    }
+'/'                  \\hlopt{    }
+'^'                  \\hlopt{    }
+'$'                  \\hlopt{    }
+'@'                  \\hlopt{    }
+':'                  \\hlopt{    }
+'?'                  \\hlopt{    }
+'~'                  \\hlopt{    }
+'!'                  \\hlopt{    }
+SPECIAL              \\hlopt{    }
+GT                   \\hlopt{    }
+GE                   \\hlopt{    }
+LT                   \\hlopt{    }
+LE                   \\hlopt{    }
+EQ                   \\hlopt{    }
+NE                   \\hlopt{    }
+AND                  \\hlopt{    }
+AND2                 \\hlopt{    }
+OR                   \\hlopt{    }
+OR2                  \\hlopt{    }
+NS_GET               \\hlopt{    }
+NS_GET_INT           \\hlopt{    }
+STANDARD             \\hlstd{    }
+STR_CONST            \\hlstr{    }
+> highr:::cmd_html
+                                      cmd1    cmd2
+COMMENT              <span class="hl com"> </span>
+FUNCTION             <span class="hl kwa"> </span>
+IF                   <span class="hl kwa"> </span>
+ELSE                 <span class="hl kwa"> </span>
+WHILE                <span class="hl kwa"> </span>
+FOR                  <span class="hl kwa"> </span>
+IN                   <span class="hl kwa"> </span>
+BREAK                <span class="hl kwa"> </span>
+REPEAT               <span class="hl kwa"> </span>
+NEXT                 <span class="hl kwa"> </span>
+NULL_CONST           <span class="hl kwa"> </span>
+LEFT_ASSIGN          <span class="hl kwb"> </span>
+EQ_ASSIGN            <span class="hl kwb"> </span>
+RIGHT_ASSIGN         <span class="hl kwb"> </span>
+SYMBOL_FORMALS       <span class="hl kwc"> </span>
+SYMBOL_SUB           <span class="hl kwc"> </span>
+SLOT                 <span class="hl kwc"> </span>
+SYMBOL_FUNCTION_CALL <span class="hl kwd"> </span>
+NUM_CONST            <span class="hl num"> </span>
+'+'                  <span class="hl opt"> </span>
+'-'                  <span class="hl opt"> </span>
+'*'                  <span class="hl opt"> </span>
+'/'                  <span class="hl opt"> </span>
+'^'                  <span class="hl opt"> </span>
+'$'                  <span class="hl opt"> </span>
+'@'                  <span class="hl opt"> </span>
+':'                  <span class="hl opt"> </span>
+'?'                  <span class="hl opt"> </span>
+'~'                  <span class="hl opt"> </span>
+'!'                  <span class="hl opt"> </span>
+SPECIAL              <span class="hl opt"> </span>
+GT                   <span class="hl opt"> </span>
+GE                   <span class="hl opt"> </span>
+LT                   <span class="hl opt"> </span>
+LE                   <span class="hl opt"> </span>
+EQ                   <span class="hl opt"> </span>
+NE                   <span class="hl opt"> </span>
+AND                  <span class="hl opt"> </span>
+AND2                 <span class="hl opt"> </span>
+OR                   <span class="hl opt"> </span>
+OR2                  <span class="hl opt"> </span>
+NS_GET               <span class="hl opt"> </span>
+NS_GET_INT           <span class="hl opt"> </span>
+STANDARD             <span class="hl std"> </span>
+STR_CONST            <span class="hl str"> </span>
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.144 0.011 0.155 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

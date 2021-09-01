@@ -1,0 +1,45 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> postscript("date.ps")
+> library(lattice)
+> 
+> ## POSIXt handling
+> 
+> y <- Sys.time() + 10000 * 1:100
+> x <- rnorm(100)
+> b <- gl(3,1,100)
+> 
+> xyplot(y ~ x | b)
+> xyplot(y ~ x | b, scales = list(relation = "free", rot = 0))
+> xyplot(y ~ x | b, scales = "sliced")
+> 
+> ## Date handling
+> 
+> dat <-
++     data.frame(a = 1:10,
++                b = seq(as.Date("2003/1/1"), as.Date("2003/1/10"), by="day"))
+> xyplot(a~b, dat)
+> xyplot(a~b, dat, scales=list(x=list(at=dat$b)))
+> 
+> 
+> dev.off()
+null device 
+          1 
+> 
+> 

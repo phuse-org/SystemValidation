@@ -1,0 +1,3011 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> #### Matrix Factorizations  --- of all kinds
+> 
+> library(Matrix)
+> 
+> source(system.file("test-tools.R", package = "Matrix"))# identical3() etc
+Loading required package: tools
+> doExtras
+[1] FALSE
+> (is64bit <- .Machine$sizeof.pointer == 8)
+[1] TRUE
+> ### "sparseQR" : Check consistency of methods
+> ##   --------
+> data(KNex); mm <- KNex$mm; y <- KNex$y
+> stopifnot(is((Y <- Matrix(y)), "dgeMatrix"))
+> md <- as(mm, "matrix")                  # dense
+> 
+> (cS <- system.time(Sq <- qr(mm))) # 0.009
+   user  system elapsed 
+  0.005   0.000   0.005 
+> (cD <- system.time(Dq <- qr(md))) # 0.499 (lynne, 2014 f)
+   user  system elapsed 
+  0.192   0.008   0.200 
+> cD[1] / cS[1] # dense is  much ( ~ 100--170 times) slower
+user.self 
+     38.4 
+> 
+> ## MM__FIXME__: move these functions to ../inst/test-tools.R
+> chkQR <- function(a,
++                   y = seq_len(nrow(a)),## RHS: made to contain no 0
++                   a.qr = qr(a), tol = 1e-11, # 1e-13 failing very rarely (interesting)
++                   ##----------
++                   Qinv.chk = !sp.rank.def, QtQ.chk = !sp.rank.def,
++                   verbose = getOption("Matrix.verbose", FALSE), giveRE = verbose,
++                   quiet = FALSE)
++ {
++     d <- dim(a)
++     stopifnot((n <- d[1]) >= (p <- d[2]), is.numeric(y))
++     kind <- if(is.qr(a.qr)) "qr"
++             else if(is(a.qr, "sparseQR")) "spQR"
++             else stop("unknown qr() class: ", class(a.qr))
++     if(!missing(verbose) && verbose) {
++ 	op <- options(Matrix.verbose = verbose)
++ 	on.exit(options(op))
++     }
++     ## rank.def <- switch(kind,
++     ##     	       "qr"  = a.qr$rank < length(a.qr$pivot),
++     ##     	       "spQR" = a.qr@V@Dim[1] > a.qr@Dim[1])
++     sp.rank.def <- (kind == "spQR") && (a.qr@V@Dim[1] > a.qr@Dim[1])
++     if(sp.rank.def && !quiet && (missing(Qinv.chk) || missing(QtQ.chk)))
++ 	message("is sparse *structurally* rank deficient:  Qinv.chk=",
++ 		Qinv.chk,", QtQ.chk=",QtQ.chk)
++     if(is.na(QtQ.chk )) QtQ.chk  <- !sp.rank.def
++     if(is.na(Qinv.chk)) Qinv.chk <- !sp.rank.def
++ 
++     if(Qinv.chk) { ## qr.qy and qr.qty should be inverses,  Q'Q y = y = QQ' y :
++         if(verbose) cat("Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :\n")
++ 	## FIXME: Fails for structurally rank deficient sparse a's, but never for classical
++ 	assert.EQ(drop(qr.qy (a.qr, qr.qty(a.qr, y))), y, giveRE=giveRE, tol = tol/64)
++ 	assert.EQ(drop(qr.qty(a.qr, qr.qy (a.qr, y))), y, giveRE=giveRE, tol = tol/64)
++     }
++ 
++     piv <- switch(kind,
++                   "qr" = a.qr$pivot,
++                   "spQR" = 1L + a.qr@q)# 'q', not 'p' !!
++     invP <- sort.list(piv)
++ 
++     .ckQR <- function(cmpl) { ## local function, using parent's variables
++         if(verbose) cat("complete = ",cmpl,": checking  X = Q R P*\n", sep="")
++         Q <- qr.Q(a.qr, complete=cmpl) # NB: Q is already "back permuted"
++         R <- qr.R(a.qr, complete=cmpl)
++         rr <- if(cmpl) n else p
++         stopifnot(dim(Q) == c(n,rr),
++                   dim(R) == c(rr,p))
++         assert.EQ.Mat(a, Q %*% R[, invP], giveRE=giveRE, tol=tol)
++         ##            =  ===============
++ 	if(QtQ.chk)
++ 	    assert.EQ.mat(crossprod(Q), diag(rr), giveRE=giveRE, tol=tol)
++         ##                ===========   ====
++     }
++     .ckQR(FALSE)
++     .ckQR(TRUE)
++     invisible(a.qr)
++ }## end{chkQR}
+> 
+> ##' Check QR-consistency of dense and sparse
+> chk.qr.D.S <- function(d., s., y, Y = Matrix(y), force = FALSE, tol = 1e-10) {
++     stopifnot(is.qr(d.), is(s., "sparseQR"))
++     cc <- qr.coef(d.,y)
++     rank.def <- any(is.na(cc)) && d.$rank < length(d.$pivot)
++     if(rank.def && force) cc <- mkNA.0(cc) ## set NA's to 0 .. ok, in some case
++ 
++     ## when system is rank deficient, have differing cases, not always just NA <-> 0 coef
++     ## FIXME though:  resid & fitted should be well determined
++     if(force || !rank.def) stopifnot(
++ ### FIXME: temporary:
++ ###	is.all.equal3(	    cc	     , drop(qr.coef  (s.,y)), drop(qr.coef  (s.,Y)), tol=tol),
++ 	is.all.equal3(	unname( cc ) , drop(qr.coef  (s.,y)), drop(qr.coef  (s.,Y)), tol=tol),
++ ### END{FIXME}
++ 	is.all.equal3(qr.resid (d.,y), drop(qr.resid (s.,y)), drop(qr.resid (s.,Y)), tol=tol),
++ 	is.all.equal3(qr.fitted(d.,y), drop(qr.fitted(s.,y)), drop(qr.fitted(s.,Y)), tol=tol)
++ 	)
++ }
+> 
+> ##' "Combi" calling chkQR() on both "(sparse)Matrix" and 'traditional' version
+> ##' ------  and combine the two qr decompositions using chk.qr.D.S()
+> ##'
+> ##' @title check QR-decomposition, and compare sparse and dense one
+> ##' @param A a 'Matrix' , typically 'sparseMatrix'
+> ##' @param Qinv.chk
+> ##' @param QtQ.chk
+> ##' @param quiet
+> ##' @return list with 'qA' (sparse QR) and 'qa' (traditional (dense) QR)
+> ##' @author Martin Maechler
+> checkQR.DS.both <- function(A, Qinv.chk, QtQ.chk=NA,
++                             quiet=FALSE, giveRE=TRUE, tol = 1e-13)
++ {
++     stopifnot(is(A,"Matrix"))
++     if(!quiet) cat("classical: ")
++     qa <- chkQR(as(A, "matrix"), Qinv.chk=TRUE, QtQ.chk=TRUE, tol=tol, giveRE=giveRE)# works always
++     if(!quiet) cat("[Ok] ---  sparse: ")
++     qA <- chkQR(A, Qinv.chk=Qinv.chk, QtQ.chk=QtQ.chk, tol=tol, giveRE=giveRE)
++     validObject(qA)
++     if(!quiet) cat("[Ok]\n")
++     chk.qr.D.S(qa, qA, y = 10 + 1:nrow(A), tol = 256*tol)# ok [not done in rank deficient case!]
++     invisible(list(qA=qA, qa=qa))
++ }
+> 
+> if(doExtras) { ## ~ 20 sec {"large" example}   + 2x qr.R() warnings
++     cat("chkQR( <KNex> ) .. takes time .. ")
++     system.time(chkQR(mm, y=y, a.qr = Sq, verbose=TRUE))
++     system.time(chkQR(md, y=y, a.qr = Dq, verbose=TRUE))
++     cat(" done: [Ok]\n")
++ }
+> 
+> ## consistency of results dense and sparse
+> chk.qr.D.S(Dq, Sq, y, Y)
+> 
+> ## Another small example with pivoting (and column name "mess"):
+> suppressWarnings(RNGversion("3.5.0")); set.seed(1)
+> X <- rsparsematrix(9,5, 1/4, dimnames=list(paste0("r", 1:9), LETTERS[1:5]))
+> qX <- qr(X); qd <- qr(as(X, "matrix"))
+> ## numbers are the same, but names of sparse case are wrongly permuted
+> qr.coef(qX, 1:9)
+          A           B           C           D           E 
+  1.2056600  -6.1033750 -20.4434698 -10.1046230  -0.9090909 
+> qr.coef(qd, 1:9)
+          A           B           C           D           E 
+  1.2056600  -6.1033750 -20.4434698 -10.1046230  -0.9090909 
+> if(FALSE) ## error:
++ chk.qr.D.S(d. = qd, s. = qX, y = 1:9)
+> 
+> 
+> 
+> ## rank deficient QR cases: ---------------
+> 
+> ## From Simon (15 Jul 2009) + dimnames (11 May 2015)
+> set.seed(10)
+> a <- matrix(round(10 * runif(90)), 10,9, dimnames =
++             list(LETTERS[1:10], paste0("c", 1:9)))
+> a[a < 7.5] <- 0
+> (A <- Matrix(a))# first column = all zeros
+10 x 9 sparse Matrix of class "dgCMatrix"
+  c1 c2 c3 c4 c5 c6 c7 c8 c9
+A  .  .  9  .  .  .  .  .  9
+B  .  .  .  .  .  9  .  .  .
+C  .  .  8  .  .  .  .  .  .
+D  .  .  .  9  .  .  .  .  .
+E  .  .  .  .  .  .  8  .  .
+F  .  .  .  .  .  .  8  .  .
+G  .  .  8  8  .  .  .  .  8
+H  .  .  . 10  .  .  . 10  .
+I  .  .  8  .  .  .  .  .  .
+J  .  8  .  .  8  .  .  .  .
+> qD <- chkQR(a, giveRE=TRUE) ## using base qr
+Mean relative difference: 3.431598e-16
+Mean relative difference: 2.59052e-16
+Mean relative difference: 8.25482e-16
+Mean relative difference: 6.237478e-16
+Mean relative difference: 8.25482e-16
+Mean relative difference: 7.019201e-16
+> qS <- chkQR(A, giveRE=TRUE) ## using Matrix "sparse qr" -- "structurally rank deficient!
+is sparse *structurally* rank deficient:  Qinv.chk=FALSE, QtQ.chk=FALSE
+Mean relative difference: 6.18072e-16
+Mean relative difference: 6.18072e-16
+Warning messages:
+1: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In .local(qr, complete, ...) :
+  qr.R(<sparse>) may differ from qr.R(<dense>) because of permutations.  Possibly use our qrR() instead
+3: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+4: In .local(qr, complete, ...) :
+  qr.R(<sparse>) may differ from qr.R(<dense>) because of permutations.  Possibly use our qrR() instead
+> validObject(qS)# with the validity now (2012-11-18) -- ok, also for "bad" case
+[1] TRUE
+> ## Here, have illegal access  Up[-1] in ../src/cs.c
+> try( ## After patch (2016-10-04 - *NOT* committed), this fails
++     ## definitely "fails" (with good singularity message) after c3194 (cs.c):
++ chk.qr.D.S(qD, qS, y = 10 + 1:nrow(A), force=TRUE)# 6 warnings: "structurally rank deficient"
++ )
+Error in chk.qr.D.S(qD, qS, y = 10 + 1:nrow(A), force = TRUE) : 
+  is.all.equal3(unname(cc), drop(qr.coef(s., y)), drop(qr.coef(s.,  .... is not TRUE
+In addition: Warning messages:
+1: In lengths(res@Dimnames) : cs_usolve(U, x): U is not invertible (j=0)
+2: In lengths(res@Dimnames) :
+  sparseQR_coef(): structurally rank deficient case: possibly WRONG zeros
+> try( ## NOTE: *Both* checks  currently fail here:
++     chkQR(A, Qinv.chk=TRUE, QtQ.chk=TRUE)
++ )
+Error in assert.EQ(drop(qr.qy(a.qr, qr.qty(a.qr, y))), y, giveRE = giveRE,  : 
+  all.equal() |-> Mean relative difference: 0.2131411
+In addition: Warning messages:
+1: In qr.qty(a.qr, y) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(a.qr, qr.qty(a.qr, y)) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> 
+> 
+> ## Larger Scale random testing
+> oo <- options(Matrix.quiet.qr.R = TRUE, Matrix.verbose = TRUE)
+> set.seed(101)
+> 
+> for(N in 1:(if(doExtras) 1008 else 24)) {
++     A <- rsparsematrix(8,5, nnz = rpois(1, lambda=16))
++     cat(sprintf("%4d -", N))
++     checkQR.DS.both(A, Qinv.chk= NA, QtQ.chk=NA,
++     ##                          --- => FALSE if struct. rank deficient
++ 		    giveRE = FALSE, tol = if(is64bit) 2e-13 else 1e-12)
++ }
+   1 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   2 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   3 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   4 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   5 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 2)
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   6 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   7 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   8 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   9 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  10 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  11 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  12 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  13 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  14 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  15 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  16 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  17 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  18 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  19 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  20 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  21 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  22 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  23 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  24 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+There were 14 warnings (use warnings() to see them)
+> unique(warnings())
+Warning message:
+In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> 
+> ## Look at single "hard" cases: --------------------------------------
+> 
+> ## This is *REALLY* nice and small :
+> A0 <- new("dgCMatrix", Dim = 4:3, i = c(0:3, 3L), p = c(0L, 3:5), x = rep(1,5))
+> A0
+4 x 3 sparse Matrix of class "dgCMatrix"
+          
+[1,] 1 . .
+[2,] 1 . .
+[3,] 1 . .
+[4,] . 1 1
+> checkQR.DS.both(A0, Qinv.chk = FALSE, QtQ.chk=FALSE)
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 1.110223e-16
+Mean relative difference: 2.220446e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.110223e-16
+Mean relative difference: 2.833226e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.110223e-16
+Mean relative difference: 3.283161e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.110223e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.110223e-16
+[Ok]
+Warning messages:
+1: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> ##                                           ----- *both* still needed :
+> try( checkQR.DS.both(A0,  TRUE, FALSE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 1.110223e-16
+Mean relative difference: 2.220446e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.110223e-16
+Mean relative difference: 2.833226e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.110223e-16
+Mean relative difference: 3.283161e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Error in assert.EQ(drop(qr.qy(a.qr, qr.qty(a.qr, y))), y, giveRE = giveRE,  : 
+  all.equal() |-> Mean relative difference: 0.09622504
+In addition: Warning messages:
+1: In qr.qty(a.qr, y) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(a.qr, qr.qty(a.qr, y)) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> try( checkQR.DS.both(A0, FALSE,  TRUE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 1.110223e-16
+Mean relative difference: 2.220446e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.110223e-16
+Mean relative difference: 2.833226e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.110223e-16
+Mean relative difference: 3.283161e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.110223e-16
+Error in assert.EQ(MM, m, tol = tol, showOnly = showOnly, giveRE = giveRE) : 
+  all.equal() |-> Mean relative difference: 1
+In addition: Warning message:
+In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> 
+> ## and the same when dropping the first row  { --> 3 x 3 }:
+> A1 <- A0[-1 ,]
+> checkQR.DS.both(A1, Qinv.chk = FALSE, QtQ.chk=FALSE)
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 7.771561e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 4.237961e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 4.237961e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+Warning messages:
+1: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> ##                                           ----- *both* still needed :
+> try( checkQR.DS.both(A1,  TRUE, FALSE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 7.771561e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 4.237961e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 4.237961e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Error in assert.EQ(drop(qr.qy(a.qr, qr.qty(a.qr, y))), y, giveRE = giveRE,  : 
+  all.equal() |-> Mean relative difference: 0.3333333
+In addition: Warning messages:
+1: In qr.qty(a.qr, y) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(a.qr, qr.qty(a.qr, y)) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> try( checkQR.DS.both(A1, FALSE,  TRUE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 7.771561e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 4.237961e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 4.237961e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Error in assert.EQ(MM, m, tol = tol, showOnly = showOnly, giveRE = giveRE) : 
+  all.equal() |-> Mean relative difference: 1
+In addition: Warning message:
+In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> 
+> 
+> qa <- qr(as(A0,"matrix"))
+> qA <- qr(A0) # -> message: ".. Matrix structurally rank deficient"
+Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+> 
+> drop0(crossprod( Qd <- qr.Q(qa) ), 1e-15) # perfect = diag( 3 )
+3 x 3 sparse Matrix of class "dgCMatrix"
+          
+[1,] 1 . .
+[2,] . 1 .
+[3,] . . 1
+> drop0(crossprod( Qs <- qr.Q(qA) ), 1e-15) # R[3,3] == 0 -- OOPS!
+3 x 3 sparse Matrix of class "dsCMatrix"
+          
+[1,] 1 . .
+[2,] . 1 .
+[3,] . . .
+Warning message:
+In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> ## OTOH, qr.R() is fine, as checked in the checkQR.DS.both(A0, *) above
+> 
+> 
+> ## zero-row *and* zero-column :
+> (A2 <- new("dgCMatrix", i = c(0L, 1L, 4L, 7L, 5L, 2L, 4L)
++            , p = c(0L, 3L, 4L, 4L, 5L, 7L)
++            , Dim = c(8L, 5L)
++            , x = c(0.92, 1.06, -1.74, 0.74, 0.19, -0.63, 0.68)))
+8 x 5 sparse Matrix of class "dgCMatrix"
+                            
+[1,]  0.92 .    . .     .   
+[2,]  1.06 .    . .     .   
+[3,]  .    .    . .    -0.63
+[4,]  .    .    . .     .   
+[5,] -1.74 .    . .     0.68
+[6,]  .    .    . 0.19  .   
+[7,]  .    .    . .     .   
+[8,]  .    0.74 . .     .   
+> checkQR.DS.both(A2, Qinv.chk = FALSE, QtQ.chk=FALSE)
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 4.551914e-16
+Mean relative difference: 4.394633e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.951379e-16
+Mean relative difference: 4.231554e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.951379e-16
+Mean relative difference: 7.831331e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 6.637203e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 6.637203e-16
+[Ok]
+Warning messages:
+1: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> ##                                           ----- *both* still needed :
+> try( checkQR.DS.both(A2,  TRUE, FALSE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 4.551914e-16
+Mean relative difference: 4.394633e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.951379e-16
+Mean relative difference: 4.231554e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.951379e-16
+Mean relative difference: 7.831331e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Error in assert.EQ(drop(qr.qy(a.qr, qr.qty(a.qr, y))), y, giveRE = giveRE,  : 
+  all.equal() |-> Mean relative difference: 0.875
+In addition: Warning messages:
+1: In qr.qty(a.qr, y) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(a.qr, qr.qty(a.qr, y)) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> try( checkQR.DS.both(A2, FALSE,  TRUE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 4.551914e-16
+Mean relative difference: 4.394633e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.951379e-16
+Mean relative difference: 4.231554e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.951379e-16
+Mean relative difference: 7.831331e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 6.637203e-16
+Error in assert.EQ(MM, m, tol = tol, showOnly = showOnly, giveRE = giveRE) : 
+  all.equal() |-> Mean absolute difference: 0.3333333
+In addition: Warning message:
+In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> 
+> 
+> ## Case of *NO* zero-row or zero-column:
+> (A3 <- new("dgCMatrix", Dim = 6:5
++            , i = c(0L, 2L, 4L, 0L, 1L, 5L, 1L, 3L, 0L)
++            , p = c(0L, 1L, 3L, 6L, 8L, 9L)
++            , x = c(40, -54, -157, -28, 75, 166, 134, 3, -152)))
+6 x 5 sparse Matrix of class "dgCMatrix"
+                         
+[1,] 40    . -28   . -152
+[2,]  .    .  75 134    .
+[3,]  .  -54   .   .    .
+[4,]  .    .   .   3    .
+[5,]  . -157   .   .    .
+[6,]  .    . 166   .    .
+> checkQR.DS.both(A3, Qinv.chk = FALSE, QtQ.chk=FALSE)
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 4.440892e-16
+Mean relative difference: 3.108624e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.144961e-15
+Mean relative difference: 4.053552e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.144961e-15
+Mean relative difference: 4.363001e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.143119e-15
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.143119e-15
+[Ok]
+Warning messages:
+1: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> ##                                           ----- *both* still needed :
+> try( checkQR.DS.both(A3,  TRUE, FALSE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 4.440892e-16
+Mean relative difference: 3.108624e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.144961e-15
+Mean relative difference: 4.053552e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.144961e-15
+Mean relative difference: 4.363001e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Error in assert.EQ(drop(qr.qy(a.qr, qr.qty(a.qr, y))), y, giveRE = giveRE,  : 
+  all.equal() |-> Mean relative difference: 0.2579847
+In addition: Warning messages:
+1: In qr.qty(a.qr, y) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(a.qr, qr.qty(a.qr, y)) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> try( checkQR.DS.both(A3, FALSE,  TRUE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 4.440892e-16
+Mean relative difference: 3.108624e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.144961e-15
+Mean relative difference: 4.053552e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 1.144961e-15
+Mean relative difference: 4.363001e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 1.143119e-15
+Error in assert.EQ(MM, m, tol = tol, showOnly = showOnly, giveRE = giveRE) : 
+  all.equal() |-> Mean relative difference: 0.3333333
+In addition: Warning message:
+In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> 
+> 
+> 
+> (A4 <- new("dgCMatrix", Dim = c(7L, 5L)
++            , i = c(1:2, 4L, 6L, 1L, 5L, 0:3, 0L, 2:4)
++            , p = c(0L, 4L, 6L, 10L, 10L, 14L)
++            , x = c(9, -8, 1, -9, 1, 10, -1, -2, 6, 14, 10, 2, 12, -9)))
+7 x 5 sparse Matrix of class "dgCMatrix"
+                  
+[1,]  .  . -1 . 10
+[2,]  9  1 -2 .  .
+[3,] -8  .  6 .  2
+[4,]  .  . 14 . 12
+[5,]  1  .  . . -9
+[6,]  . 10  . .  .
+[7,] -9  .  . .  .
+> checkQR.DS.both(A4, Qinv.chk = FALSE, QtQ.chk=FALSE)
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 4.194176e-16
+Mean relative difference: 3.383537e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 4.992217e-16
+Mean relative difference: 6.176905e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 4.992217e-16
+Mean relative difference: 9.420353e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 4.234339e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 4.234339e-16
+[Ok]
+Warning messages:
+1: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> ##                                           ----- *both* still needed :
+> try( checkQR.DS.both(A4,  TRUE, FALSE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 4.194176e-16
+Mean relative difference: 3.383537e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 4.992217e-16
+Mean relative difference: 6.176905e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 4.992217e-16
+Mean relative difference: 9.420353e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Error in assert.EQ(drop(qr.qy(a.qr, qr.qty(a.qr, y))), y, giveRE = giveRE,  : 
+  all.equal() |-> Mean relative difference: 0.3289631
+In addition: Warning messages:
+1: In qr.qty(a.qr, y) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(a.qr, qr.qty(a.qr, y)) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> try( checkQR.DS.both(A4, FALSE,  TRUE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 4.194176e-16
+Mean relative difference: 3.383537e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 4.992217e-16
+Mean relative difference: 6.176905e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 4.992217e-16
+Mean relative difference: 9.420353e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 4.234339e-16
+Error in assert.EQ(MM, m, tol = tol, showOnly = showOnly, giveRE = giveRE) : 
+  all.equal() |-> Mean relative difference: 0.5
+In addition: Warning message:
+In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> 
+> (A5 <- new("dgCMatrix", Dim = c(4L, 4L)
++            , i = c(2L, 2L, 0:1, 0L, 2:3), p = c(0:2, 4L, 7L)
++            , x = c(48, 242, 88, 18, -167, -179, 18)))
+4 x 4 sparse Matrix of class "dgCMatrix"
+                   
+[1,]  .   . 88 -167
+[2,]  .   . 18    .
+[3,] 48 242  . -179
+[4,]  .   .  .   18
+> checkQR.DS.both(A5, Qinv.chk = FALSE, QtQ.chk=FALSE)
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 2.854859e-16
+Mean relative difference: 3.552714e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 3.034504e-16
+Mean relative difference: 4.229346e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 3.034504e-16
+Mean relative difference: 4.229346e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Mean absolute difference: 7.105427e-15
+complete = TRUE: checking  X = Q R P*
+Mean absolute difference: 7.105427e-15
+[Ok]
+Warning messages:
+1: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> ##                                           ----- *both* still needed :
+> try( checkQR.DS.both(A5,  TRUE, FALSE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 2.854859e-16
+Mean relative difference: 3.552714e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 3.034504e-16
+Mean relative difference: 4.229346e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 3.034504e-16
+Mean relative difference: 4.229346e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Error in assert.EQ(drop(qr.qy(a.qr, qr.qty(a.qr, y))), y, giveRE = giveRE,  : 
+  all.equal() |-> Mean relative difference: 0.6884769
+In addition: Warning messages:
+1: In qr.qty(a.qr, y) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(a.qr, qr.qty(a.qr, y)) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> try( checkQR.DS.both(A5, FALSE,  TRUE) )
+classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+Mean relative difference: 2.854859e-16
+Mean relative difference: 3.552714e-16
+complete = FALSE: checking  X = Q R P*
+Mean relative difference: 3.034504e-16
+Mean relative difference: 4.229346e-16
+complete = TRUE: checking  X = Q R P*
+Mean relative difference: 3.034504e-16
+Mean relative difference: 4.229346e-16
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+Mean absolute difference: 7.105427e-15
+Error in assert.EQ(MM, m, tol = tol, showOnly = showOnly, giveRE = giveRE) : 
+  all.equal() |-> Mean relative difference: 1
+In addition: Warning message:
+In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> 
+> 
+> for(N in 1:(if(doExtras) 2^12 else 128)) {
++     A <- round(100*rsparsematrix(5,3, nnz = min(15,rpois(1, lambda=10))))
++     if(any(apply(A, 2, function(x) all(x == 0)))) ## "column of all 0"
++         next
++     cat(sprintf("%4d -", N))
++     checkQR.DS.both(A, Qinv.chk=NA, giveRE=FALSE, tol = 1e-12)
++     ##                         --- => FALSE if struct. rank deficient
++ }
+   1 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   2 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   3 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   4 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   5 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   6 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   7 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   8 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+   9 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  10 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  11 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  12 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  13 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  14 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  15 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  16 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  17 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  18 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  19 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  21 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  22 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  24 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  25 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  26 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  28 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  29 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  30 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  31 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  32 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  34 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  35 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  37 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  38 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  39 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  40 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  41 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  42 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  43 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  44 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  45 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  46 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  47 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  48 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  49 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  50 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  51 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  52 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  53 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  54 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  55 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  56 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  57 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  58 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  59 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  60 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  61 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  62 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  63 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  64 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  65 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  66 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  67 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  68 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  69 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  70 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  71 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  72 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  73 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  74 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  75 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  76 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  77 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  78 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  79 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  80 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  81 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  82 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  83 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  84 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  85 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  86 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  87 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  88 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  89 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  90 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  91 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  92 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  93 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  94 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  95 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  96 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  97 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  98 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+  99 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 100 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 101 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 102 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 103 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 104 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Symbolic QR(): Matrix structurally rank deficient (m2-m = 1)
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 105 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 106 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 107 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 108 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 109 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 110 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 111 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 112 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 113 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 114 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 115 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 116 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 117 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 118 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 119 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 120 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 121 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 122 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 123 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 124 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 126 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 127 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+ 128 -classical: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok] ---  sparse: Qinv.chk=TRUE: checking   Q'Q y = y = QQ' y :
+complete = FALSE: checking  X = Q R P*
+complete = TRUE: checking  X = Q R P*
+[Ok]
+Warning messages:
+1: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+2: In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> 
+> unique(warnings())
+Warning message:
+In qr.qy(qr, D) :
+  sparseQR_qty(): structurally rank deficient case: possibly WRONG zeros
+> 
+> 
+> options(oo)
+> 
+> 
+> 
+> ### "denseLU"
+> 
+> ## Testing expansions of factorizations {was ./expand.R, then in simple.R }
+> ## new: [m x n]  where m and n  may differ
+> x. <- c(2^(0:5),9:1,-3:8, round(sqrt(0:16)))
+> set.seed(1)
+> for(nnn in 1:100) {
++     y <- sample(x., replace=TRUE)
++     m <- sample(2:6, 1)
++     n <- sample(2:7, 1)
++     x <- suppressWarnings(matrix(y, m,n))
++     lux <- lu(x)# occasionally a warning about exact singularity
++     xx <- with(expand(lux), (P %*% L %*% U))
++     print(dim(xx))
++     assert.EQ.mat(xx, x, tol = 16*.Machine$double.eps)
++ }
+[1] 4 6
+[1] 3 2
+[1] 4 5
+[1] 6 5
+[1] 4 7
+[1] 3 3
+[1] 5 3
+[1] 2 6
+[1] 5 6
+[1] 5 2
+[1] 4 7
+[1] 6 5
+[1] 4 4
+[1] 6 3
+[1] 2 7
+[1] 5 3
+[1] 6 6
+[1] 3 4
+[1] 6 3
+[1] 5 7
+[1] 3 3
+[1] 6 5
+[1] 5 4
+[1] 4 2
+[1] 6 2
+[1] 3 7
+[1] 3 5
+[1] 3 6
+[1] 2 4
+[1] 2 5
+[1] 4 2
+[1] 3 6
+[1] 5 4
+[1] 6 2
+[1] 3 2
+[1] 6 6
+[1] 5 6
+[1] 3 7
+[1] 2 5
+[1] 6 2
+[1] 6 3
+[1] 2 4
+[1] 5 2
+[1] 4 2
+[1] 6 2
+[1] 3 3
+[1] 5 7
+[1] 4 4
+[1] 4 3
+[1] 3 7
+[1] 5 7
+[1] 3 5
+[1] 5 5
+[1] 6 2
+[1] 3 7
+[1] 6 7
+[1] 3 3
+[1] 3 6
+[1] 2 5
+[1] 4 2
+[1] 3 7
+[1] 4 7
+[1] 4 7
+[1] 2 5
+[1] 6 6
+[1] 6 4
+[1] 5 4
+[1] 5 7
+[1] 2 3
+[1] 5 6
+[1] 6 2
+[1] 5 7
+[1] 6 7
+[1] 3 6
+[1] 3 5
+[1] 6 5
+[1] 2 2
+[1] 6 4
+[1] 4 4
+[1] 3 2
+[1] 6 3
+[1] 5 5
+[1] 2 2
+[1] 4 7
+[1] 2 3
+[1] 2 2
+[1] 2 5
+[1] 5 6
+[1] 3 4
+[1] 5 5
+[1] 2 3
+[1] 3 6
+[1] 2 4
+[1] 3 4
+[1] 5 6
+[1] 3 5
+[1] 5 5
+[1] 3 3
+[1] 2 4
+[1] 4 4
+> 
+> ### "sparseLU"
+> por1 <- readMM(system.file("external/pores_1.mtx", package = "Matrix"))
+> lu1 <- lu(por1)
+> pm <- as(por1, "CsparseMatrix")
+> (pmLU <- lu(pm)) # -> show(<MatrixFactorization>)
+'MatrixFactorization' of Formal class 'sparseLU' [package "Matrix"] with 5 slots
+  ..@ L  :Formal class 'dtCMatrix' [package "Matrix"] with 7 slots
+  .. .. ..@ i       : int [1:141] 0 1 18 22 25 26 1 18 22 25 ...
+  .. .. ..@ p       : int [1:31] 0 6 11 13 16 19 22 26 31 35 ...
+  .. .. ..@ Dim     : int [1:2] 30 30
+  .. .. ..@ Dimnames:List of 2
+  .. .. .. ..$ : NULL
+  .. .. .. ..$ : NULL
+  .. .. ..@ x       : num [1:141] 1 -0.993819 -0.004979 -0.000132 0.000132 ...
+  .. .. ..@ uplo    : chr "L"
+  .. .. ..@ diag    : chr "N"
+  ..@ U  :Formal class 'dtCMatrix' [package "Matrix"] with 7 slots
+  .. .. ..@ i       : int [1:206] 0 0 1 2 2 3 2 4 2 3 ...
+  .. .. ..@ p       : int [1:31] 0 1 3 4 6 8 12 15 20 25 ...
+  .. .. ..@ Dim     : int [1:2] 30 30
+  .. .. ..@ Dimnames:List of 2
+  .. .. .. ..$ : NULL
+  .. .. .. ..$ : NULL
+  .. .. ..@ x       : num [1:206] -7178502 -24613411 -18311731 -6399179 715 ...
+  .. .. ..@ uplo    : chr "U"
+  .. .. ..@ diag    : chr "N"
+  ..@ p  : int [1:30] 1 11 29 27 19 28 9 18 17 7 ...
+  ..@ q  : int [1:30] 0 1 29 27 19 28 9 18 17 8 ...
+  ..@ Dim: int [1:2] 30 30
+> xp <- expand(pmLU)
+> ## permute rows and columns of original matrix
+> ppm <- pm[pmLU@p + 1:1, pmLU@q + 1:1]
+> Ppm <- pmLU@L %*% pmLU@U
+> ## identical only as long as we don't keep the original class info:
+> stopifnot(identical3(lu1, pmLU, pm@factors$LU),# TODO === por1@factors$LU
++ 	  identical(ppm, with(xp, P %*% pm %*% t(Q))),
++ 	  sapply(xp, is, class="Matrix"))
+> 
+> Ipm <- solve(pm, sparse=FALSE)
+> Spm <- solve(pm, sparse=TRUE)  # is not sparse at all, here
+> assert.EQ.Mat(Ipm, Spm, giveRE=TRUE, tol = 1e-13)# seen 7.36e-15 only on 32-bit
+> stopifnot(abs(as.vector(solve(Diagonal(30, x=10) %*% pm) / Ipm) - 1/10) < 1e-7,
++ 	  abs(as.vector(solve(rep.int(4, 30)	  *  pm) / Ipm) - 1/ 4) < 1e-7)
+> 
+> ## these two should be the same, and `are' in some ways:
+> assert.EQ.mat(ppm, as(Ppm, "matrix"), tol = 1e-14, giveRE=TRUE)
+Mean relative difference: 3.426772e-16
+> ## *however*
+> length(ppm@x)# 180
+[1] 180
+> length(Ppm@x)# 317 !
+[1] 317
+> table(Ppm@x == 0)# (194, 123) - has 123 "zero" and 14 ``almost zero" entries
+
+FALSE  TRUE 
+  194   123 
+> 
+> ##-- determinant() and det() --- working via LU ---
+> m <- matrix(c(0, NA, 0, NA, NA, 0, 0, 0, 1), 3,3)
+> m0 <- rbind(0,cbind(0,m))
+> M <- as(m,"Matrix"); M ## "dsCMatrix" ...
+3 x 3 sparse Matrix of class "dsCMatrix"
+            
+[1,]  . NA .
+[2,] NA NA .
+[3,]  .  . 1
+> M0 <- rBind(0, cBind(0, M))
+Warning messages:
+1: 'rBind' is deprecated.
+ Since R version 3.2.0, base's rbind() should work fine with S4 objects 
+2: 'cBind' is deprecated.
+ Since R version 3.2.0, base's cbind() should work fine with S4 objects 
+> dM  <- as(M, "denseMatrix")
+> dM0 <- as(M0,"denseMatrix")
+> try( lum  <- lu(M) )# Err: "near-singular A"
+Error in .local(x, ...) : 
+  cs_lu(A) failed: near-singular A (or out of memory)
+> (lum  <- lu(M,  errSing=FALSE))# NA --- *BUT* it is not stored in @factors
+[1] NA
+> (lum0 <- lu(M0, errSing=FALSE))# NA --- and it is stored in M0@factors[["LU"]]
+[1] NA
+> ## "FIXME" - TODO: Consider
+> replNA <- function(x, value) { x[is.na(x)] <- value ; x }
+> (EL.1 <- expand(lu.1 <- lu(M.1 <- replNA(M, -10))))
+$P
+3 x 3 sparse Matrix of class "pMatrix"
+          
+[1,] . | .
+[2,] | . .
+[3,] . . |
+
+$L
+3 x 3 sparse Matrix of class "dtCMatrix"
+          
+[1,] 1 . .
+[2,] . 1 .
+[3,] . . 1
+
+$U
+3 x 3 sparse Matrix of class "dtCMatrix"
+              
+[1,] -10 -10 .
+[2,]   . -10 .
+[3,]   .   . 1
+
+$Q
+3 x 3 sparse Matrix of class "pMatrix"
+          
+[1,] | . .
+[2,] . | .
+[3,] . . |
+
+> ## so it's quite clear how  lu() of the *singular* matrix  M	should work
+> ## but it's not supported by the C code in ../src/cs.c which errors out
+> stopifnot(all.equal(M.1,  with(EL.1, P %*% L %*% U %*% Q)),
++ 	  is.na(det(M)), is.na(det(dM)),
++ 	  is.na(det(M0)), is.na(det(dM0)) )
+> 
+> ###________ Cholesky() ________
+> 
+> ##--------  LDL' ---- small exact examples
+> 
+> set.seed(1)
+> for(n in c(5:12)) {
++     cat("\nn = ",n,"\n-------\n")
++     rr <- mkLDL(n)
++     ##    -------- from 'test-tools.R'
++     stopifnot(all(with(rr, A ==
++ 		       as(L %*% D %*% t(L), "symmetricMatrix"))),
++ 	      all(with(rr, A == tcrossprod(L %*% sqrt(D)))))
++     d <- rr$d.half
++     A <- rr$A
++     R <- chol(A)
++     assert.EQ.Mat(R, chol(as(A, "TsparseMatrix"))) # gave infinite recursion
++     print(d. <- diag(R))
++     D. <- Diagonal(x= d.^2)
++     L. <- t(R) %*% Diagonal(x = 1/d.)
++     stopifnot(all.equal(as.matrix(D.), as.matrix(rr$ D)),
++               all.equal(as.matrix(L.), as.matrix(rr$ L)))
++     ##
++     CAp <- Cholesky(A)# perm=TRUE --> Permutation:
++     p <- CAp@perm + 1L
++     P <- as(p, "pMatrix")
++     ## the inverse permutation:
++     invP <- solve(P)@perm
++     lDet <- sum(2* log(d))# the "true" value
++     ldetp  <-         Matrix:::.diag.dsC(Chx = CAp, res.kind = "sumLog")
++     ldetp. <- sum(log(Matrix:::.diag.dsC(Chx = CAp, res.kind = "diag") ))
++     ##
++     CA	<- Cholesky(A,perm=FALSE)
++     ldet <- Matrix:::.diag.dsC(Chx = CA, res.kind = "sumLog")
++     ## not printing CAp : ends up non-integer for n >= 11
++     mCAp <- as(CAp,"sparseMatrix")
++     print(mCA  <- drop0(as(CA, "sparseMatrix")))
++     stopifnot(identical(A[p,p], as(P %*% A %*% t(P),
++ 				   "symmetricMatrix")),
++ 	      relErr(d.^2, Matrix:::.diag.dsC(Chx= CA, res.kind="diag")) < 1e-14,
++ 	      relErr(A[p,p], tcrossprod(mCAp)) < 1e-14)
++     if(FALSE)
++         rbind(lDet,ldet, ldetp, ldetp.)
++     ##  ==> Empirically, I see  lDet = ldet  !=  ldetp == ldetp.
++     ## if(rr$rcond.A < ...) warning("condition number of A ..." ## <- TODO
++     cat(1,""); assert.EQ.(lDet,  ldet,   tol = 1e-14)
++     cat(2,""); assert.EQ.(ldetp, ldetp., tol = 1e-14)
++     cat(3,""); assert.EQ.(lDet,  ldetp, tol = n^2* 1e-7)# extreme: have seen 0.0011045 !!
++ }## for()
+
+n =  5 
+-------
+[1] 20 50 40 30 10
+5 x 5 sparse Matrix of class "dtCMatrix"
+                     
+[1,]  20  .   .  .  .
+[2,] 100 50   .  .  .
+[3,]   .  .  40  .  .
+[4,] 140  . 160 30  .
+[5,] 120  .   .  . 10
+1 2 Mean relative difference: 2.179523e-16
+3 Mean relative difference: 2.179523e-16
+
+n =  6 
+-------
+[1] 30 40 20 60 50 10
+6 x 6 sparse Matrix of class "dtCMatrix"
+                         
+[1,]  30   .  .   .  .  .
+[2,]   .  40  .   .  .  .
+[3,]   . 240 20   .  .  .
+[4,]   .   .  .  60  .  .
+[5,] 150 360  .   . 50  .
+[6,]   . 280  . 600  . 10
+1 Mean relative difference: 1.741974e-16
+2 3 
+n =  7 
+-------
+[1] 50 30 10 40 60 20 70
+7 x 7 sparse Matrix of class "dtCMatrix"
+                            
+[1,] 50  .   .   .   .  .  .
+[2,]  . 30   .   .   .  .  .
+[3,]  .  .  10   .   .  .  .
+[4,]  .  . 130  40   .  .  .
+[5,]  .  .   .   .  60  .  .
+[6,]  .  .  20 480 480 20  .
+[7,]  .  .   .   .   .  . 70
+1 Mean relative difference: 1.441658e-16
+2 3 
+n =  8 
+-------
+[1] 10 80 20 30 50 60 40 70
+8 x 8 sparse Matrix of class "dtCMatrix"
+                                  
+[1,] 10   .   .   .   .   .   .  .
+[2,]  .  80   .   .   .   .   .  .
+[3,]  .   .  20   .   .   .   .  .
+[4,]  .   . 320  30   .   .   .  .
+[5,] 70   .  40 150  50   .   .  .
+[6,]  .   .   .  30 850  60   .  .
+[7,]  .   .   .   .   . 600  40  .
+[8,]  . 320   .   .   .   . 440 70
+1 2 Mean relative difference: 1.224007e-16
+3 Mean relative difference: 1.980492e-11
+
+n =  9 
+-------
+[1] 30 70 20 50 10 60 40 90 80
+9 x 9 sparse Matrix of class "dtCMatrix"
+                                        
+ [1,]  30   .   .   .   .  .   .    .  .
+ [2,]   .  70   .   .   .  .   .    .  .
+ [3,]   .   .  20   .   .  .   .    .  .
+ [4,]   .   . 420  50   .  .   .    .  .
+ [5,]   .   .   . 300  10  .   .    .  .
+ [6,] 780 980   .   .   . 60   .    .  .
+ [7,]   .   . 540   .   .  .  40    .  .
+ [8,]   .   . 200   . 130 60 120   90  .
+ [9,] 450   .   . 250  80  . 160 1980 80
+1 2 3 Mean relative difference: 1.857049e-12
+
+n =  10 
+-------
+ [1]  70  90  40  80  20 100  60  50  10  30
+10 x 10 sparse Matrix of class "dtCMatrix"
+                                               
+ [1,]   70    .   .    .   .   .    .  .   .  .
+ [2,]    .   90   .    .   .   .    .  .   .  .
+ [3,]    .    .  40    .   .   .    .  .   .  .
+ [4,]  280 2430   .   80   .   .    .  .   .  .
+ [5,]    . 1620   . 2000  20   .    .  .   .  .
+ [6,] 2030    . 960    . 220 100    .  .   .  .
+ [7,]    .    .   .    .   . 200   60  .   .  .
+ [8,]  210    .   . 2080   .   .    . 50   .  .
+ [9,] 1400    .   . 1360 180   .    .  .  10  .
+[10,]    . 2700   .    .   . 100 1260  . 100 30
+1 Mean relative difference: 1.863461e-16
+2 3 Mean relative difference: 3.64493e-13
+
+n =  11 
+-------
+ [1]  50  80 100  40  10  30  90  20 110  60  70
+11 x 11 sparse Matrix of class "dtCMatrix"
+                                                    
+ [1,]   50    .    .   .   .    .    .   .   .  .  .
+ [2,]    .   80    .   .   .    .    .   .   .  .  .
+ [3,]    .    .  100   .   .    .    .   .   .  .  .
+ [4,]    .    . 2800  40   .    .    .   .   .  .  .
+ [5,]    .    .    .   .  10    .    .   .   .  .  .
+ [6,]    . 2560    .   . 340   30    .   .   .  .  .
+ [7,]    .    . 2200   .   . 1110   90   .   .  .  .
+ [8,]    .    .    . 760   . 1200    .  20   .  .  .
+ [9,] 1950    . 2600   .   .    . 1620   . 110  .  .
+[10,]    . 1040    .   .   .    .    . 100   . 60  .
+[11,] 1000  720    .   .   .    .  360   .   .  . 70
+1 Mean relative difference: 1.658955e-16
+2 3 Mean relative difference: 2.296093e-10
+
+n =  12 
+-------
+ [1] 120 100  40  60  80  70  30  20  10 110  50  90
+12 x 12 sparse Matrix of class "dtCMatrix"
+                                                           
+ [1,]  120    .    .    .    .    .    .   .  .   .    .  .
+ [2,]    .  100    .    .    .    .    .   .  .   .    .  .
+ [3,]    .    .   40    .    .    .    .   .  .   .    .  .
+ [4,]    .    . 1280   60    .    .    .   .  .   .    .  .
+ [5,]    . 2300    .    .   80    .    .   .  .   .    .  .
+ [6,]    . 1900 1520 2040    .   70    .   .  .   .    .  .
+ [7,]  360  700    .    .    .    .   30   .  .   .    .  .
+ [8,]    .    .    .    . 1920    .    .  20  .   .    .  .
+ [9,]    .    .    .    . 1120    .    . 220 10   .    .  .
+[10,]    .    .    .    . 2880    .    .   .  . 110    .  .
+[11,] 5640    . 1480    .  320 2030    .   .  .   .   50  .
+[12,]    .    .    .    .    .    . 1170   .  . 550 2000 90
+1 Mean relative difference: 1.492165e-16
+2 Mean relative difference: 2.98433e-16
+3 Mean relative difference: 2.671423e-12
+> 
+> mkCholhash <- function(r.all) {
++     ## r.all %*% (2^(2:0)), but only those that do not have NA / "?" :
++     stopifnot(is.character(rn <- rownames(r.all)),
++               is.matrix(r.all), is.logical(r.all))
++     c.rn <- vapply(rn, function(ch) strsplit(ch, " ")[[1]], character(3))
++     ## Now
++     h1 <- function(i) {
++         ok <- c.rn[,i] != "?"
++         r.all[i, ok] %*% 2^((2:0)[ok])
++     }
++     vapply(seq_len(nrow(r.all)), h1, numeric(1))
++ }
+> 
+> set.seed(17)
+> (rr <- mkLDL(4))
+$A
+4 x 4 sparse Matrix of class "dsCMatrix"
+                     
+[1,] 100   .  300   .
+[2,]   . 900  900   .
+[3,] 300 900 3400   .
+[4,]   .   .    . 400
+
+$L
+4 x 4 sparse Matrix of class "dtCMatrix"
+            
+[1,] 1 . . .
+[2,] . 1 . .
+[3,] 3 1 1 .
+[4,] . . . 1
+
+$d.half
+[1] 10 30 40 20
+
+$D
+4 x 4 diagonal matrix of class "ddiMatrix"
+     [,1] [,2] [,3] [,4]
+[1,]  100    .    .    .
+[2,]    .  900    .    .
+[3,]    .    . 1600    .
+[4,]    .    .    .  400
+
+$rcond.A
+[1] 0.0112202
+
+$cond.A
+NULL
+
+> (CA <- Cholesky(rr$A))
+'MatrixFactorization' of Formal class 'dCHMsimpl' [package "Matrix"] with 10 slots
+  ..@ x       : num [1:6] 900 1 100 3 1600 400
+  ..@ p       : int [1:5] 0 2 4 5 6
+  ..@ i       : int [1:6] 0 2 1 2 2 3
+  ..@ nz      : int [1:4] 2 2 1 1
+  ..@ nxt     : int [1:6] 1 2 3 4 -1 0
+  ..@ prv     : int [1:6] 5 0 1 2 3 -1
+  ..@ colcount: int [1:4] 2 2 1 1
+  ..@ perm    : int [1:4] 1 0 2 3
+  ..@ type    : int [1:4] 2 0 0 1
+  ..@ Dim     : int [1:2] 4 4
+> stopifnot(all.equal(determinant(rr$A) -> detA,
++                     determinant(as(rr$A, "matrix"))),
++           is.all.equal3(c(detA$modulus), log(det(rr$D)), sum(log(rr$D@x))))
+> A12 <- mkLDL(12, 1/10)
+> (r12 <- allCholesky(A12$A))[-1]
+Warning in allCholesky(A12$A) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+$dup.r.all
+ [1] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+
+$r.all
+       
+  p L s  perm   LDL super
+  . . . FALSE FALSE FALSE
+  | . .  TRUE FALSE FALSE
+  . | . FALSE  TRUE FALSE
+  | | .  TRUE  TRUE FALSE
+  . . | FALSE FALSE  TRUE
+  | . |  TRUE FALSE  TRUE
+  . | | FALSE FALSE  TRUE
+  | | |  TRUE FALSE  TRUE
+  . . ? FALSE FALSE FALSE
+  | . ?  TRUE FALSE FALSE
+  . | ? FALSE  TRUE FALSE
+  | | ?  TRUE  TRUE FALSE
+
+$r.uniq
+       
+  p L s  perm   LDL super
+  . . . FALSE FALSE FALSE
+  | . .  TRUE FALSE FALSE
+  . | . FALSE  TRUE FALSE
+  | | .  TRUE  TRUE FALSE
+  . . | FALSE FALSE  TRUE
+  | . |  TRUE FALSE  TRUE
+
+> aCh.hash <- mkCholhash(r12$r.all)
+> if(FALSE)## if(require("sfsmisc"))
++ split(rownames(r12$r.all), Duplicated(aCh.hash))
+> 
+> ## TODO: find cases for both choices when we leave it to CHOLMOD to choose
+> for(n in 1:50) { ## used to seg.fault at n = 10 !
++     mkA <- mkLDL(1+rpois(1, 30), 1/10)
++     cat(sprintf("n = %3d, LDL-dim = %d x %d ", n, nrow(mkA$A), ncol(mkA$A)))
++     r <- allCholesky(mkA$A, silentTry=TRUE)
++     ## Compare .. apart from the NAs that happen from (perm=FALSE, super=TRUE)
++     iNA <- apply(is.na(r$r.all), 1, any)
++     cat(sprintf(" -> %3s NAs\n", if(any(iNA)) format(sum(iNA)) else "no"))
++     stopifnot(aCh.hash[!iNA] == mkCholhash(r$r.all[!iNA,]))
++ ##     cat("--------\n")
++ }
+n =   1, LDL-dim = 27 x 27 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =   2, LDL-dim = 27 x 27 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =   3, LDL-dim = 23 x 23 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =   4, LDL-dim = 25 x 25 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =   5, LDL-dim = 32 x 32 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =   6, LDL-dim = 43 x 43 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   6 NAs
+n =   7, LDL-dim = 34 x 34 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   6 NAs
+n =   8, LDL-dim = 28 x 28 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =   9, LDL-dim = 33 x 33 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  10, LDL-dim = 32 x 32 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  11, LDL-dim = 32 x 32 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  12, LDL-dim = 33 x 33 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   4 NAs
+n =  13, LDL-dim = 35 x 35 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  14, LDL-dim = 35 x 35 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   4 NAs
+n =  15, LDL-dim = 30 x 30 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   1 NAs
+n =  16, LDL-dim = 36 x 36 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   1 NAs
+n =  17, LDL-dim = 29 x 29 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  18, LDL-dim = 35 x 35 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  19, LDL-dim = 32 x 32 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  20, LDL-dim = 25 x 25 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  21, LDL-dim = 46 x 46 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   4 NAs
+n =  22, LDL-dim = 28 x 28 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  23, LDL-dim = 28 x 28 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  24, LDL-dim = 41 x 41 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   4 NAs
+n =  25, LDL-dim = 31 x 31 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   2 NAs
+n =  26, LDL-dim = 34 x 34 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  27, LDL-dim = 31 x 31 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   2 NAs
+n =  28, LDL-dim = 33 x 33 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  29, LDL-dim = 44 x 44 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   3 NAs
+n =  30, LDL-dim = 33 x 33 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  31, LDL-dim = 31 x 31 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   2 NAs
+n =  32, LDL-dim = 33 x 33 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  33, LDL-dim = 34 x 34 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  34, LDL-dim = 32 x 32 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  35, LDL-dim = 28 x 28 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  36, LDL-dim = 27 x 27 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  37, LDL-dim = 26 x 26 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  38, LDL-dim = 32 x 32 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  39, LDL-dim = 28 x 28 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  40, LDL-dim = 27 x 27 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  41, LDL-dim = 23 x 23 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  42, LDL-dim = 39 x 39 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   6 NAs
+n =  43, LDL-dim = 23 x 23 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  44, LDL-dim = 48 x 48 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   6 NAs
+n =  45, LDL-dim = 31 x 31 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  46, LDL-dim = 37 x 37 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  47, LDL-dim = 34 x 34 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   4 NAs
+n =  48, LDL-dim = 24 x 24 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+n =  49, LDL-dim = 39 x 39 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->   2 NAs
+n =  50, LDL-dim = 24 x 24 Warning in allCholesky(mkA$A, silentTry = TRUE) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+ ->  no NAs
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> 
+> ## This is a relatively small "critical example" :
+> A. <-
++     new("dsCMatrix", Dim = c(25L, 25L), uplo = "U"
++ 	, i = as.integer(
++           c(0, 1, 2, 3, 4, 2, 5, 6, 0, 8, 8, 9, 3, 4, 10, 11, 6, 12, 13, 4,
++             10, 14, 15, 1, 2, 5, 16, 17, 0, 7, 8, 18, 9, 19, 10, 11, 16, 20,
++             0, 6, 7, 16, 17, 18, 20, 21, 6, 9, 12, 14, 19, 21, 22, 9, 11, 19,
++             20, 22, 23, 1, 16, 24))
++ 	##
++ 	, p = c(0:6, 8:10, 12L, 15:16, 18:19, 22:23, 27:28, 32L, 34L, 38L, 46L, 53L, 59L, 62L)
++ 	##
++ 	, x = c(1, 1, 1, 1, 2, 100, 2, 40, 1, 2, 100, 6700, 100, 100, 13200,
++ 	  1, 50, 4100, 1, 5, 400, 20, 1, 40, 100, 5600, 9100, 5000, 5,
++ 	  100, 100, 5900, 100, 6200, 30, 20, 9, 2800, 1, 100, 8, 10, 8000,
++ 	  100, 600, 23900, 30, 100, 2800, 50, 5000, 3100, 15100, 100, 10,
++ 	  5600, 800, 4500, 5500, 7, 600, 18200))
+> validObject(A.)
+[1] TRUE
+> ## A1: the same pattern as  A.   just simply filled with '1's :
+> A1 <- A.; A1@x[] <- 1; A1@factors <- list()
+> A1.8 <- A1; diag(A1.8) <- 8
+> ##
+> nT. <- as(AT <- as(A., "TsparseMatrix"),"nMatrix")
+> stopifnot(all(nT.@i <= nT.@j),
++ 	  identical(qr(A1.8), qr(as(A1.8, "dgCMatrix"))))
+> CA <- Cholesky(A.)
+> stopifnotValid(CAinv <- solve(CA), "dsCMatrix")
+> MA <- as(CA, "Matrix") # with a confusing warning -- FIXME!
+Warning message:
+In asMethod(object) :
+  Cholmod warning 'L not positive definite' at file ../Core/t_cholmod_change_factor.c, line 246
+> stopifnotValid(MAinv <- solve(MA), "dtCMatrix")
+> ## comparing MAinv with some solve(CA, system="...") .. *not* trivial? - TODO
+> ##
+> CAinv2 <- solve(CA, Diagonal(nrow(A.)))
+> CAinv2 <- as(CAinv2, "symmetricMatrix")
+> stopifnot(identical(CAinv, CAinv2))
+> 
+> ## FINALLY fix "TODO": (not implemented *symbolic* factorization of nMatrix)
+> try(    tc <- Cholesky(nT.)  )
+Error in Cholesky(nT.) : 
+  Cholesky(<nsparse...>) -> *symbolic* factorization -- not yet implemented
+> 
+> for(p in c(FALSE,TRUE))
++     for(L in c(FALSE,TRUE))
++         for(s in c(FALSE,TRUE, NA)) {
++             cat(sprintf("p,L,S = (%2d,%2d,%2d): ", p,L,s))
++             r <- tryCatch(Cholesky(A., perm=p, LDL=L, super=s),
++                           error = function(e)e)
++             cat(if(inherits(r, "error")) " *** E ***" else
++                 sprintf("%3d", r@type),"\n", sep="")
++         }
+p,L,S = ( 0, 0, 0):  *** E ***
+p,L,S = ( 0, 0, 1):  *** E ***
+p,L,S = ( 0, 0,NA):  *** E ***
+p,L,S = ( 0, 1, 0):   0  0  0  1
+p,L,S = ( 0, 1, 1):  *** E ***
+p,L,S = ( 0, 1,NA):   0  0  0  1
+p,L,S = ( 1, 0, 0):  *** E ***
+p,L,S = ( 1, 0, 1):  *** E ***
+p,L,S = ( 1, 0,NA):  *** E ***
+p,L,S = ( 1, 1, 0):   2  0  0  1
+p,L,S = ( 1, 1, 1):  *** E ***
+p,L,S = ( 1, 1,NA):   2  0  0  1
+Warning messages:
+1: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'not positive definite' at file ../Cholesky/t_cholmod_rowfac.c, line 431
+2: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'matrix not positive definite' at file ../Supernodal/t_cholmod_super_numeric.c, line 729
+3: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'not positive definite' at file ../Cholesky/t_cholmod_rowfac.c, line 431
+4: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'matrix not positive definite' at file ../Supernodal/t_cholmod_super_numeric.c, line 729
+5: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'not positive definite' at file ../Cholesky/t_cholmod_rowfac.c, line 431
+6: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'matrix not positive definite' at file ../Supernodal/t_cholmod_super_numeric.c, line 729
+7: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'not positive definite' at file ../Cholesky/t_cholmod_rowfac.c, line 431
+8: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'matrix not positive definite' at file ../Supernodal/t_cholmod_super_numeric.c, line 729
+> str(A., max=3) ## look at the 'factors'
+Formal class 'dsCMatrix' [package "Matrix"] with 7 slots
+  ..@ i       : int [1:62] 0 1 2 3 4 2 5 6 0 8 ...
+  ..@ p       : int [1:26] 0 1 2 3 4 5 6 8 9 10 ...
+  ..@ Dim     : int [1:2] 25 25
+  ..@ Dimnames:List of 2
+  .. ..$ : NULL
+  .. ..$ : NULL
+  ..@ x       : num [1:62] 1 1 1 1 2 100 2 40 1 2 ...
+  ..@ uplo    : chr "U"
+  ..@ factors :List of 2
+  .. ..$ sPDCholesky:Formal class 'dCHMsimpl' [package "Matrix"] with 10 slots
+  .. ..$ spDCholesky:Formal class 'dCHMsimpl' [package "Matrix"] with 10 slots
+> 
+> facs <- A.@factors
+> names(facs) <- sub("Cholesky$", "", names(facs))
+> facs <- facs[order(names(facs))]
+> 
+> sapply(facs, class)
+        spD         sPD 
+"dCHMsimpl" "dCHMsimpl" 
+> str(lapply(facs, slot, "type"))
+List of 2
+ $ spD: int [1:4] 0 0 0 1
+ $ sPD: int [1:4] 2 0 0 1
+> ## super = TRUE  currently always entails  LDL=FALSE :
+> ## hence isLDL is TRUE for ("D" and not "S"):
+> sapply(facs, isLDL)
+ spD  sPD 
+TRUE TRUE 
+> 
+> chkCholesky <- function(chmf, A) {
++     stopifnot(is(chmf, "CHMfactor"),
++               is(A, "Matrix"), isSymmetric(A))
++     if(!is(A, "dsCMatrix"))
++         A <- as(A, "dsCMatrix")
++     L <- drop0(zapsmall(L. <- as(chmf, "Matrix")))
++     cat("no. nonzeros in L {before / after drop0(zapsmall(.))}: ",
++         c(nnzero(L.), nnzero(L)), "\n") ## 112, 95
++     ecc <- expand(chmf)
++     A... <- with(ecc, crossprod(crossprod(L,P)))
++     stopifnot(all.equal(L., ecc$L, tolerance = 1e-14),
++               all.equal(A,  A...,  tolerance = 1e-14, factorsCheck = FALSE))
++     invisible(ecc)
++ }
+> 
+> c1.8 <- try(Cholesky(A1.8, super = TRUE))# works "always", interestingly ...
+> chkCholesky(c1.8, A1.8)
+no. nonzeros in L {before / after drop0(zapsmall(.))}:  71 71 
+> 
+> 
+> 
+> ## --- now a "large" (712 x 712) real data example ---------------------------
+> 
+> data(KNex)
+> mtm <- with(KNex, crossprod(mm))
+> ld.3 <- .Call("dsCMatrix_LDL_D", mtm, perm=TRUE,  "sumLog")
+> stopifnot(names(mtm@factors) == "sPDCholesky")
+> ld.4 <- .Call("dsCMatrix_LDL_D", mtm, perm=FALSE, "sumLog")# clearly slower
+> stopifnot(names(mtm@factors) == paste(c("sPD", "spD"),"Cholesky", sep=''))
+> c2 <- Cholesky(mtm, super = TRUE)
+> stopifnot(names(mtm@factors) == paste(c("sPD", "spD", "SPd"),
++                "Cholesky", sep=''))
+> 
+> r <- allCholesky(mtm)
+Warning in allCholesky(mtm) :
+  duplicated( <pLs-matrix> ) differs from duplicated( <CHM-list> )
+> r[-1]
+$dup.r.all
+ [1] FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+
+$r.all
+       
+  p L s  perm   LDL super
+  . . . FALSE FALSE FALSE
+  | . .  TRUE FALSE FALSE
+  . | . FALSE  TRUE FALSE
+  | | .  TRUE  TRUE FALSE
+  . . | FALSE FALSE  TRUE
+  | . |  TRUE FALSE  TRUE
+  . | | FALSE FALSE  TRUE
+  | | |  TRUE FALSE  TRUE
+  . . ? FALSE FALSE FALSE
+  | . ?  TRUE FALSE  TRUE
+  . | ? FALSE  TRUE FALSE
+  | | ?  TRUE  TRUE FALSE
+
+$r.uniq
+       
+  p L s  perm   LDL super
+  . . . FALSE FALSE FALSE
+  | . .  TRUE FALSE FALSE
+  . | . FALSE  TRUE FALSE
+  | | .  TRUE  TRUE FALSE
+  . . | FALSE FALSE  TRUE
+  | . |  TRUE FALSE  TRUE
+
+> 
+> ## is now taken from cache
+> c1 <- Cholesky(mtm)
+> 
+> bv <- 1:nrow(mtm) # even integer
+> b <- matrix(bv)
+> ## solve(c2, b) by default solves  Ax = b, where A = c2'c2 !
+> x <- solve(c2,b)
+> stopifnot(identical3(x, solve(c2, bv), solve(c2, b, system = "A")),
++           all.equal(x, solve(mtm, b)))
+> for(sys in c("A", "LDLt", "LD", "DLt", "L", "Lt", "D", "P", "Pt")) {
++     x <- solve(c2, b,  system = sys)
++     cat(sys,":\n"); print(head(x))
++     stopifnot(dim(x) == c(712, 1),
++               identical(x, solve(c2, bv, system = sys)))
++ }
+A :
+6 x 1 Matrix of class "dgeMatrix"
+          [,1]
+[1,] -324576.9
+[2,] -602422.0
+[3,] -475225.1
+[4,] -656840.4
+[5,] -823533.6
+[6,] -853756.8
+LDLt :
+6 x 1 Matrix of class "dgeMatrix"
+          [,1]
+[1,] 37696.471
+[2,]  4713.432
+[3,]  6643.932
+[4,]  1866.030
+[5,]  4340.785
+[6,]  2086.379
+LD :
+6 x 1 Matrix of class "dgeMatrix"
+     [,1]
+[1,]    1
+[2,]    2
+[3,]    3
+[4,]    4
+[5,]    5
+[6,]    6
+DLt :
+6 x 1 Matrix of class "dgeMatrix"
+          [,1]
+[1,]  778.7719
+[2,] -422.7658
+[3,] -351.6316
+[4,] -522.6810
+[5,] -544.7115
+[6,]  227.2868
+L :
+6 x 1 Matrix of class "dgeMatrix"
+     [,1]
+[1,]    1
+[2,]    2
+[3,]    3
+[4,]    4
+[5,]    5
+[6,]    6
+Lt :
+6 x 1 Matrix of class "dgeMatrix"
+          [,1]
+[1,]  778.7719
+[2,] -422.7658
+[3,] -351.6316
+[4,] -522.6810
+[5,] -544.7115
+[6,]  227.2868
+D :
+6 x 1 Matrix of class "dgeMatrix"
+     [,1]
+[1,]    1
+[2,]    2
+[3,]    3
+[4,]    4
+[5,]    5
+[6,]    6
+P :
+6 x 1 Matrix of class "dgeMatrix"
+     [,1]
+[1,]  257
+[2,]  244
+[3,]  243
+[4,]  242
+[5,]  214
+[6,]  694
+Pt :
+6 x 1 Matrix of class "dgeMatrix"
+     [,1]
+[1,]  617
+[2,]  469
+[3,]  473
+[4,]  619
+[5,]  453
+[6,]  458
+> 
+> ## log(|LL'|) - check if super = TRUE and simplicial give same determinant
+> ld1 <- .Call("CHMfactor_ldetL2", c1)
+> ld2 <- .Call("CHMfactor_ldetL2", c2)
+> (ld1. <- determinant(mtm))
+$modulus
+[1] -343.1384
+attr(,"logarithm")
+[1] TRUE
+
+$sign
+[1] 1
+
+attr(,"class")
+[1] "det"
+> ## experimental
+> ld3 <- .Call("dsCMatrix_LDL_D", mtm, TRUE, "sumLog")
+> ld4 <- .Call("dsCMatrix_LDL_D", mtm, FALSE, "sumLog")
+> stopifnot(all.equal(ld1, ld2),
++ 	  is.all.equal3(ld2, ld3, ld4),
++ 	  all.equal(ld.3, ld3, tolerance = 1e-14),
++ 	  all.equal(ld.4, ld4, tolerance = 1e-14),
++ 	  all.equal(ld1, as.vector(ld1.$modulus), tolerance = 1e-14))
+> 
+> ## Some timing measurements
+> mtm <- with(KNex, crossprod(mm))
+> I <- .symDiagonal(n=nrow(mtm))
+> set.seed(101); r <- runif(100)
+> 
+> system.time(D1 <- sapply(r, function(rho) Matrix:::ldet1.dsC(mtm + (1/rho) * I)))
+   user  system elapsed 
+  0.335   0.008   0.343 
+> ## 0.842 on fast cmath-5
+> system.time(D2 <- sapply(r, function(rho) Matrix:::ldet2.dsC(mtm + (1/rho) * I)))
+   user  system elapsed 
+  0.321   0.015   0.337 
+> ## 0.819
+> system.time(D3 <- sapply(r, function(rho) Matrix:::ldet3.dsC(mtm + (1/rho) * I)))
+   user  system elapsed 
+  0.327   0.008   0.335 
+> ## 0.810
+> stopifnot(is.all.equal3(D1,D2,D3, tol = 1e-13))
+> 
+> ## Updating LL'  should remain LL' and not become  LDL' :
+> cholCheck <- function(Ut, tol = 1e-12, super = FALSE, LDL = !super) {
++     L <- Cholesky(UtU <- tcrossprod(Ut), super=super, LDL=LDL, Imult = 1)
++     L1 <- update(L, UtU, mult = 1)
++     L2 <- update(L, Ut,  mult = 1)
++     stopifnot(is.all.equal3(L, L1, L2, tol = tol),
++               all.equal(update(L, UtU, mult = pi),
++                         update(L, Ut,  mult = pi), tolerance = tol)
++               )
++ }
+> 
+> ## Inspired by
+> ## data(Dyestuff, package = "lme4")
+> ## Zt <- as(Dyestuff$Batch, "sparseMatrix")
+> Zt <- new("dgCMatrix", Dim = c(6L, 30L), x = 2*1:30,
++           i = rep(0:5, each=5),
++           p = 0:30, Dimnames = list(LETTERS[1:6], NULL))
+> cholCheck(0.78 * Zt, tol=1e-14)
+> 
+> showSys.time(
++ for(i in 1:120) {
++     set.seed(i)
++     M <- rspMat(n=rpois(1,50), m=rpois(1,20), density = 1/(4*rpois(1, 4)))
++     cat(sprintf("%3d: dim(M) = %2dx%2d, rank=%2d, k=%9.4g; ",
++ 		i, nrow(M), ncol(M), rankMatrix(M), kappa(M)))
++     for(super in c(FALSE,TRUE)) {
++         cat("super=",super,"M: ")
++         ## 2018-01-04, Avi Adler: needed 1.2e-12 in Windows 64 (for i=55, l.1):
++         cholCheck( M  , tol=2e-12, super=super); cat(" M': ")
++         cholCheck(t(M), tol=2e-12, super=super)
++     }
++     cat(" [Ok]\n")
++ })
+  1: dim(M) = 45x25, rank=21, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+  2: dim(M) = 43x15, rank=15, k=    5.083; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+  3: dim(M) = 43x18, rank=17, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+  4: dim(M) = 51x17, rank=17, k=    26.07; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+  5: dim(M) = 44x17, rank=16, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+  6: dim(M) = 51x17, rank=12, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+  7: dim(M) = 66x14, rank=14, k=    5.556; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+  8: dim(M) = 49x23, rank=23, k=    13.49; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+  9: dim(M) = 44x16, rank=16, k=    5.585; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 10: dim(M) = 50x19, rank=19, k=    8.837; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 11: dim(M) = 45x10, rank=10, k=    7.917; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 12: dim(M) = 39x17, rank=17, k=    11.81; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 13: dim(M) = 53x18, rank=13, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 14: dim(M) = 45x20, rank=18, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 15: dim(M) = 51x28, rank=27, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 16: dim(M) = 53x19, rank=18, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 17: dim(M) = 42x23, rank=21, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 18: dim(M) = 56x28, rank=28, k=    14.55; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 19: dim(M) = 41x13, rank=12, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 20: dim(M) = 58x17, rank=12, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 21: dim(M) = 55x22, rank=18, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 22: dim(M) = 46x20, rank=17, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 23: dim(M) = 51x18, rank=16, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 24: dim(M) = 46x20, rank=17, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 25: dim(M) = 48x15, rank=11, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 26: dim(M) = 34x23, rank=21, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 27: dim(M) = 63x25, rank=25, k=    18.79; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 28: dim(M) = 36x25, rank=21, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 29: dim(M) = 40x17, rank=11, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 30: dim(M) = 40x19, rank=19, k=    8.338; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 31: dim(M) = 50x19, rank=14, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 32: dim(M) = 50x23, rank=23, k=    11.41; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 33: dim(M) = 49x19, rank=13, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 34: dim(M) = 49x25, rank=25, k=    14.28; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 35: dim(M) = 57x20, rank=20, k=     13.3; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 36: dim(M) = 52x23, rank=21, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 37: dim(M) = 50x21, rank=19, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 38: dim(M) = 48x15, rank=13, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 39: dim(M) = 48x14, rank=13, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 40: dim(M) = 53x22, rank=22, k=    6.927; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 41: dim(M) = 44x15, rank=12, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 42: dim(M) = 59x17, rank=17, k=      4.9; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 43: dim(M) = 49x12, rank=11, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 44: dim(M) = 54x20, rank=20, k=    10.87; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 45: dim(M) = 52x16, rank=15, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 46: dim(M) = 43x18, rank=17, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 47: dim(M) = 64x23, rank=23, k=    20.77; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 48: dim(M) = 51x28, rank=22, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 49: dim(M) = 47x21, rank=21, k=    10.29; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 50: dim(M) = 53x16, rank=16, k=    4.912; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 51: dim(M) = 55x17, rank=15, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 52: dim(M) = 43x10, rank= 8, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 53: dim(M) = 51x14, rank=14, k=    19.61; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 54: dim(M) = 63x22, rank=22, k=    8.823; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 55: dim(M) = 50x11, rank=11, k=     6.33; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 56: dim(M) = 48x17, rank=17, k=    11.92; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 57: dim(M) = 45x15, rank=11, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 58: dim(M) = 46x27, rank=26, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 59: dim(M) = 36x22, rank=18, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 60: dim(M) = 55x22, rank=22, k=    30.21; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 61: dim(M) = 47x24, rank=20, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 62: dim(M) = 55x21, rank=21, k=    7.926; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 63: dim(M) = 59x11, rank=11, k=    28.41; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 64: dim(M) = 63x20, rank=20, k=    10.79; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 65: dim(M) = 41x12, rank=12, k=    4.169; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 66: dim(M) = 66x20, rank=20, k=    13.37; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 67: dim(M) = 58x19, rank=19, k=    7.797; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 68: dim(M) = 60x18, rank=18, k=    5.237; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 69: dim(M) = 50x21, rank=21, k=    14.43; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 70: dim(M) = 39x14, rank=14, k=    6.119; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 71: dim(M) = 46x16, rank=14, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 72: dim(M) = 59x25, rank=25, k=    16.74; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 73: dim(M) = 48x21, rank=20, k=2.914e+18; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 74: dim(M) = 53x16, rank=16, k=    8.899; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 75: dim(M) = 44x18, rank=18, k=    8.835; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 76: dim(M) = 52x19, rank=18, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 77: dim(M) = 46x27, rank=25, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 78: dim(M) = 55x21, rank=17, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 79: dim(M) = 57x22, rank=21, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 80: dim(M) = 48x23, rank=22, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 81: dim(M) = 42x 9, rank= 8, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 82: dim(M) = 41x19, rank=17, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 83: dim(M) = 33x27, rank=23, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 84: dim(M) = 55x25, rank=25, k=    11.44; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 85: dim(M) = 49x17, rank=13, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 86: dim(M) = 55x25, rank=25, k=    237.1; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 87: dim(M) = 62x17, rank=17, k=    4.925; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 88: dim(M) = 48x22, rank=15, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 89: dim(M) = 39x24, rank=20, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 90: dim(M) = 50x19, rank=19, k=    7.178; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 91: dim(M) = 50x20, rank=14, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 92: dim(M) = 39x21, rank=17, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 93: dim(M) = 47x18, rank=18, k=    6.972; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 94: dim(M) = 58x21, rank=21, k=    10.51; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 95: dim(M) = 42x13, rank=13, k=    22.02; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 96: dim(M) = 50x26, rank=22, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 97: dim(M) = 37x15, rank=10, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 98: dim(M) = 49x18, rank=18, k=    16.69; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+ 99: dim(M) = 51x22, rank=21, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+100: dim(M) = 46x12, rank= 9, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+101: dim(M) = 47x21, rank=21, k=     12.6; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+102: dim(M) = 51x23, rank=23, k=    12.84; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+103: dim(M) = 44x20, rank=20, k=    7.502; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+104: dim(M) = 47x28, rank=28, k=    16.27; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+105: dim(M) = 40x18, rank=16, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+106: dim(M) = 43x16, rank=13, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+107: dim(M) = 50x20, rank=20, k=    12.23; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+108: dim(M) = 49x18, rank=17, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+109: dim(M) = 36x29, rank=27, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+110: dim(M) = 52x26, rank=25, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+111: dim(M) = 51x18, rank=18, k=    8.149; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+112: dim(M) = 47x28, rank=28, k=    14.75; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+113: dim(M) = 50x26, rank=26, k=    27.23; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+114: dim(M) = 51x25, rank=25, k=    14.32; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+115: dim(M) = 54x22, rank=21, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+116: dim(M) = 54x16, rank=15, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+117: dim(M) = 54x20, rank=18, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+118: dim(M) = 38x21, rank=17, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+119: dim(M) = 34x29, rank=25, k=      Inf; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+120: dim(M) = 48x18, rank=18, k=    7.804; super= FALSE M:  M': super= TRUE M:  M':  [Ok]
+Time    user  system elapsed 
+Time   5.604   4.682   2.623 
+> 
+> .updateCHMfactor
+function (object, parent, mult) 
+.Call(CHMfactor_update, object, parent, mult)
+<bytecode: 0x5617393f0c50>
+<environment: namespace:Matrix>
+> ## TODO: (--> ../TODO "Cholesky"):
+> ## ----
+> ## allow Cholesky(A,..) when A is not symmetric *AND*
+> ## we really want to factorize  AA' ( + beta * I)
+> 
+> 
+> ## Schur() ----------------------
+> checkSchur <- function(A, SchurA = Schur(A), tol = 1e-14) {
++     stopifnot(is(SchurA, "Schur"),
++               isOrthogonal(Q <- SchurA@Q),
++               all.equal(as.mat(A),
++                         as.mat(Q %*% SchurA@T %*% t(Q)), tolerance = tol))
++ }
+> 
+> SH <- Schur(H5 <- Hilbert(5))
+> checkSchur(H5, SH)
+> checkSchur(Diagonal(x = 9:3))
+> 
+> p <- 4L
+> uTp <- new("dtpMatrix", x=c(2, 3, -1, 4:6, -2:1), Dim = c(p,p))
+> (uT <- as(uTp, "dtrMatrix"))
+4 x 4 Matrix of class "dtrMatrix"
+     [,1] [,2] [,3] [,4]
+[1,]    2    3    4   -2
+[2,]    .   -1    5   -1
+[3,]    .    .    6    0
+[4,]    .    .    .    1
+> ## Schur ( <general> )  <--> Schur( <triangular> )
+> Su <- Schur(uT) ;   checkSchur(uT, Su)
+> gT <- as(uT,"generalMatrix")
+> Sg <- Schur(gT) ;   checkSchur(gT, Sg)
+> Stg <- Schur(t(gT));checkSchur(t(gT), Stg)
+> Stu <- Schur(t(uT));checkSchur(t(uT), Stu)
+> 
+> stopifnot(identical3(Sg@T, uT, Su@T),
++           identical(Sg@Q, as(diag(p), "dgeMatrix")),
++           identical(Stg@T, as(t(gT[,p:1])[,p:1], "triangularMatrix")),
++           identical(Stg@Q, as(diag(p)[,p:1], "dgeMatrix")),
++           identical(Stu@T, Stg@T))
+> assert.EQ.mat(Stu@Q, as(Stg@Q,"matrix"), tol=0)
+> 
+> ## the pedigreemm example where solve(.) failed:
+> p <- new("dtCMatrix", i = c(2L, 3L, 2L, 5L, 4L, 4:5), p = c(0L, 2L, 4:7, 7L),
++ 	 Dim = c(6L, 6L), Dimnames = list(as.character(1:6), NULL),
++ 	 x = rep.int(-0.5, 7), uplo = "L", diag = "U")
+> Sp <- Schur(p)
+> Sp. <- Schur(as(p,"generalMatrix"))
+> Sp.p <- Schur(crossprod(p))
+> ## the last two failed
+> ip <- solve(p)
+> assert.EQ.mat(solve(ip), as(p,"matrix"))
+> 
+> 
+> ## chol2inv() for a traditional matrix
+> assert.EQ.mat(     crossprod(chol2inv(chol(Diagonal(x = 5:1)))),
++               C <- crossprod(chol2inv(chol(    diag(x = 5:1)))))
+> stopifnot(all.equal(C, diag((5:1)^-2)))
+> ## failed in some versions because of a "wrong" implicit generic
+> 
+> ## From [Bug 14834] New: chol2inv *** caught segfault ***
+> n <- 1e6 # was 595362
+> A <- chol( D <- Diagonal(n) )
+> stopifnot(identical(A,D)) # A remains (unit)diagonal
+> is(tA <- as(A,"triangularMatrix"))# currently a dtTMatrix
+ [1] "dtTMatrix"        "TsparseMatrix"    "dsparseMatrix"    "triangularMatrix"
+ [5] "dMatrix"          "sparseMatrix"     "Matrix"           "xMatrix"         
+ [9] "mMatrix"          "Mnumeric"         "replValueSp"     
+> stopifnotValid(tA, "dsparseMatrix")
+> CA <- as(tA, "CsparseMatrix")
+> 
+> selectMethod(solve, c("dtCMatrix","missing"))
+Method Definition:
+
+function (a, b, ...) 
+{
+    stopifnot((n <- nrow(a)) == ncol(a))
+    as(.Call(dtCMatrix_sparse_solve, a, .trDiagonal(n, unitri = FALSE)), 
+        "dtCMatrix")
+}
+<bytecode: 0x56173c5d5388>
+<environment: namespace:Matrix>
+
+Signatures:
+        a           b        
+target  "dtCMatrix" "missing"
+defined "dtCMatrix" "missing"
+> ##--> .Call(dtCMatrix_sparse_solve, a, .trDiagonal(n))  in ../src/dtCMatrix.c
+> sA  <- solve(CA)## -- R_CheckStack() segfault in Matrix <= 1.0-4
+> nca <- diagU2N(CA)
+> stopifnot(identical(sA, nca))
+> ## same check with non-unit-diagonal D :
+> A <- chol(D <- Diagonal(n, x = 0.5))
+> ia <- chol2inv(A)
+> stopifnot(is(ia, "diagonalMatrix"),
++ 	  all.equal(ia@x, rep(2,n), tolerance = 1e-15))
+> 
+> 
+> cat('Time elapsed: ', proc.time(),'\n') # for ``statistical reasons''
+Time elapsed:  16.55 9.291 11.251 0.009 0 
+> if(!interactive()) warnings()
+Warning messages:
+1: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'not positive definite' at file ../Cholesky/t_cholmod_rowfac.c, line 431
+2: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'matrix not positive definite' at file ../Supernodal/t_cholmod_super_numeric.c, line 729
+3: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'not positive definite' at file ../Cholesky/t_cholmod_rowfac.c, line 431
+4: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'matrix not positive definite' at file ../Supernodal/t_cholmod_super_numeric.c, line 729
+5: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'not positive definite' at file ../Cholesky/t_cholmod_rowfac.c, line 431
+6: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'matrix not positive definite' at file ../Supernodal/t_cholmod_super_numeric.c, line 729
+7: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'not positive definite' at file ../Cholesky/t_cholmod_rowfac.c, line 431
+8: In Cholesky(A., perm = p, LDL = L, super = s) :
+  Cholmod warning 'matrix not positive definite' at file ../Supernodal/t_cholmod_super_numeric.c, line 729
+> 

@@ -1,0 +1,119 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> ## test some typical completion attempts
+> 
+> testLine <- function(line, cursor = nchar(line))
++ {
++     str(utils:::.win32consoleCompletion(line, cursor))
++ }
+> 
+> testLine("")
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr ""
+> 
+> testLine("lib")
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr "libcurlVersion library library.dynam library.dynam.unload"
+> testLine("data(")
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr "AirPassengers BJsales BJsales.lead (BJsales) BOD CO2 ChickWeight DNase EuStockMarkets Formaldehyde HairEyeColor"| __truncated__
+> testLine("data(US")
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr "USAccDeaths USArrests USJudgeRatings USPersonalExpenditure UScitiesD"
+> testLine("data(US", 3)
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr "data data.class data.entry data.frame data.matrix dataentry date datasets::"
+> 
+> testLine("?INS")
+List of 3
+ $ addition: chr "TALL"
+ $ possible: chr(0) 
+ $ comps   : chr "?INSTALL"
+> 
+> testLine("utils::data")
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr "utils::data.entry utils::dataentry utils::data"
+> testLine("utils:::.show_help_on_topic_")
+List of 3
+ $ addition: chr "offline"
+ $ possible: chr(0) 
+ $ comps   : chr "utils:::.show_help_on_topic_offline"
+> testLine("utils::.show_help_on_topic_")
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr "utils::"
+> 
+> testLine("update(")
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr "object= ...= formula.= evaluate= old= new= lib.loc= repositories="
+> 
+> testLine("version$m")
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr "version$major version$minor version$month"
+> testLine("nchar(version[")
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr "version["
+> 
+> 
+> 
+> testLine("method?coe")
+List of 3
+ $ addition: chr "rce,"
+ $ possible: chr(0) 
+ $ comps   : chr "method?coerce,ANY,array method?coerce,ANY,call method?coerce,ANY,character method?coerce,ANY,complex method?coe"| __truncated__
+> testLine("?coe")
+List of 3
+ $ addition: chr ""
+ $ possible: chr(0) 
+ $ comps   : chr "?coef ?coef.aov ?coef.default ?coefficients ?coerce ?coerce,ANY,array-method ?coerce,ANY,call-method ?coerce,AN"| __truncated__
+> testLine("?\"coerce,AN")
+List of 3
+ $ addition: chr "Y,"
+ $ possible: chr(0) 
+ $ comps   : chr "coerce,ANY,array-method coerce,ANY,call-method coerce,ANY,character-method coerce,ANY,complex-method coerce,ANY"| __truncated__
+> testLine("method?\"coerce,AN")
+List of 3
+ $ addition: chr "Y,"
+ $ possible: chr(0) 
+ $ comps   : chr "coerce,ANY,array coerce,ANY,call coerce,ANY,character coerce,ANY,complex coerce,ANY,environment coerce,ANY,expr"| __truncated__
+> 
+> 
+> ## testLine("")
+> ## testLine("")
+> ## testLine("")
+> 

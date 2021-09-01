@@ -1,0 +1,49 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## regression tests on cmdscale from R 2.13.0
+> 
+> cmdsE <- cmdscale(eurodist, k = 20, eig = TRUE, x.ret = TRUE)
+Warning message:
+In cmdscale(eurodist, k = 20, eig = TRUE, x.ret = TRUE) :
+  only 11 of the first 20 eigenvalues are > 0
+> utils::str(cmdsE)
+List of 5
+ $ points: num [1:21, 1:11] 2290.3 -825.4 59.2 -82.8 -352.5 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:21] "Athens" "Barcelona" "Brussels" "Calais" ...
+  .. ..$ : NULL
+ $ eig   : num [1:21] 19538377 11856555 1528844 1118742 789347 ...
+ $ x     : num [1:21, 1:21] -15671564 2126686 793501 1896686 2701154 ...
+ $ ac    : num 0
+ $ GOF   : num [1:2] 0.868 1
+> cmdsE2 <- cmdscale(eurodist, k = 20, add = TRUE, eig = TRUE, x.ret = TRUE)
+> utils::str(cmdsE2)
+List of 5
+ $ points: num [1:21, 1:20] -2683.2 1448.3 -234.9 -18.9 447.3 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:21] "Athens" "Barcelona" "Brussels" "Calais" ...
+  .. ..$ : NULL
+ $ eig   : num [1:21] 42271881 29539104 9553423 8377974 6299475 ...
+ $ x     : num [1:21, 1:21] -38353886 4445881 3154334 4807547 5739772 ...
+ $ ac    : num 2133
+ $ GOF   : num [1:2] 1 1
+> stopifnot(identical(rownames(cmdsE2$points), attr(eurodist, "Labels")))
+> 
+> ## the exact answers diff by platform, since eigenvalue calculations are
+> ## involved
+> 

@@ -1,0 +1,546 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "htmltools"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('htmltools')
+Warning: package ‘htmltools’ was built under R version 4.0.5
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("HTML")
+> ### * HTML
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: HTML
+> ### Title: Mark Characters as HTML
+> ### Aliases: HTML
+> 
+> ### ** Examples
+> 
+> el <- div(HTML("I like <u>turtles</u>"))
+> cat(as.character(el))
+<div>I like <u>turtles</u></div>> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("builder")
+> ### * builder
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: builder
+> ### Title: Create HTML tags
+> ### Aliases: builder tags p h1 h2 h3 h4 h5 h6 a br div span pre code img
+> ###   strong em hr tag
+> 
+> ### ** Examples
+> 
+> tags$html(
++   tags$head(
++     tags$title('My first page')
++   ),
++   tags$body(
++     h1('My first heading'),
++     p('My first paragraph, with some ', strong('bold'), ' text.'),
++     div(
++       id = 'myDiv', class = 'simpleDiv',
++       'Here is a div with some attributes.'
++      )
++   )
++ )
+<html>
+  <body>
+    <h1>My first heading</h1>
+    <p>
+      My first paragraph, with some 
+      <strong>bold</strong>
+       text.
+    </p>
+    <div id="myDiv" class="simpleDiv">Here is a div with some attributes.</div>
+  </body>
+</html>
+> 
+> # html5 <audio> with boolean control attribute
+> # https://www.w3.org/TR/html5/infrastructure.html#sec-boolean-attributes
+> tags$audio(
++   controls = NA,
++   tags$source(
++     src = "myfile.wav",
++     type = "audio/wav"
++   )
++ )
+<audio controls>
+  <source src="myfile.wav" type="audio/wav"/>
+</audio>
+> 
+> # suppress the whitespace between tags
+> tags$span(
++   tags$strong("I'm strong", .noWS="outside")
++ )
+<span><strong>I'm strong</strong></span>
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("capturePlot")
+> ### * capturePlot
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: capturePlot
+> ### Title: Capture a plot as a saved file
+> ### Aliases: capturePlot
+> 
+> ### ** Examples
+> 
+> # Default settings
+> res <- capturePlot(plot(cars))
+> 
+> # View result
+> if (interactive()) browseURL(res)
+> 
+> # Clean up
+> unlink(res)
+> 
+> # Custom width/height
+> pngpath <- tempfile(fileext = ".png")
+> capturePlot(plot(pressure), pngpath, width = 800, height = 375)
+[1] "/tmp/RtmpuqAtS8/file20212d11381d.png"
+> if (interactive()) browseURL(pngpath)
+> unlink(pngpath)
+> 
+> # Use a custom graphics device (e.g., SVG)
+> if (capabilities("cairo")) {
++   svgpath <- capturePlot(
++     plot(pressure),
++     tempfile(fileext = ".svg"),
++     grDevices::svg,
++     width = 8, height = 3.75
++   )
++   if (interactive()) browseURL(svgpath)
++   unlink(svgpath)
++ }
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("css")
+> ### * css
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: css
+> ### Title: CSS string helper
+> ### Aliases: css
+> 
+> ### ** Examples
+> 
+> padding <- 6
+> css(
++   font.family = "Helvetica, sans-serif",
++   margin = paste0(c(10, 20, 10, 20), "px"),
++   "padding!" = if (!is.null(padding)) padding
++ )
+[1] "font-family:Helvetica, sans-serif;margin:10px 20px 10px 20px;padding:6 !important;"
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("htmlDependencies")
+> ### * htmlDependencies
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: htmlDependencies
+> ### Title: HTML dependency metadata
+> ### Aliases: htmlDependencies htmlDependencies<- attachDependencies
+> 
+> ### ** Examples
+> 
+> # Create a JavaScript dependency
+> dep <- htmlDependency("jqueryui", "1.11.4", c(href="shared/jqueryui"),
++                       script = "jquery-ui.min.js")
+> 
+> # A CSS dependency
+> htmlDependency(
++   "font-awesome", "4.5.0", c(href="shared/font-awesome"),
++   stylesheet = "css/font-awesome.min.css"
++ )
+List of 10
+ $ name      : chr "font-awesome"
+ $ version   : chr "4.5.0"
+ $ src       :List of 1
+  ..$ href: chr "shared/font-awesome"
+ $ meta      : NULL
+ $ script    : NULL
+ $ stylesheet: chr "css/font-awesome.min.css"
+ $ head      : NULL
+ $ attachment: NULL
+ $ package   : NULL
+ $ all_files : logi TRUE
+ - attr(*, "class")= chr "html_dependency"
+> 
+> # A few different ways to add the dependency to tag objects:
+> # Inline as a child of the div()
+> div("Code here", dep)
+<div>Code here</div>
+> # Inline in a tagList
+> tagList(div("Code here"), dep)
+<div>Code here</div>
+> # With attachDependencies
+> attachDependencies(div("Code here"), dep)
+<div>Code here</div>
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("htmlPreserve")
+> ### * htmlPreserve
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: htmlPreserve
+> ### Title: Preserve HTML regions
+> ### Aliases: htmlPreserve extractPreserveChunks restorePreserveChunks
+> 
+> ### ** Examples
+> 
+> # htmlPreserve will prevent "<script>alert(10*2*3);</script>"
+> # from getting an <em> tag inserted in the middle
+> markup <- paste(sep = "\n",
++   "This is *emphasized* text in markdown.",
++   htmlPreserve("<script>alert(10*2*3);</script>"),
++   "Here is some more *emphasized text*."
++ )
+> extracted <- extractPreserveChunks(markup)
+> markup <- extracted$value
+> # Just think of this next line as Markdown processing
+> output <- gsub("\\*(.*?)\\*", "<em>\\1</em>", markup)
+> output <- restorePreserveChunks(output, extracted$chunks)
+> output
+[1] "This is <em>emphasized</em> text in markdown.\n<script>alert(10*2*3);</script>\nHere is some more <em>emphasized text</em>."
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("parseCssColors")
+> ### * parseCssColors
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: parseCssColors
+> ### Title: Parse CSS color strings
+> ### Aliases: parseCssColors
+> 
+> ### ** Examples
+> 
+> parseCssColors(c(
++   "#0d6efd",
++   "#DC35457F",
++   "rgb(32,201,151)",
++   "  rgba( 23 , 162 , 184 , 0.5 )  ",
++   "hsl(261, 51%, 51%)",
++   "cornflowerblue"
++ ))
+[1] "#0D6EFD"   "#DC35457F" "#20C997"   "#17A2B880" "#6F42C2"   "#6495ED"  
+> 
+> 
+> 
+> cleanEx()
+> nameEx("plotTag")
+> ### * plotTag
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plotTag
+> ### Title: Capture a plot as a self-contained <img> tag
+> ### Aliases: plotTag
+> 
+> ### ** Examples
+> 
+> img <- plotTag({
++   plot(cars)
++ }, "A plot of the 'cars' dataset", width = 375, height = 275)
+> 
+> if (interactive()) img
+> 
+> if (interactive() && capabilities("cairo")) {
++   plotTag(
++     plot(pressure), "A plot of the 'pressure' dataset",
++     device = grDevices::svg, width = 375, height = 275, pixelratio = 1/72,
++     mimeType = "image/svg+xml"
++   )
++ }
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("tagAddRenderHook")
+> ### * tagAddRenderHook
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: tagAddRenderHook
+> ### Title: Modify a tag prior to rendering
+> ### Aliases: tagAddRenderHook
+> 
+> ### ** Examples
+> 
+> # Have a place holder div and return a span instead
+> obj <- div("example", .renderHook = function(x) {
++   x$name <- "span"
++   x
++ })
+> obj$name # "div"
+[1] "div"
+> print(obj) # Prints as a `span`
+<span>example</span>
+> 
+> # Add a class to the tag
+> # Should print a `span` with class `"extra"`
+> spanExtra <- tagAddRenderHook(obj, function(x) {
++   tagAppendAttributes(x, class = "extra")
++ })
+> spanExtra
+<span class="extra">example</span>
+> 
+> # Replace the previous render method
+> # Should print a `div` with class `"extra"`
+> divExtra <- tagAddRenderHook(obj, replace = TRUE, function(x) {
++   tagAppendAttributes(x, class = "extra")
++ })
+> divExtra
+<div class="extra">example</div>
+> 
+> # Add more child tags
+> spanExtended <- tagAddRenderHook(obj, function(x) {
++   tagAppendChildren(x, " ", tags$strong("bold text"))
++ })
+> spanExtended
+<span>
+  example
+   
+  <strong>bold text</strong>
+</span>
+> 
+> # Add a new html dependency
+> newDep <- tagAddRenderHook(obj, function(x) {
++   fa <- htmlDependency(
++     "font-awesome", "4.5.0", c(href="shared/font-awesome"),
++     stylesheet = "css/font-awesome.min.css")
++   attachDependencies(x, fa, append = TRUE)
++ })
+> # Also add a jqueryui html dependency
+> htmlDependencies(newDep) <- htmlDependency(
++   "jqueryui", "1.11.4", c(href="shared/jqueryui"),
++   script = "jquery-ui.min.js")
+> # At render time, both dependencies will be found
+> renderTags(newDep)$dependencies
+[[1]]
+List of 10
+ $ name      : chr "jqueryui"
+ $ version   : chr "1.11.4"
+ $ src       :List of 1
+  ..$ href: chr "shared/jqueryui"
+ $ meta      : NULL
+ $ script    : chr "jquery-ui.min.js"
+ $ stylesheet: NULL
+ $ head      : NULL
+ $ attachment: NULL
+ $ package   : NULL
+ $ all_files : logi TRUE
+ - attr(*, "class")= chr "html_dependency"
+
+[[2]]
+List of 10
+ $ name      : chr "font-awesome"
+ $ version   : chr "4.5.0"
+ $ src       :List of 1
+  ..$ href: chr "shared/font-awesome"
+ $ meta      : NULL
+ $ script    : NULL
+ $ stylesheet: chr "css/font-awesome.min.css"
+ $ head      : NULL
+ $ attachment: NULL
+ $ package   : NULL
+ $ all_files : logi TRUE
+ - attr(*, "class")= chr "html_dependency"
+
+> 
+> # Ignore the original tag and return something completely new.
+> newObj <- tagAddRenderHook(obj, function(x) {
++   tags$p("Something else")
++ })
+> newObj
+<p>Something else</p>
+> 
+> 
+> 
+> cleanEx()
+> nameEx("tagAppendAttributes")
+> ### * tagAppendAttributes
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: tagAppendAttributes
+> ### Title: Append tag attributes
+> ### Aliases: tagAppendAttributes tagHasAttribute tagGetAttribute
+> 
+> ### ** Examples
+> 
+> html <- div(a())
+> tagAppendAttributes(html, class = "foo")
+<div class="foo">
+  <a></a>
+</div>
+> tagAppendAttributes(html, .cssSelector = "a", class = "bar")
+<div>
+  <a class="bar"></a>
+</div>
+> 
+> tagHasAttribute(div(foo = "bar"), "foo")
+[1] TRUE
+> tagGetAttribute(div(foo = "bar"), "foo")
+[1] "bar"
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("tagAppendChild")
+> ### * tagAppendChild
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: tagAppendChild
+> ### Title: Modify tag contents
+> ### Aliases: tagAppendChild tagAppendChildren tagSetChildren
+> ###   tagInsertChildren
+> 
+> ### ** Examples
+> 
+> html <- div(a(), h1())
+> tagAppendChild(html, span())
+<div>
+  <a></a>
+  <h1></h1>
+  <span></span>
+</div>
+> tagAppendChild(html, .cssSelector = "a", span())
+<div>
+  <a>
+    <span></span>
+  </a>
+  <h1></h1>
+</div>
+> 
+> tagAppendChildren(html, span(), p())
+<div>
+  <a></a>
+  <h1></h1>
+  <span></span>
+  <p></p>
+</div>
+> tagAppendChildren(html, .cssSelector = "a", span(), p())
+<div>
+  <a>
+    <span></span>
+    <p></p>
+  </a>
+  <h1></h1>
+</div>
+> 
+> tagSetChildren(html, span(), p())
+<div>
+  <span></span>
+  <p></p>
+</div>
+> 
+> tagInsertChildren(html, after = 1, span(), p())
+<div>
+  <a></a>
+  <span></span>
+  <p></p>
+  <h1></h1>
+</div>
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("tagFunction")
+> ### * tagFunction
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: tagFunction
+> ### Title: Tag function
+> ### Aliases: tagFunction
+> 
+> ### ** Examples
+> 
+> myDivDep <- tagFunction(function() {
++   if (isTRUE(getOption("useDep", TRUE))) {
++     htmlDependency(
++       name = "lazy-dependency",
++       version = "1.0", src = ""
++     )
++   }
++ })
+> myDiv <- attachDependencies(div(), myDivDep)
+> renderTags(myDiv)
+$head
+
+
+$singletons
+character(0)
+
+$dependencies
+$dependencies[[1]]
+List of 10
+ $ name      : chr "lazy-dependency"
+ $ version   : chr "1.0"
+ $ src       :List of 1
+  ..$ file: chr ""
+ $ meta      : NULL
+ $ script    : NULL
+ $ stylesheet: NULL
+ $ head      : NULL
+ $ attachment: NULL
+ $ package   : NULL
+ $ all_files : logi TRUE
+ - attr(*, "class")= chr "html_dependency"
+
+
+$html
+<div></div>
+
+> withr::with_options(list(useDep = FALSE), renderTags(myDiv))
+Error in loadNamespace(name) : there is no package called ‘withr’
+Calls: :: ... loadNamespace -> withRestarts -> withOneRestart -> doWithOneRestart
+Execution halted

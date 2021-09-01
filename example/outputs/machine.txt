@@ -1,0 +1,84 @@
+$double.eps
+[1] 2.220446e-16
+
+$double.neg.eps
+[1] 1.110223e-16
+
+$double.xmin
+[1] 2.225074e-308
+
+$double.xmax
+[1] 1.797693e+308
+
+$double.base
+[1] 2
+
+$double.digits
+[1] 53
+
+$double.rounding
+[1] 5
+
+$double.guard
+[1] 0
+
+$double.ulp.digits
+[1] -52
+
+$double.neg.ulp.digits
+[1] -53
+
+$double.exponent
+[1] 11
+
+$double.min.exp
+[1] -1022
+
+$double.max.exp
+[1] 1024
+
+$integer.max
+[1] 2147483647
+
+$sizeof.long
+[1] 8
+
+$sizeof.longlong
+[1] 8
+
+$sizeof.longdouble
+[1] 16
+
+$sizeof.pointer
+[1] 8
+
+$longdouble.eps
+[1] 1.084202e-19
+
+$longdouble.neg.eps
+[1] 5.421011e-20
+
+$longdouble.digits
+[1] 64
+
+$longdouble.rounding
+[1] 5
+
+$longdouble.guard
+[1] 0
+
+$longdouble.ulp.digits
+[1] -63
+
+$longdouble.neg.ulp.digits
+[1] -64
+
+$longdouble.exponent
+[1] 15
+
+$longdouble.min.exp
+[1] -16382
+
+$longdouble.max.exp
+[1] 16384
+

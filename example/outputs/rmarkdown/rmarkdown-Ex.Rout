@@ -1,0 +1,661 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "rmarkdown"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('rmarkdown')
+Warning: package ‘rmarkdown’ was built under R version 4.0.5
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("beamer_presentation")
+> ### * beamer_presentation
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: beamer_presentation
+> ### Title: Convert to a Beamer presentation
+> ### Aliases: beamer_presentation
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D 
+> ##D library(rmarkdown)
+> ##D 
+> ##D # simple invocation
+> ##D render("pres.Rmd", beamer_presentation())
+> ##D 
+> ##D # specify an option for incremental rendering
+> ##D render("pres.Rmd", beamer_presentation(incremental = TRUE))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("context_document")
+> ### * context_document
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: context_document
+> ### Title: Convert to a ConTeXt document
+> ### Aliases: context_document
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D # simple invocation
+> ##D render("input.Rmd", context_document())
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("convert_ipynb")
+> ### * convert_ipynb
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: convert_ipynb
+> ### Title: Convert a Jupyter/IPython notebook to an R Markdown document
+> ### Aliases: convert_ipynb
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # this is not a real ipynb file, but illustrates what convert_ipynb() does
+> nb_data <- list(
++   cells = list(
++     list(cell_type = 'markdown', source = 'Hi **Markdown**!'),
++     list(cell_type = 'code', source = 'print("Hi R Markdown!")')
++   ),
++   metadata = list(
++     kernelspec = list(language = 'python')
++   )
++ )
+> nb_file = tempfile(fileext = '.ipynb')
+> jsonlite::write_json(nb_data, nb_file, auto_unbox = TRUE, pretty = TRUE)
+> xfun::file_string(nb_file)  # show file content
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": "Hi **Markdown**!"
+    },
+    {
+      "cell_type": "code",
+      "source": "print(\"Hi R Markdown!\")"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "language": "python"
+    }
+  }
+}
+> 
+> # convert to R Markdown
+> nb_rmd = rmarkdown:::convert_ipynb(nb_file)
+> xfun::file_string(nb_rmd)
+---
+title: An R Markdown document converted from "/tmp/RtmpqWvh91/file213522e32a4a.ipynb"
+output: html_document
+---
+
+Hi **Markdown**!
+
+```{python}
+print("Hi R Markdown!")
+```
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("draft")
+> ### * draft
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: draft
+> ### Title: Create a new document based on a template
+> ### Aliases: draft
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D rmarkdown::draft("Q4Report.Rmd",
+> ##D                  template="/opt/rmd/templates/quarterly_report")
+> ##D 
+> ##D rmarkdown::draft("Q4Report.Rmd",
+> ##D                  template="quarterly_report", package="pubtools")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("find_pandoc")
+> ### * find_pandoc
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: find_pandoc
+> ### Title: Find the 'pandoc' executable
+> ### Aliases: find_pandoc
+> 
+> ### ** Examples
+> 
+> rmarkdown::find_pandoc()
+$version
+[1] ‘0’
+
+$dir
+NULL
+
+> rmarkdown::find_pandoc(dir = '~/Downloads/Pandoc')
+$version
+[1] ‘0’
+
+$dir
+NULL
+
+> rmarkdown::find_pandoc(version = '2.7.3')
+$version
+[1] ‘0’
+
+$dir
+NULL
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("html_document")
+> ### * html_document
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: html_document
+> ### Title: Convert to an HTML document
+> ### Aliases: html_document
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D render("input.Rmd", html_document())
+> ##D 
+> ##D render("input.Rmd", html_document(toc = TRUE))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("includes")
+> ### * includes
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: includes
+> ### Title: Include content within output
+> ### Aliases: includes includes_to_pandoc_args
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D html_document(includes = includes(before_body = "header.htm"))
+> ##D 
+> ##D pdf_document(includes = includes(after_body = "footer.tex"))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("md_document")
+> ### * md_document
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: md_document
+> ### Title: Convert to a markdown document
+> ### Aliases: md_document
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D render("input.Rmd", md_document())
+> ##D 
+> ##D render("input.Rmd", md_document(variant = "markdown_github"))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("metadata")
+> ### * metadata
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: metadata
+> ### Title: The YAML metadata of the current R Markdown document
+> ### Aliases: metadata
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> rmarkdown::metadata
+list()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("odt_document")
+> ### * odt_document
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: odt_document
+> ### Title: Convert to an OpenDocument Text (ODT) document
+> ### Aliases: odt_document
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D # simple invocation
+> ##D render("input.Rmd", odt_document())
+> ##D 
+> ##D # specify an option for syntax highlighting
+> ##D render("input.Rmd", odt_document(highlight = "zenburn"))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("output_format")
+> ### * output_format
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: output_format
+> ### Title: Define an R Markdown output format
+> ### Aliases: output_format
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D output_format(knitr = knitr_options(opts_chunk = list(dev = 'png')),
+> ##D               pandoc = pandoc_options(to = "html"))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pandoc_args")
+> ### * pandoc_args
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pandoc_args
+> ### Title: Functions for generating pandoc command line arguments
+> ### Aliases: pandoc_args pandoc_variable_arg pandoc_metadata_arg
+> ###   pandoc_include_args pandoc_highlight_args pandoc_latex_engine_args
+> ###   pandoc_toc_args pandoc_citeproc_args pandoc_lua_filter_args
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D pandoc_include_args(before_body = "header.htm")
+> ##D pandoc_include_args(before_body = "header.tex")
+> ##D 
+> ##D pandoc_highlight_args("kate")
+> ##D 
+> ##D pandoc_latex_engine_args("pdflatex")
+> ##D 
+> ##D pandoc_toc_args(toc = TRUE, toc_depth = 2)
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pandoc_available")
+> ### * pandoc_available
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pandoc_available
+> ### Title: Check pandoc availability and version
+> ### Aliases: pandoc_available pandoc_version
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D if (pandoc_available())
+> ##D   cat("pandoc", as.character(pandoc_version()), "is available!\n")
+> ##D 
+> ##D if (pandoc_available("1.12.3"))
+> ##D   cat("required version of pandoc is available!\n")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pandoc_convert")
+> ### * pandoc_convert
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pandoc_convert
+> ### Title: Convert a document with pandoc
+> ### Aliases: pandoc_convert
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D # convert markdown to various formats
+> ##D pandoc_convert("input.md", to = "html")
+> ##D pandoc_convert("input.md", to = "latex")
+> ##D 
+> ##D # process citations
+> ##D pandoc_convert("input.md", to = "html", citeproc = TRUE)
+> ##D 
+> ##D # add some pandoc options
+> ##D pandoc_convert("input.md", to = "latex", options = c("--listings"))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pdf_document")
+> ### * pdf_document
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pdf_document
+> ### Title: Convert to a PDF/LaTeX document
+> ### Aliases: pdf_document latex_document latex_fragment
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D # simple invocation
+> ##D render("input.Rmd", pdf_document())
+> ##D 
+> ##D # specify an option for latex engine
+> ##D render("input.Rmd", pdf_document(latex_engine = "lualatex"))
+> ##D 
+> ##D # add a table of contents and pass an option to pandoc
+> ##D render("input.Rmd", pdf_document(toc = TRUE, "--listings"))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pkg_file_lua")
+> ### * pkg_file_lua
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pkg_file_lua
+> ### Title: Get the full paths of Lua filters in an R package
+> ### Aliases: pkg_file_lua
+> 
+> ### ** Examples
+> 
+> # list all Lua filters stored in the rmarkdown package
+> pkg_file_lua()
+[1] "/usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/latex-div.lua"      
+[2] "/usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/number-sections.lua"
+[3] "/usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/pagebreak.lua"      
+[4] "/usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/shared.lua"         
+> # get a specific filter
+> pkg_file_lua(c("pagebreak.lua", "latex_div.lua"))
+[1] "/usr/local/lib/R/site-library/rmarkdown/rmarkdown/lua/pagebreak.lua"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("publish_site")
+> ### * publish_site
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: publish_site
+> ### Title: Publish an R Markdown Website
+> ### Aliases: publish_site
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D publish_site()
+> ## End(Not run)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("render")
+> ### * render
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: render
+> ### Title: Render R Markdown
+> ### Aliases: render
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D # Render the default (first) format defined in the file
+> ##D render("input.Rmd")
+> ##D 
+> ##D # Render all formats defined in the file
+> ##D render("input.Rmd", "all")
+> ##D 
+> ##D # Render a single format, using parameters for \code{html_document} from
+> ##D # the YAML header parameters.
+> ##D render("input.Rmd", "html_document")
+> ##D 
+> ##D # Render a single format, ignoring parameters for \code{html_document} in
+> ##D # the YAML header. Any parameters not passed as arguments to
+> ##D # \code{html_document()} will be assigned to their default values, regardless
+> ##D # of anything in the YAML header
+> ##D render("input.Rmd", html_document(toc = TRUE, toc_depth = 2))
+> ##D 
+> ##D # Render multiple formats
+> ##D render("input.Rmd", c("html_document", "pdf_document"))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("render_delayed")
+> ### * render_delayed
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: render_delayed
+> ### Title: Delay Rendering for an Expression
+> ### Aliases: render_delayed
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Add the following code to an R Markdown document
+> ##D 
+> ##D div(Sys.time())
+> ##D 
+> ##D render_delayed({
+> ##D  Sys.sleep(3)      # simulate an expensive computation
+> ##D  div(Sys.time())
+> ##D })
+> ##D 
+> ##D div(Sys.time())
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rmarkdown_format")
+> ### * rmarkdown_format
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rmarkdown_format
+> ### Title: R Markdown input format definition
+> ### Aliases: rmarkdown_format from_rmarkdown
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D rmarkdown_format("-implicit_figures")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rtf_document")
+> ### * rtf_document
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: rtf_document
+> ### Title: Convert to an RTF document
+> ### Aliases: rtf_document
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D 
+> ##D library(rmarkdown)
+> ##D 
+> ##D # simple invocation
+> ##D render("input.Rmd", rtf_document())
+> ##D 
+> ##D # specify table of contents option
+> ##D render("input.Rmd", rtf_document(toc = TRUE))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("run")
+> ### * run
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: run
+> ### Title: Run a Shiny document
+> ### Aliases: run
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Run the Shiny document "index.Rmd" in the current directory
+> ##D rmarkdown::run()
+> ##D 
+> ##D # Run the Shiny document "shiny_doc.Rmd" on port 8241
+> ##D rmarkdown::run("shiny_doc.Rmd", shiny_args = list(port = 8241))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("slidy_presentation")
+> ### * slidy_presentation
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: slidy_presentation
+> ### Title: Convert to a slidy presentation
+> ### Aliases: slidy_presentation
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D # simple invocation
+> ##D render("pres.Rmd", slidy_presentation())
+> ##D 
+> ##D # specify an option for incremental rendering
+> ##D render("pres.Rmd", slidy_presentation(incremental = TRUE))
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("word_document")
+> ### * word_document
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: word_document
+> ### Title: Convert to an MS Word document
+> ### Aliases: word_document
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D library(rmarkdown)
+> ##D 
+> ##D # simple invocation
+> ##D render("input.Rmd", word_document())
+> ##D 
+> ##D # specify an option for syntax highlighting
+> ##D render("input.Rmd", word_document(highlight = "zenburn"))
+> ## End(Not run)
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.216 0.025 0.247 0.004 0.001 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

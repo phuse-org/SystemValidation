@@ -1,0 +1,444 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> #  File src/library/stats/tests/nafns.R
+> #  Part of the R package, https://www.R-project.org
+> #
+> #  This program is free software; you can redistribute it and/or modify
+> #  it under the terms of the GNU General Public License as published by
+> #  the Free Software Foundation; either version 2 of the License, or
+> #  (at your option) any later version.
+> #
+> #  This program is distributed in the hope that it will be useful,
+> #  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> #  GNU General Public License for more details.
+> #
+> #  A copy of the GNU General Public License is available at
+> #  https://www.R-project.org/Licenses/
+> 
+> ## Tests of functions handling NAs in fits
+> ## These functions were introduced in 1.3.0.
+> ## They are used by lm and glm in base R, and by
+> ## packages MASS, rpart and survival.
+> 
+> ## Comparison strictness is set at 256eps, increased from 100eps for v.2.1.0
+> ## May look lenient, but notice that the Ozone levels that are being modeled
+> ## can be more than 100.
+> 
+> dim(airquality)
+[1] 153   6
+> nd <- airquality[c(6,25:27), ]
+> 
+> sm <- function(x) cat("length", length(x), "with", sum(is.na(x)), "NAs\n")
+> 
+> # default is to omit some rows
+> fit <- lm(Ozone ~ ., data=airquality, na.action=na.omit)
+> summary(fit)
+
+Call:
+lm(formula = Ozone ~ ., data = airquality, na.action = na.omit)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-37.014 -12.284  -3.302   8.454  95.348 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -64.11632   23.48249  -2.730  0.00742 ** 
+Solar.R       0.05027    0.02342   2.147  0.03411 *  
+Wind         -3.31844    0.64451  -5.149 1.23e-06 ***
+Temp          1.89579    0.27389   6.922 3.66e-10 ***
+Month        -3.03996    1.51346  -2.009  0.04714 *  
+Day           0.27388    0.22967   1.192  0.23576    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 20.86 on 105 degrees of freedom
+  (42 observations deleted due to missingness)
+Multiple R-squared:  0.6249,	Adjusted R-squared:  0.6071 
+F-statistic: 34.99 on 5 and 105 DF,  p-value: < 2.2e-16
+
+> sm(fitted(fit))
+length 111 with 0 NAs
+> sm(resid(fit))
+length 111 with 0 NAs
+> sm(predict(fit))
+length 111 with 0 NAs
+> (pp <- predict(fit, nd))
+         6         25         26         27 
+        NA -16.177404   1.688479         NA 
+> 
+> fit2 <- lm(Ozone ~ ., data=airquality, na.action=na.exclude)
+> summary(fit2) # same as before
+
+Call:
+lm(formula = Ozone ~ ., data = airquality, na.action = na.exclude)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-37.014 -12.284  -3.302   8.454  95.348 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -64.11632   23.48249  -2.730  0.00742 ** 
+Solar.R       0.05027    0.02342   2.147  0.03411 *  
+Wind         -3.31844    0.64451  -5.149 1.23e-06 ***
+Temp          1.89579    0.27389   6.922 3.66e-10 ***
+Month        -3.03996    1.51346  -2.009  0.04714 *  
+Day           0.27388    0.22967   1.192  0.23576    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 20.86 on 105 degrees of freedom
+  (42 observations deleted due to missingness)
+Multiple R-squared:  0.6249,	Adjusted R-squared:  0.6071 
+F-statistic: 34.99 on 5 and 105 DF,  p-value: < 2.2e-16
+
+> sm(fitted(fit2))
+length 153 with 42 NAs
+> sm(resid(fit2))
+length 153 with 42 NAs
+> sm(predict(fit2))
+length 153 with 42 NAs
+> (pp2 <- predict(fit2, nd))
+         6         25         26         27 
+        NA -16.177404   1.688479         NA 
+> 
+> ## same as before: napredict is only applied to predictions on the
+> ## original data, following Therneau's original code (and S-PLUS).
+> ## However, as from R 1.8.0 there is a separate na.action arg to predict.lm()
+> stopifnot(all.equal(pp, pp2))
+> 
+> ## should fail
+> try(fit3 <- lm(Ozone ~ ., data=airquality, na.action=na.fail))
+Error in na.fail.default(structure(list(Ozone = c(41L, 36L, 12L, 18L,  : 
+  missing values in object
+> 
+> ## more precise tests.
+> f1 <- fitted(fit)
+> f2 <- fitted(fit2)
+> common <- match(names(f1), names(f2))
+> stopifnot(max(abs(f1 - f2[common])) <= 256*.Machine$double.eps)
+> stopifnot(all(is.na(f2[-common])))
+> 
+> r1 <- resid(fit)
+> r2 <- resid(fit2)
+> common <- match(names(r1), names(r2))
+> stopifnot(max(abs(r1 - r2[common])) <= 256*.Machine$double.eps)
+> stopifnot(all(is.na(r2[-common])))
+> 
+> p1 <- predict(fit)
+> p2 <- predict(fit2)
+> common <- match(names(p1), names(p2))
+> stopifnot(max(abs(p1 - p2[common])) <= 256*.Machine$double.eps)
+> stopifnot(all(is.na(p2[-common])))
+> 
+> 
+> ### now try out glm
+> gfit <- glm(Ozone ~ ., data=airquality, na.action=na.omit)
+> summary(gfit)
+
+Call:
+glm(formula = Ozone ~ ., data = airquality, na.action = na.omit)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-37.014  -12.284   -3.302    8.454   95.348  
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -64.11632   23.48249  -2.730  0.00742 ** 
+Solar.R       0.05027    0.02342   2.147  0.03411 *  
+Wind         -3.31844    0.64451  -5.149 1.23e-06 ***
+Temp          1.89579    0.27389   6.922 3.66e-10 ***
+Month        -3.03996    1.51346  -2.009  0.04714 *  
+Day           0.27388    0.22967   1.192  0.23576    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for gaussian family taken to be 435.0755)
+
+    Null deviance: 121802  on 110  degrees of freedom
+Residual deviance:  45683  on 105  degrees of freedom
+  (42 observations deleted due to missingness)
+AIC: 997.22
+
+Number of Fisher Scoring iterations: 2
+
+> sm(fitted(gfit))
+length 111 with 0 NAs
+> sm(resid(gfit))
+length 111 with 0 NAs
+> sm(predict(gfit))
+length 111 with 0 NAs
+> predict(gfit, nd)
+         6         25         26         27 
+        NA -16.177404   1.688479         NA 
+> (pp <- predict(gfit, nd))
+         6         25         26         27 
+        NA -16.177404   1.688479         NA 
+> 
+> gfit2 <- glm(Ozone ~ ., data=airquality, na.action=na.exclude)
+> summary(gfit2) # same as before
+
+Call:
+glm(formula = Ozone ~ ., data = airquality, na.action = na.exclude)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-37.014  -12.284   -3.302    8.454   95.348  
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -64.11632   23.48249  -2.730  0.00742 ** 
+Solar.R       0.05027    0.02342   2.147  0.03411 *  
+Wind         -3.31844    0.64451  -5.149 1.23e-06 ***
+Temp          1.89579    0.27389   6.922 3.66e-10 ***
+Month        -3.03996    1.51346  -2.009  0.04714 *  
+Day           0.27388    0.22967   1.192  0.23576    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for gaussian family taken to be 435.0755)
+
+    Null deviance: 121802  on 110  degrees of freedom
+Residual deviance:  45683  on 105  degrees of freedom
+  (42 observations deleted due to missingness)
+AIC: 997.22
+
+Number of Fisher Scoring iterations: 2
+
+> sm(fitted(gfit2))
+length 153 with 42 NAs
+> sm(resid(gfit2))
+length 153 with 42 NAs
+> sm(predict(gfit2))
+length 153 with 42 NAs
+> (pp2 <- predict(gfit2, nd))
+         6         25         26         27 
+        NA -16.177404   1.688479         NA 
+> stopifnot(all.equal(pp, pp2))
+> 
+> ## more precise tests.
+> f1 <- fitted(gfit)
+> f2 <- fitted(gfit2)
+> common <- match(names(f1), names(f2))
+> stopifnot(max(abs(f1 - f2[common])) <= 256*.Machine$double.eps)
+> stopifnot(all(is.na(f2[-common])))
+> 
+> r1 <- resid(gfit)
+> r2 <- resid(gfit2)
+> common <- match(names(r1), names(r2))
+> stopifnot(max(abs(r1 - r2[common])) <= 256*.Machine$double.eps)
+> stopifnot(all(is.na(r2[-common])))
+> 
+> p1 <- predict(gfit)
+> p2 <- predict(gfit2)
+> common <- match(names(p1), names(p2))
+> stopifnot(max(abs(p1 - p2[common])) <= 256*.Machine$double.eps)
+> stopifnot(all(is.na(p2[-common])))
+> 
+> ## tests of diagnostic measures.
+> set.seed(11)
+> x <- 1:10
+> y <- c(rnorm(9),NA)
+> fit <- lm(y ~ x, na.action=na.exclude)
+> fit2 <- lm(y ~ x, subset=-10)
+> 
+> lm.influence(fit2); lm.influence(fit)
+$hat
+        1         2         3         4         5         6         7         8 
+0.3777778 0.2611111 0.1777778 0.1277778 0.1111111 0.1277778 0.1777778 0.2611111 
+        9 
+0.3777778 
+
+$coefficients
+  (Intercept)             x
+1  0.16097130 -2.414569e-02
+2  0.32983912 -4.567003e-02
+3 -0.35011135  4.201336e-02
+4 -0.23419092  2.007351e-02
+5  0.16531816  6.707906e-18
+6 -0.03051525 -1.830915e-02
+7 -0.07645232  4.587139e-02
+8 -0.04975992  1.791357e-02
+9  0.20500060 -6.150018e-02
+
+$sigma
+        1         2         3         4         5         6         7         8 
+1.0762034 1.0339608 0.9767902 0.9802768 0.9186166 0.9981899 0.9551447 1.0751793 
+        9 
+1.0409441 
+
+$wt.res
+         1          2          3          4          5          6          7 
+ 0.2253598  0.6749016 -1.0363296 -1.0505135  1.3225453 -0.9581789  1.1314943 
+         8          9 
+ 0.2647228 -0.5740017 
+
+$hat
+        1         2         3         4         5         6         7         8 
+0.3777778 0.2611111 0.1777778 0.1277778 0.1111111 0.1277778 0.1777778 0.2611111 
+        9        10 
+0.3777778 0.0000000 
+
+$coefficients
+   (Intercept)             x
+1   0.16097130 -2.414569e-02
+2   0.32983912 -4.567003e-02
+3  -0.35011135  4.201336e-02
+4  -0.23419092  2.007351e-02
+5   0.16531816  6.707906e-18
+6  -0.03051525 -1.830915e-02
+7  -0.07645232  4.587139e-02
+8  -0.04975992  1.791357e-02
+9   0.20500060 -6.150018e-02
+10  0.00000000  0.000000e+00
+
+$sigma
+        1         2         3         4         5         6         7         8 
+1.0762034 1.0339608 0.9767902 0.9802768 0.9186166 0.9981899 0.9551447 1.0751793 
+        9        10 
+1.0409441 1.0022051 
+
+$wt.res
+         1          2          3          4          5          6          7 
+ 0.2253598  0.6749016 -1.0363296 -1.0505135  1.3225453 -0.9581789  1.1314943 
+         8          9         10 
+ 0.2647228 -0.5740017         NA 
+
+> 
+> rstandard(fit2); rstandard(fit)
+         1          2          3          4          5          6          7 
+ 0.2850671  0.7834193 -1.1403724 -1.1223582  1.3996847 -1.0237088  1.2450912 
+         8          9 
+ 0.3072877 -0.7260789 
+         1          2          3          4          5          6          7 
+ 0.2850671  0.7834193 -1.1403724 -1.1223582  1.3996847 -1.0237088  1.2450912 
+         8          9         10 
+ 0.3072877 -0.7260789         NA 
+> rstudent(fit2); rstudent(fit)
+         1          2          3          4          5          6          7 
+ 0.2654663  0.7593584 -1.1700435 -1.1474648  1.5270474 -1.0278266  1.3064374 
+         8          9 
+ 0.2864315 -0.6990577 
+         1          2          3          4          5          6          7 
+ 0.2654663  0.7593584 -1.1700435 -1.1474648  1.5270474 -1.0278266  1.3064374 
+         8          9         10 
+ 0.2864315 -0.6990577         NA 
+> 
+> dffits(fit2); dffits(fit)
+         1          2          3          4          5          6          7 
+ 0.2068496  0.4514087 -0.5440592 -0.4391910  0.5398928 -0.3933996  0.6074810 
+         8          9 
+ 0.1702723 -0.5447014 
+         1          2          3          4          5          6          7 
+ 0.2068496  0.4514087 -0.5440592 -0.4391910  0.5398928 -0.3933996  0.6074810 
+         8          9         10 
+ 0.1702723 -0.5447014         NA 
+> 
+> dfbetas(fit2); dfbetas(fit)
+  (Intercept)             x
+1  0.20588681 -1.737885e-01
+2  0.43910920 -3.421392e-01
+3 -0.49337751  3.331668e-01
+4 -0.32884843  1.586172e-01
+5  0.24771980  5.656246e-17
+6 -0.04208024 -1.420793e-01
+7 -0.11017827  3.720046e-01
+8 -0.06370496  1.290556e-01
+9  0.27108295 -4.576407e-01
+   (Intercept)             x
+1   0.20588681 -1.737885e-01
+2   0.43910920 -3.421392e-01
+3  -0.49337751  3.331668e-01
+4  -0.32884843  1.586172e-01
+5   0.24771980  5.656246e-17
+6  -0.04208024 -1.420793e-01
+7  -0.11017827  3.720046e-01
+8  -0.06370496  1.290556e-01
+9   0.27108295 -4.576407e-01
+10  0.00000000  0.000000e+00
+> 
+> covratio(fit2); covratio(fit)
+        1         2         3         4         5         6         7         8 
+2.1370053 1.5332422 1.0974622 1.0494007 0.7940781 1.1282339 1.0033700 1.7927427 
+        9 
+1.8704135 
+        1         2         3         4         5         6         7         8 
+2.1370053 1.5332422 1.0974622 1.0494007 0.7940781 1.1282339 1.0033700 1.7927427 
+        9        10 
+1.8704135        NA 
+> 
+> cooks.distance(fit2); cooks.distance(fit)
+         1          2          3          4          5          6          7 
+0.02466920 0.10844381 0.14058910 0.09227013 0.12244482 0.07676285 0.16759483 
+         8          9 
+0.01668424 0.16003999 
+         1          2          3          4          5          6          7 
+0.02466920 0.10844381 0.14058910 0.09227013 0.12244482 0.07676285 0.16759483 
+         8          9         10 
+0.01668424 0.16003999         NA 
+> 
+> (inf <- influence.measures(fit))
+Influence measures of
+	 lm(formula = y ~ x, na.action = na.exclude) :
+
+    dfb.1_     dfb.x  dffit cov.r cook.d   hat inf
+1   0.2059 -1.74e-01  0.207 2.137 0.0247 0.378   *
+2   0.4391 -3.42e-01  0.451 1.533 0.1084 0.261    
+3  -0.4934  3.33e-01 -0.544 1.097 0.1406 0.178    
+4  -0.3288  1.59e-01 -0.439 1.049 0.0923 0.128    
+5   0.2477  5.66e-17  0.540 0.794 0.1224 0.111    
+6  -0.0421 -1.42e-01 -0.393 1.128 0.0768 0.128    
+7  -0.1102  3.72e-01  0.607 1.003 0.1676 0.178    
+8  -0.0637  1.29e-01  0.170 1.793 0.0167 0.261    
+9   0.2711 -4.58e-01 -0.545 1.870 0.1600 0.378   *
+10  0.0000  0.00e+00     NA 1.000     NA 0.000    
+> (inf2 <- influence.measures(fit2))
+Influence measures of
+	 lm(formula = y ~ x, subset = -10) :
+
+   dfb.1_     dfb.x  dffit cov.r cook.d   hat inf
+1  0.2059 -1.74e-01  0.207 2.137 0.0247 0.378   *
+2  0.4391 -3.42e-01  0.451 1.533 0.1084 0.261    
+3 -0.4934  3.33e-01 -0.544 1.097 0.1406 0.178    
+4 -0.3288  1.59e-01 -0.439 1.049 0.0923 0.128    
+5  0.2477  5.66e-17  0.540 0.794 0.1224 0.111    
+6 -0.0421 -1.42e-01 -0.393 1.128 0.0768 0.128    
+7 -0.1102  3.72e-01  0.607 1.003 0.1676 0.178    
+8 -0.0637  1.29e-01  0.170 1.793 0.0167 0.261    
+9  0.2711 -4.58e-01 -0.545 1.870 0.1600 0.378   *
+> 
+> summary(inf)
+Potentially influential observations of
+	 lm(formula = y ~ x, na.action = na.exclude) :
+
+  dfb.1_ dfb.x dffit cov.r   cook.d hat  
+1  0.21  -0.17  0.21  2.14_*  0.02   0.38
+9  0.27  -0.46 -0.54  1.87_*  0.16   0.38
+> summary(inf2)
+Potentially influential observations of
+	 lm(formula = y ~ x, subset = -10) :
+
+  dfb.1_ dfb.x dffit cov.r   cook.d hat  
+1  0.21  -0.17  0.21  2.14_*  0.02   0.38
+9  0.27  -0.46 -0.54  1.87_*  0.16   0.38
+> 
+> plot(fit)
+> 

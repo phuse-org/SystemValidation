@@ -1,0 +1,320 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ### Testing positive definite matrices
+> library(Matrix)
+> source(system.file("test-tools.R", package = "Matrix"))# identical3() etc
+Loading required package: tools
+> cat("doExtras:",doExtras,"\n")
+doExtras: FALSE 
+> 
+> h9 <- Hilbert(9)
+> stopifnot(c(0,0) == dim(Hilbert(0)),
++           c(9,9) == dim(h9),
++ 	  identical(h9@factors, list()))
+> str(h9)# no 'factors'		32b:	-96.73694669	2.08e-8
+Formal class 'dpoMatrix' [package "Matrix"] with 5 slots
+  ..@ x       : num [1:81] 1 0.5 0.333 0.25 0.2 ...
+  ..@ Dim     : int [1:2] 9 9
+  ..@ Dimnames:List of 2
+  .. ..$ : NULL
+  .. ..$ : NULL
+  ..@ uplo    : chr "U"
+  ..@ factors : list()
+> assert.EQ.(c(determinant(h9)$modulus),	-96.7369487, tol = 8e-8)
+Mean relative difference: 1.049389e-08
+> ##				64b:	-96.73695078	2.15e-8 then 6.469e-8
+> 
+> ## determinant() now working via chol(): ==> h9 now has factorization
+> stopifnot(names(h9@factors) == "Cholesky",
++           identical(ch9 <- chol(h9), h9@factors$Cholesky))
+> round(ch9, 3) ## round() preserves 'triangular' !
+9 x 9 Matrix of class "Cholesky"
+      [,1]  [,2]  [,3]  [,4]  [,5]  [,6]  [,7]  [,8]  [,9] 
+ [1,] 1.000 0.500 0.333 0.250 0.200 0.167 0.143 0.125 0.111
+ [2,]     . 0.289 0.289 0.260 0.231 0.206 0.186 0.168 0.154
+ [3,]     .     . 0.075 0.112 0.128 0.133 0.133 0.130 0.126
+ [4,]     .     .     . 0.019 0.038 0.052 0.063 0.070 0.075
+ [5,]     .     .     .     . 0.005 0.012 0.019 0.027 0.033
+ [6,]     .     .     .     .     . 0.001 0.004 0.007 0.010
+ [7,]     .     .     .     .     .     . 0.000 0.001 0.002
+ [8,]     .     .     .     .     .     .     . 0.000 0.000
+ [9,]     .     .     .     .     .     .     .     . 0.000
+> str(f9 <- as(ch9, "dtrMatrix"))
+Formal class 'dtrMatrix' [package "Matrix"] with 5 slots
+  ..@ x       : num [1:81] 1 0 0 0 0 0 0 0 0 0.5 ...
+  ..@ Dim     : int [1:2] 9 9
+  ..@ Dimnames:List of 2
+  .. ..$ : NULL
+  .. ..$ : NULL
+  ..@ uplo    : chr "U"
+  ..@ diag    : chr "N"
+> stopifnot(all.equal(rcond(h9), 9.0938e-13),
++           all.equal(rcond(f9), 9.1272e-7, tolerance = 1e-6))# more precision fails
+> options(digits=4)
+> (cf9 <- crossprod(f9))# looks the same as  h9 :
+9 x 9 Matrix of class "dpoMatrix"
+        [,1]   [,2]    [,3]    [,4]    [,5]    [,6]    [,7]    [,8]    [,9]
+ [1,] 1.0000 0.5000 0.33333 0.25000 0.20000 0.16667 0.14286 0.12500 0.11111
+ [2,] 0.5000 0.3333 0.25000 0.20000 0.16667 0.14286 0.12500 0.11111 0.10000
+ [3,] 0.3333 0.2500 0.20000 0.16667 0.14286 0.12500 0.11111 0.10000 0.09091
+ [4,] 0.2500 0.2000 0.16667 0.14286 0.12500 0.11111 0.10000 0.09091 0.08333
+ [5,] 0.2000 0.1667 0.14286 0.12500 0.11111 0.10000 0.09091 0.08333 0.07692
+ [6,] 0.1667 0.1429 0.12500 0.11111 0.10000 0.09091 0.08333 0.07692 0.07143
+ [7,] 0.1429 0.1250 0.11111 0.10000 0.09091 0.08333 0.07692 0.07143 0.06667
+ [8,] 0.1250 0.1111 0.10000 0.09091 0.08333 0.07692 0.07143 0.06667 0.06250
+ [9,] 0.1111 0.1000 0.09091 0.08333 0.07692 0.07143 0.06667 0.06250 0.05882
+> assert.EQ.mat(h9, as(cf9,"matrix"), tol=1e-15)
+> 
+> h9. <- round(h9, 2)# actually loses pos.def. "slightly"
+>                    # ==> the above may be invalid in the future
+> h9p  <- as(h9,  "dppMatrix")
+> h9.p <- as(h9., "dppMatrix")
+> ch9p <- chol(h9p)
+> stopifnot(identical(ch9p, h9p@factors$pCholesky),
++ 	  identical(names(h9p@factors), c("Cholesky", "pCholesky")))
+> h4  <- h9.[1:4, 1:4] # this and the next
+> h9.[1,1] <- 10       # had failed in 0.995-14
+> h9p[1,1] <- 10
+> stopifnotValid(h9., "symmetricMatrix")
+> stopifnotValid(h9p, "symmetricMatrix")
+> stopifnotValid(h4,  "symmetricMatrix")
+> 
+> h9p[1,2] <- 99
+> stopifnot(class(h9p) == "dgeMatrix", h9p[1,1:2] == c(10,99))
+> 
+> str(h9p <- as(h9, "dppMatrix"))# {again}
+Formal class 'dppMatrix' [package "Matrix"] with 5 slots
+  ..@ x       : num [1:45] 1 0.5 0.333 0.333 0.25 ...
+  ..@ Dim     : int [1:2] 9 9
+  ..@ Dimnames:List of 2
+  .. ..$ : NULL
+  .. ..$ : NULL
+  ..@ uplo    : chr "U"
+  ..@ factors :List of 1
+  .. ..$ Cholesky:Formal class 'Cholesky' [package "Matrix"] with 5 slots
+  .. .. .. ..@ x       : num [1:81] 1 0 0 0 0 0 0 0 0 0.5 ...
+  .. .. .. ..@ Dim     : int [1:2] 9 9
+  .. .. .. ..@ Dimnames:List of 2
+  .. .. .. .. ..$ : NULL
+  .. .. .. .. ..$ : NULL
+  .. .. .. ..@ uplo    : chr "U"
+  .. .. .. ..@ diag    : chr "N"
+> h6 <- h9[1:6,1:6]
+> stopifnot(all(h6 == Hilbert(6)), length(h6@factors) == 0)
+> stopifnotValid(th9p <- t(h9p), "dppMatrix")
+> stopifnotValid(h9p@factors$Cholesky,"Cholesky")
+> H6  <- as(h6, "dspMatrix")
+> pp6 <- as(H6, "dppMatrix")
+> po6 <- as(pp6,"dpoMatrix")
+> hs <- as(h9p, "dspMatrix")
+> stopifnot(names(H6@factors)  == "pCholesky",
++ 	  names(pp6@factors) == "pCholesky",
++ 	  names(hs@factors)  == "Cholesky") # for now
+> chol(hs) # and that is cached in 'hs' too :
+'MatrixFactorization' of Formal class 'pCholesky' [package "Matrix"] with 5 slots
+  ..@ x       : num [1:45] 1 0.5 0.289 0.333 0.289 ...
+  ..@ Dim     : int [1:2] 9 9
+  ..@ Dimnames:List of 2
+  .. ..$ : NULL
+  .. ..$ : NULL
+  ..@ uplo    : chr "U"
+  ..@ diag    : chr "N"
+> stopifnot(names(hs@factors) %in% c("Cholesky","pCholesky"),
++ 	  all.equal(h9, crossprod(hs@factors$pCholesky), tolerance =1e-13),
++ 	  all.equal(h9, crossprod(hs@factors$ Cholesky), tolerance =1e-13))
+> 
+> hs@x <- 1/h9p@x # is not pos.def. anymore
+> validObject(hs) # "but" this does not check
+[1] TRUE
+> stopifnot(diag(hs) == seq(1, by = 2, length = 9))
+> 
+> s9 <- solve(h9p, seq(nrow(h9p)))
+> signif(t(s9)/10000, 4)# only rounded numbers are platform-independent
+1 x 9 Matrix of class "dgeMatrix"
+       [,1]  [,2]  [,3]   [,4] [,5]  [,6] [,7]  [,8] [,9]
+[1,] 0.0729 -5.76 109.5 -864.9 3468 -7668 9459 -6095 1597
+> (I9 <- h9p %*% s9)
+9 x 1 Matrix of class "dgeMatrix"
+      [,1]
+ [1,]    1
+ [2,]    2
+ [3,]    3
+ [4,]    4
+ [5,]    5
+ [6,]    6
+ [7,]    7
+ [8,]    8
+ [9,]    9
+> m9 <- matrix(1:9, dimnames = list(NULL,NULL))
+> stopifnot(all.equal(m9, .asmatrix(I9), tolerance = 2e-9))
+> 
+> ### Testing nearPD() --- this is partly in  ../man/nearPD.Rd :
+> pr <- Matrix(c(1,     0.477, 0.644, 0.478, 0.651, 0.826,
++                0.477, 1,     0.516, 0.233, 0.682, 0.75,
++                0.644, 0.516, 1,     0.599, 0.581, 0.742,
++                0.478, 0.233, 0.599, 1,     0.741, 0.8,
++                0.651, 0.682, 0.581, 0.741, 1,     0.798,
++                0.826, 0.75,  0.742, 0.8,   0.798, 1),
++              nrow = 6, ncol = 6)
+> 
+> nL <-
++     list(r   = nearPD(pr, conv.tol = 1e-7), # default
++ 	 r.1 = nearPD(pr, conv.tol = 1e-7,		corr = TRUE),
++ 	 rs  = nearPD(pr, conv.tol = 1e-7, doDyk=FALSE),
++ 	 rs1 = nearPD(pr, conv.tol = 1e-7, doDyk=FALSE, corr = TRUE),
++ 	 rH  = nearPD(pr, conv.tol = 1e-15),
++          rH.1= nearPD(pr, conv.tol = 1e-15, corr = TRUE))
+> 
+> sapply(nL, `[`, c("iterations", "normF"))
+           r       r.1     rs      rs1     rH      rH.1   
+iterations 2       12      2       11      2       30     
+normF      0.06262 0.07429 0.06262 0.07438 0.06262 0.07429
+> 
+> allnorms <- function(d) vapply(c("1","I","F","M","2"),
++                                norm, x = d, double(1))
+> 
+> ## "F" and "M" distances are larger for the (corr=TRUE) constrained:
+> 100 * sapply(nL, function(rr) allnorms((pr - rr  $ mat)))
+      r   r.1    rs   rs1    rH  rH.1
+1 8.889 8.805 8.889 8.746 8.889 8.805
+I 8.889 8.805 8.889 8.746 8.889 8.805
+F 6.262 7.429 6.262 7.438 6.262 7.429
+M 2.655 2.860 2.655 2.785 2.655 2.860
+2 6.262 6.418 6.262 6.461 6.262 6.418
+> 
+> ## But indeed, the 'corr = TRUE' constraint yield a better solution,
+> ## if you need the constraint :  cov2cor() does not just fix it up :
+> 100 * (nn <- sapply(nL, function(rr) allnorms((pr - cov2cor(rr  $ mat)))))
+      r   r.1    rs   rs1    rH  rH.1
+1 9.994 8.805 9.994 8.746 9.994 8.805
+I 9.994 8.805 9.994 8.746 9.994 8.805
+F 8.391 7.429 8.391 7.438 8.391 7.429
+M 3.544 2.860 3.544 2.785 3.544 2.860
+2 6.322 6.418 6.322 6.461 6.322 6.418
+> 
+> stopifnot(
++ all.equal(nn["1",],
++           c(r =0.0999444286984696, r.1= 0.0880468666522317,
++             rs=0.0999444286984702, rs1= 0.0874614179943388,
++             rH=0.0999444286984696, rH.1=0.0880468927726625),
++           tolerance=1e-9))
+> 
+> nr <- nL $rH.1 $mat
+> stopifnot(
++     all.equal(nr[lower.tri(nr)],
++ 	      c(0.4877861230299, 0.6429309061748, 0.4904554299278, 0.6447150779852,
++ 		0.8082100656035, 0.514511537243, 0.2503412693503, 0.673249718642,
++ 		0.7252316891977, 0.5972811755863, 0.5818673040157, 0.7444549621769,
++ 		0.7308954865819, 0.7713984381710, 0.8124321235679),
++ 	      tolerance = 1e-9))
+> showProc.time()
+Time elapsed:  0.885 0.353 0.588 
+> 
+> 
+> suppressWarnings(RNGversion("3.5.0")); set.seed(27)
+> m9 <- h9 + rnorm(9^2)/1000 ; m9 <- (m9 + t(m9))/2
+> nm9 <- nearPD(m9)
+> showProc.time()
+Time elapsed:  0.024 0.026 0.025 
+> 
+> nRep <- if(doExtras) 50 else 4
+> CPU <- 0
+> for(M in c(5, 12))
++     for(i in 1:nRep) {
++ 	m <- matrix(round(rnorm(M^2),2), M, M)
++ 	m <- m + t(m)
++ 	diag(m) <- pmax(0, diag(m)) + 1
++ 	m <- cov2cor(m)
++ 	CPU <- CPU + system.time(n.m <- nearPD(m))[1]
++ 	X <- as(n.m$mat, "matrix")
++ 	stopifnot(all.equal(X, (X + t(X))/2, tolerance = 8*.Machine$double.eps),
++ 		  all.equal(eigen(n.m$mat, only.values=TRUE)$values,
++ 			    n.m$eigenvalues, tolerance = 4e-8))
++     }
+> cat('Time elapsed for ',nRep, 'nearPD(): ', CPU,'\n')
+Time elapsed for  4 nearPD():  0.028 
+> showProc.time()
+Time elapsed:  1.454 0.48 1.006 
+> 
+> ## cov2cor()
+> m <- diag(6:1) %*% as(pr,"matrix") %*% diag(6:1) # so we can "vector-index"
+> m[upper.tri(m)] <- 0
+> ltm <- which(lower.tri(m))
+> ne <- length(ltm)
+> set.seed(17)
+> m[ltm[sample(ne, 3/4*ne)]] <- 0
+> m <- (m + t(m))/2 # now is a covariance matrix with many 0 entries
+> (spr <- Matrix(m))
+6 x 6 sparse Matrix of class "dsCMatrix"
+                                       
+[1,] 36.000  7.155  .     .     3.906 .
+[2,]  7.155 25.000  .     .     .     .
+[3,]  .      .     16.000 .     2.324 .
+[4,]  .      .      .     9.000 2.223 .
+[5,]  3.906  .      2.324 2.223 4.000 .
+[6,]  .      .      .     .     .     1
+> cspr <- cov2cor(spr)
+> ev <- eigen(cspr, only.v = TRUE)$values
+> stopifnot(is(spr, "dsCMatrix"),
++           is(cspr,"dsCMatrix"),
++           all.equal(ev, c(1.5901626099,  1.1902658504, 1, 1,
++                           0.80973414959, 0.40983739006), tolerance=1e-10))
+> 
+> x <- c(2,1,1,2)
+> mM <- Matrix(x, 2,2, dimnames=rep( list(c("A","B")), 2))# dsy
+> mM
+2 x 2 Matrix of class "dsyMatrix"
+  A B
+A 2 1
+B 1 2
+> stopifnot(length(mM@factors)== 0)
+> (po <- as(mM, "dpoMatrix")) # still has dimnames
+2 x 2 Matrix of class "dpoMatrix"
+  A B
+A 2 1
+B 1 2
+> mm <- as(mM, "matrix")
+> msy <- as(mm, "dsyMatrix")
+> stopifnot(Qidentical(mM, msy),
++ 	  length(mM @factors)== 1,
++ 	  length(msy@factors)== 0)
+> 
+> c1 <- as(mm, "corMatrix")
+> c2 <- as(mM, "corMatrix")
+> c3 <- as(po, "corMatrix")
+> (co.x <- matrix(x/2, 2,2))
+     [,1] [,2]
+[1,]  1.0  0.5
+[2,]  0.5  1.0
+> checkMatrix(c1)
+ norm(m [2 x 2]) : 1  I  F  M  ok
+ Summary:  ok
+2*m =?= m+m: ok
+m >= m for all: ok
+m < m for none: ok
+symmpart(m) + skewpart(m) == m: ok;  determinant(): ok
+> assert.EQ.mat(c1, co.x)
+> assert.EQ.mat(c2, co.x) # failed in Matrix 0.999375-9, because of
+> ## the wrong automatic "dsyMatrix" -> "corMatrix" coerce method
+> stopifnot(identical(dimnames(c1), dimnames(mM)),
++ 	  all.equal(c1, c3, tolerance =1e-15))
+> 
+> showProc.time()
+Time elapsed:  0.735 0.2 0.625 
+> 
+> 

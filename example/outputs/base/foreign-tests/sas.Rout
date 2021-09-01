@@ -1,0 +1,64 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library("foreign")
+> (dd <- data.frame(name  = c("apple", "banana", "carrot", NA),
++                   gender= c("male", "female", "male", "female"), stringsAsFactors = FALSE))
+    name gender
+1  apple   male
+2 banana female
+3 carrot   male
+4   <NA> female
+> ##   name gender
+> ## 1    a   male
+> ## 2    b female
+> ## 3    c   male
+> ## 4 <NA> female
+> setwd(tempdir())
+> tfSi <- "temp_for_sas_import.txt"
+> ti   <- "temp_import.sas"
+> write.foreign(dd, datafile = tfSi, codefile = ti, package = "SAS")
+> file.show(tfSi) # the NA is shown as <empty>
+"apple","male"
+"banana","female"
+"carrot","male"
+,"female"
+
+> writeLines(sasCodes <- readLines(ti))
+* Written by R;
+*  write.foreign(dd, datafile = tfSi, codefile = ti, package = "SAS") ;
+
+DATA  rdata ;
+LENGTH
+ name $ 6
+ gender $ 6
+;
+
+INFILE  "temp_for_sas_import.txt" 
+     DSD 
+     LRECL= 21 ;
+INPUT
+ name
+ gender $ 
+;
+RUN;
+> ## This failed in foreign <= 0.8-71 :
+> stopifnot(identical(" name $ 6",
++                     grep(" name ", sasCodes, value=TRUE)))
+> 
+> ## This site was unresponsive in Jan 2014
+> if(!nzchar(Sys.getenv("R_FOREIGN_FULL_TEST"))) q("no")

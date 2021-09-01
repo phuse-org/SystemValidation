@@ -1,0 +1,85 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## examples that are claimed to be too long in help files
+> ## illustration of multi-threading with gam...
+> 
+> require(mgcv);set.seed(9)
+Loading required package: mgcv
+Loading required package: nlme
+This is mgcv 1.8-33. For overview type 'help("mgcv-package")'.
+> dat <- gamSim(1,n=2000,dist="poisson",scale=.1)
+Gu & Wahba 4 term additive model
+> k <- 12;bs <- "cr";ctrl <- list(nthreads=2)
+> 
+> system.time(b1<-gam(y~s(x0,bs=bs)+s(x1,bs=bs)+s(x2,bs=bs,k=k)
++             ,family=poisson,data=dat,method="REML"))[3]
+elapsed 
+  0.192 
+> 
+> system.time(b2<-gam(y~s(x0,bs=bs)+s(x1,bs=bs)+s(x2,bs=bs,k=k),
++             family=poisson,data=dat,method="REML",control=ctrl))[3]
+elapsed 
+  0.758 
+> 
+> ## Poisson example on a cluster with 'bam'. 
+> ## Note that there is some overhead in initializing the 
+> ## computation on the cluster, associated with loading 
+> ## the Matrix package on each node. For this reason the 
+> ## sample sizes here are very small to keep CRAN happy, but at
+> ## this low sample size you see little advantage of parallel computation.
+> 
+> k <- 13;set.seed(9)
+> dat <- gamSim(1,n=6000,dist="poisson",scale=.1)
+Gu & Wahba 4 term additive model
+> require(parallel)  
+Loading required package: parallel
+> nc <- 2   ## cluster size, set for example portability
+> if (detectCores()>1) { ## no point otherwise
++   cl <- makeCluster(nc) 
++   ## could also use makeForkCluster, but read warnings first!
++ } else cl <- NULL
+>   
+> system.time(b3 <- bam(y ~ s(x0,bs=bs,k=7)+s(x1,bs=bs,k=7)+s(x2,bs=bs,k=k)
++             ,data=dat,family=poisson(),chunk.size=5000,cluster=cl))
+   user  system elapsed 
+  1.437   0.162   2.952 
+> 
+> fv <- predict(b3,cluster=cl) ## parallel prediction
+> 
+> if (!is.null(cl)) stopCluster(cl)
+> b3
+
+Family: poisson 
+Link function: log 
+
+Formula:
+y ~ s(x0, bs = bs, k = 7) + s(x1, bs = bs, k = 7) + s(x2, bs = bs, 
+    k = k)
+
+Estimated degrees of freedom:
+3.65 4.05 9.96  total = 18.65 
+
+fREML score: 8563.711     
+> 
+> ## Alternative using the discrete option with bam...
+> 
+> system.time(b4 <- bam(y ~ s(x0,bs=bs,k=7)+s(x1,bs=bs,k=7)+s(x2,bs=bs,k=k)
++             ,data=dat,family=poisson(),discrete=TRUE,nthreads=2))
+   user  system elapsed 
+  1.276   0.249   0.968 
+> 

@@ -1,0 +1,72 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(nlme)
+> ## ==> ~/R/Pkgs/MASS_CRAN/tests/lme.R : tests  stepAIC() for *both* lme and gls
+> library(MASS)
+> 
+> ## deviance.lme() and extractAIC.lme() :
+> set.seed(321) # to be sure
+> a <- data.frame( resp=rnorm(250), cov1=rnorm(250),
++                 cov2=rnorm(250), group=rep(letters[1:10],25) )
+> mod1 <- lme(resp~cov1, a, ~cov1|group, method="ML")
+> mod2 <- stepAIC(mod1, scope = list(upper=~(cov1+cov2)^2, lower=~1) )
+Start:  AIC=700.38
+resp ~ cov1
+
+       Df    AIC
+<none>    700.38
+- cov1  1 701.25
++ cov2  1 702.33
+> stopifnot(all.equal(logLik(mod1), logLik(mod2)),
++ 	  all.equal(  coef(mod1),   coef(mod2)),
++ 	  all.equal(logLik(mod2),
++ 		    structure(-344.190316608, class = "logLik",
++ 			      nall = 250L, nobs = 250, df = 6)))
+> 
+> 
+> ## deviance.gls() and extractAIC.gls() :
+> data(beav2, package = "MASS")
+> set.seed(123)
+> beav <- beav2; beav$dummy <- rnorm(nrow(beav))
+> beav.gls <- gls(temp ~ activ + dummy, data = beav,
++                 corr = corAR1(0.8), method = "ML")
+> stopifnot(all.equal(sigma(beav.gls), 0.2516395, tol = 1e-6),
++ 	  all.equal(coef(beav.gls),
++ 		    c("(Intercept)" = 37.191057,
++ 		      activ = 0.61602059, dummy =0.006842112)))
+> st.beav <- stepAIC(beav.gls)
+Start:  AIC=-124.01
+temp ~ activ + dummy
+
+        Df     AIC
+- dummy  1 -125.55
+<none>     -124.01
+- activ  1 -108.39
+
+Step:  AIC=-125.55
+temp ~ activ
+
+        Df     AIC
+<none>     -125.55
+- activ  1 -110.10
+> stopifnot(all.equal(coef(st.beav),
++ 		    c("(Intercept)" = 37.1919453124,
++ 		      "activ" = 0.614177660082)),
++ 	  all.equal(sigma(st.beav), 0.2527856, tol = 1e-6))
+> 
+> 

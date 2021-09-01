@@ -1,0 +1,1822 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "lattice"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('lattice')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("Lattice")
+> ### * Lattice
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: A_01_Lattice
+> ### Title: Lattice Graphics
+> ### Aliases: Lattice lattice lattice-package
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D 
+> ##D ## Show brief history of changes to lattice, including
+> ##D ## a summary of new features.
+> ##D 
+> ##D RShowDoc("NEWS", package = "lattice")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("USMortality")
+> ### * USMortality
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: H_USMortality
+> ### Title: Mortality Rates in US by Cause and Gender
+> ### Aliases: USMortality USRegionalMortality
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> dotplot(reorder(Cause, Rate) ~ Rate | Status,
++         data = USMortality, groups = Sex,
++         par.settings = simpleTheme(pch = 16), auto.key = list(columns = 2),
++         scales = list(x = list(log = TRUE, equispaced.log = FALSE)))
+> dotplot(reorder(Cause, Rate):Sex ~ Rate | Status,
++         data = USRegionalMortality, groups = Sex,
++         scales = list(x = list(log = TRUE, equispaced.log = FALSE)))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("axis.default")
+> ### * axis.default
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: G_axis.default
+> ### Title: Default axis annotation utilities
+> ### Aliases: axis.default xscale.components.default
+> ###   yscale.components.default
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> str(xscale.components.default(c(0, 1)))
+List of 3
+ $ num.limit: num [1:2] 0 1
+ $ bottom   :List of 2
+  ..$ ticks :List of 2
+  .. ..$ at : num [1:6] 0 0.2 0.4 0.6 0.8 1
+  .. ..$ tck: num 1
+  ..$ labels:List of 3
+  .. ..$ at           : num [1:6] 0 0.2 0.4 0.6 0.8 1
+  .. ..$ labels       : chr [1:6] "0.0" "0.2" "0.4" "0.6" ...
+  .. ..$ check.overlap: logi TRUE
+ $ top      : logi TRUE
+> 
+> set.seed(36872)
+> rln <- rlnorm(100)
+> 
+> densityplot(rln, 
++             scales = list(x = list(log = 2), alternating = 3),
++             xlab = "Simulated lognormal variates",
++             xscale.components = function(...) {
++                 ans <- xscale.components.default(...)
++                 ans$top <- ans$bottom
++                 ans$bottom$labels$labels <- parse(text = ans$bottom$labels$labels)
++                 ans$top$labels$labels <-
++                     if (require(MASS))
++                         fractions(2^(ans$top$labels$at))
++                     else
++                         2^(ans$top$labels$at)
++                 ans
++             })
+Loading required package: MASS
+> 
+> 
+> ## Direct use of axis to show two temperature scales (Celcius and
+> ## Fahrenheit).  This does not work for multi-row plots, and doesn't
+> ## do automatic allocation of space
+> 
+> 
+> F2C <- function(f) 5 * (f - 32) / 9 
+> C2F <- function(c) 32 + 9 * c / 5 
+> 
+> axis.CF <-
++     function(side, ...) 
++ {
++     ylim <- current.panel.limits()$ylim
++     switch(side,
++            left = {
++                prettyF <- pretty(ylim)
++                labF <- parse(text = sprintf("%s ~ degree * F", prettyF))
++                panel.axis(side = side, outside = TRUE,
++                           at = prettyF, labels = labF)
++            },
++            right = {
++                prettyC <- pretty(F2C(ylim))
++                labC <- parse(text = sprintf("%s ~ degree * C", prettyC))
++                panel.axis(side = side, outside = TRUE,
++                           at = C2F(prettyC), labels = labC)
++            },
++            axis.default(side = side, ...))
++ }
+> 
+> xyplot(nhtemp ~ time(nhtemp), aspect = "xy", type = "o",
++        scales = list(y = list(alternating = 3)),
++        axis = axis.CF, xlab = "Year", ylab = "Temperature", 
++        main = "Yearly temperature in New Haven, CT")
+> 
+> ## version using yscale.components
+> 
+> yscale.components.CF <-
++     function(...)
++ {
++     ans <- yscale.components.default(...)
++     ans$right <- ans$left
++     ans$left$labels$labels <-
++         parse(text = sprintf("%s ~ degree * F", ans$left$labels$at))
++     prettyC <- pretty(F2C(ans$num.limit))
++     ans$right$ticks$at <- C2F(prettyC)
++     ans$right$labels$at <- C2F(prettyC)
++     ans$right$labels$labels <-
++         parse(text = sprintf("%s ~ degree * C", prettyC))
++     ans
++ }
+>       
+> 
+> xyplot(nhtemp ~ time(nhtemp), aspect = "xy", type = "o",
++        scales = list(y = list(alternating = 3)),
++        yscale.components = yscale.components.CF,
++        xlab = "Year", ylab = "Temperature", 
++        main = "Yearly temperature in New Haven, CT")
+> 
+> 
+> 
+> 
+> 
+> cleanEx()
+
+detaching ‘package:MASS’
+
+> nameEx("banking")
+> ### * banking
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: G_banking
+> ### Title: Banking
+> ### Aliases: banking
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> ## with and without banking
+> 
+> plot <- xyplot(sunspot.year ~ 1700:1988, xlab = "", type = "l",
++                scales = list(x = list(alternating = 2)),
++                main = "Yearly Sunspots")
+> print(plot, position = c(0, .3, 1, .9), more = TRUE)
+> print(update(plot, aspect = "xy", main = "", xlab = "Year"),
++       position = c(0, 0, 1, .3))
+> 
+> ## cut-and-stack plot (see also xyplot.ts)
+> 
+> xyplot(sunspot.year ~ time(sunspot.year) | equal.count(time(sunspot.year)), 
++        xlab = "", type = "l", aspect = "xy", strip = FALSE,
++        scales = list(x = list(alternating = 2, relation = "sliced")),
++        as.table = TRUE, main = "Yearly Sunspots")
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("barchart.table")
+> ### * barchart.table
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_02_barchart.table
+> ### Title: table methods for barchart and dotplot
+> ### Aliases: barchart.table barchart.array barchart.matrix dotplot.table
+> ###   dotplot.array dotplot.matrix
+> ### Keywords: hplot
+> 
+> ### ** Examples
+> 
+> barchart(Titanic, scales = list(x = "free"),
++          auto.key = list(title = "Survived"))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("barley")
+> ### * barley
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: H_barley
+> ### Title: Yield data from a Minnesota barley trial
+> ### Aliases: barley
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> # Graphic suggesting the Morris data switched the years 1931 and 1932
+> # Figure 1.1 from Cleveland
+> dotplot(variety ~ yield | site, data = barley, groups = year,
++         key = simpleKey(levels(barley$year), space = "right"),
++         xlab = "Barley Yield (bushels/acre) ",
++         aspect=0.5, layout = c(1,6), ylab=NULL)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("cloud")
+> ### * cloud
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_07_cloud
+> ### Title: 3d Scatter Plot and Wireframe Surface Plot
+> ### Aliases: cloud wireframe cloud.formula cloud.matrix cloud.table
+> ###   wireframe.formula wireframe.matrix
+> ### Keywords: hplot
+> 
+> ### ** Examples
+> 
+> ## volcano  ## 87 x 61 matrix
+> wireframe(volcano, shade = TRUE,
++           aspect = c(61/87, 0.4),
++           light.source = c(10,0,10))
+> 
+> g <- expand.grid(x = 1:10, y = 5:15, gr = 1:2)
+> g$z <- log((g$x^g$gr + g$y^2) * g$gr)
+> wireframe(z ~ x * y, data = g, groups = gr,
++           scales = list(arrows = FALSE),
++           drape = TRUE, colorkey = TRUE,
++           screen = list(z = 30, x = -60))
+> 
+> cloud(Sepal.Length ~ Petal.Length * Petal.Width | Species, data = iris,
++       screen = list(x = -90, y = 70), distance = .4, zoom = .6)
+> 
+> ## cloud.table
+> 
+> cloud(prop.table(Titanic, margin = 1:3),
++       type = c("p", "h"), strip = strip.custom(strip.names = TRUE),
++       scales = list(arrows = FALSE, distance = 2), panel.aspect = 0.7,
++       zlab = "Proportion")[, 1]
+> 
+> ## transparent axes
+> 
+> par.set <-
++     list(axis.line = list(col = "transparent"),
++          clip = list(panel = "off"))
+> print(cloud(Sepal.Length ~ Petal.Length * Petal.Width, 
++             data = iris, cex = .8, 
++             groups = Species, 
++             main = "Stereo",
++             screen = list(z = 20, x = -70, y = 3),
++             par.settings = par.set,
++             scales = list(col = "black")),
++       split = c(1,1,2,1), more = TRUE)
+> print(cloud(Sepal.Length ~ Petal.Length * Petal.Width,
++             data = iris, cex = .8, 
++             groups = Species,
++             main = "Stereo",
++             screen = list(z = 20, x = -70, y = 0),
++             par.settings = par.set,
++             scales = list(col = "black")),
++       split = c(2,1,2,1))
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("environmental")
+> ### * environmental
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: H_environmental
+> ### Title: Atmospheric environmental conditions in New York City
+> ### Aliases: environmental
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> # Scatter plot matrix with loess lines
+> splom(~environmental,
++   panel=function(x,y){
++     panel.xyplot(x,y)
++     panel.loess(x,y)
++   }
++ )
+> 
+> 
+> # Conditioned plot similar to figure 5.3 from Cleveland
+> attach(environmental)
+> Temperature <- equal.count(temperature, 4, 1/2)
+> Wind <- equal.count(wind, 4, 1/2)
+> xyplot((ozone^(1/3)) ~ radiation | Temperature * Wind,
++   aspect=1,
++ 	prepanel = function(x, y) 
++ 		prepanel.loess(x, y, span = 1),
++ 	panel = function(x, y){
++ 		panel.grid(h = 2, v = 2)
++ 		panel.xyplot(x, y, cex = .5)
++ 		panel.loess(x, y, span = 1)
++ 	},
++ 	xlab = "Solar radiation (langleys)",
++ 	ylab = "Ozone (cube root ppb)")
+> detach()
+> 
+> # Similar display using the coplot function
+> with(environmental,{
++   coplot((ozone^.33) ~ radiation | temperature * wind,
++   number=c(4,4),
++   panel = function(x, y, ...) panel.smooth(x, y, span = .8, ...),
++   xlab="Solar radiation (langleys)",
++   ylab="Ozone (cube root ppb)")
++ })
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ethanol")
+> ### * ethanol
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: H_ethanol
+> ### Title: Engine exhaust fumes from burning ethanol
+> ### Aliases: ethanol
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> ## Constructing panel functions on the fly
+> EE <- equal.count(ethanol$E, number=9, overlap=1/4)
+> xyplot(NOx ~ C | EE, data = ethanol,
++        prepanel = function(x, y) prepanel.loess(x, y, span = 1),
++        xlab = "Compression ratio", ylab = "NOx (micrograms/J)",
++        panel = function(x, y) {
++            panel.grid(h=-1, v= 2)
++            panel.xyplot(x, y)
++            panel.loess(x,y, span=1)
++        },
++        aspect = "xy")
+> 
+> # Wireframe loess surface fit.  See Figure 4.61 from Cleveland.
+> require(stats)
+> with(ethanol, {
++   eth.lo <- loess(NOx ~ C * E, span = 1/3, parametric = "C", 
++                   drop.square = "C", family="symmetric")
++   eth.marginal <- list(C = seq(min(C), max(C), length.out = 25), 
++                        E = seq(min(E), max(E), length.out = 25))
++   eth.grid <- expand.grid(eth.marginal)
++   eth.fit <- predict(eth.lo, eth.grid)
++   wireframe(eth.fit ~ eth.grid$C * eth.grid$E,
++             shade=TRUE,
++ 	    screen = list(z = 40, x = -60, y=0),
++ 	    distance = .1,
++ 	    xlab = "C", ylab = "E", zlab = "NOx")
++ })
+> 
+> 
+> 
+> cleanEx()
+> nameEx("histogram")
+> ### * histogram
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_03_histogram
+> ### Title: Histograms and Kernel Density Plots
+> ### Aliases: histogram histogram.factor histogram.numeric histogram.formula
+> ###   densityplot densityplot.numeric densityplot.formula do.breaks
+> ### Keywords: hplot
+> 
+> ### ** Examples
+> 
+> require(stats)
+> histogram( ~ height | voice.part, data = singer, nint = 17,
++           endpoints = c(59.5, 76.5), layout = c(2,4), aspect = 1,
++           xlab = "Height (inches)")
+> 
+> histogram( ~ height | voice.part, data = singer,
++           xlab = "Height (inches)", type = "density",
++           panel = function(x, ...) {
++               panel.histogram(x, ...)
++               panel.mathdensity(dmath = dnorm, col = "black",
++                                 args = list(mean=mean(x),sd=sd(x)))
++           } )
+> 
+> densityplot( ~ height | voice.part, data = singer, layout = c(2, 4),  
++             xlab = "Height (inches)", bw = 5)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("interaction")
+> ### * interaction
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: E_interaction
+> ### Title: Functions to Interact with Lattice Plots
+> ### Aliases: panel.identify panel.identify.qqmath panel.identify.cloud
+> ###   panel.link.splom panel.brush.splom trellis.focus trellis.unfocus
+> ###   trellis.switchFocus trellis.panelArgs trellis.vpname trellis.grobname
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> ## Not run: 
+> ##D xyplot(1:10 ~ 1:10)
+> ##D trellis.focus("panel", 1, 1)
+> ##D panel.identify()
+> ## End(Not run)
+> 
+> xyplot(Petal.Length ~ Sepal.Length | Species, iris, layout = c(2, 2))
+> Sys.sleep(1)
+> 
+> trellis.focus("panel", 1, 1)
+> do.call("panel.lmline", trellis.panelArgs())
+> Sys.sleep(0.5)
+> trellis.unfocus()
+> 
+> trellis.focus("panel", 2, 1)
+> do.call("panel.lmline", trellis.panelArgs())
+> Sys.sleep(0.5)
+> trellis.unfocus()
+> 
+> trellis.focus("panel", 1, 2)
+> do.call("panel.lmline", trellis.panelArgs())
+> Sys.sleep(0.5)
+> trellis.unfocus()
+> 
+> 
+> ## choosing loess smoothing parameter
+> 
+> p <- xyplot(dist ~ speed, cars)
+> 
+> panel.loessresid <-
++     function(x = panel.args$x,
++              y = panel.args$y,
++              span,
++              panel.args = trellis.panelArgs())
++ {
++     fm <- loess(y ~ x, span = span)
++     xgrid <- do.breaks(current.panel.limits()$xlim, 50)
++     ygrid <- predict(fm, newdata = data.frame(x = xgrid))
++     panel.lines(xgrid, ygrid)
++     pred <- predict(fm)
++     ## center residuals so that they fall inside panel
++     resids <- y - pred + mean(y)
++     fm.resid <- loess.smooth(x, resids, span = span)
++     ##panel.points(x, resids, col = 1, pch = 4)
++     panel.lines(fm.resid, col = 1)
++ }
+> 
+> 
+> spans <- c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8)
+> update(p, index.cond = list(rep(1, length(spans))))
+> panel.locs <- trellis.currentLayout()
+> 
+> i <- 1
+> 
+> for (row in 1:nrow(panel.locs))
++     for (column in 1:ncol(panel.locs))
++     if (panel.locs[row, column] > 0)
++ {
++     trellis.focus("panel", row = row, column = column,
++                   highlight = FALSE)
++     panel.loessresid(span = spans[i])
++     grid::grid.text(paste("span = ", spans[i]),
++                     x = 0.25,
++                     y = 0.75,
++                     default.units = "npc")
++     trellis.unfocus()
++     i <- i + 1
++ }
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at 12
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  0
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  There are other near singularities as well. 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  pseudoinverse used at 12
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  neighborhood radius 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  reciprocal condition number  -0
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  There are other near singularities as well. 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  pseudoinverse used at 12
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  neighborhood radius 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  reciprocal condition number  -0
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  There are other near singularities as well. 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  pseudoinverse used at 12
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  neighborhood radius 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  reciprocal condition number  -0
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  There are other near singularities as well. 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  pseudoinverse used at 12
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  neighborhood radius 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  reciprocal condition number  -0
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  There are other near singularities as well. 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  pseudoinverse used at 12
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  neighborhood radius 1
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  reciprocal condition number  -0
+Warning in simpleLoess(y, x, w, span, degree = degree, parametric = FALSE,  :
+  There are other near singularities as well. 1
+> 
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("lattice.options")
+> ### * lattice.options
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: C_04_lattice.options
+> ### Title: Low-level Options Controlling Behaviour of Lattice
+> ### Aliases: lattice.options lattice.getOption
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> names(lattice.options())
+ [1] "save.object"                  "panel.error"                 
+ [3] "drop.unused.levels"           "legend.bbox"                 
+ [5] "banking"                      "default.args"                
+ [7] "axis.padding"                 "skip.boundary.labels"        
+ [9] "interaction.sep"              "panel.contourplot"           
+[11] "panel.levelplot"              "panel.levelplot.raster"      
+[13] "panel.parallel"               "panel.densityplot"           
+[15] "panel.splom"                  "panel.wireframe"             
+[17] "panel.dotplot"                "panel.qq"                    
+[19] "panel.stripplot"              "panel.xyplot"                
+[21] "panel.qqmath"                 "panel.barchart"              
+[23] "panel.bwplot"                 "panel.histogram"             
+[25] "panel.cloud"                  "panel.pairs"                 
+[27] "prepanel.default.bwplot"      "prepanel.default.cloud"      
+[29] "prepanel.default.densityplot" "prepanel.default.histogram"  
+[31] "prepanel.default.levelplot"   "prepanel.default.parallel"   
+[33] "prepanel.default.qq"          "prepanel.default.qqmath"     
+[35] "prepanel.default.splom"       "prepanel.default.xyplot"     
+[37] "prepanel.default.dotplot"     "prepanel.default.barchart"   
+[39] "prepanel.default.wireframe"   "prepanel.default.contourplot"
+[41] "axis.units"                   "layout.heights"              
+[43] "layout.widths"                "highlight.gpar"              
+> str(lattice.getOption("layout.widths"), max.level = 2)
+List of 15
+ $ left.padding     :List of 2
+  ..$ x    : num 0.5
+  ..$ units: chr "char"
+ $ key.left         :List of 3
+  ..$ x    : num 0
+  ..$ units: chr "grobwidth"
+  ..$ data :List of 11
+  .. ..- attr(*, "class")= chr [1:3] "text" "grob" "gDesc"
+ $ key.ylab.padding :List of 2
+  ..$ x    : num 0.5
+  ..$ units: chr "char"
+ $ ylab             :List of 3
+  ..$ x    : num 0
+  ..$ units: chr "grobwidth"
+  ..$ data :List of 11
+  .. ..- attr(*, "class")= chr [1:3] "text" "grob" "gDesc"
+ $ ylab.axis.padding:List of 2
+  ..$ x    : num 0.5
+  ..$ units: chr "char"
+ $ axis.left        :List of 3
+  ..$ x    : num 0
+  ..$ units: chr "mm"
+  ..$ data : NULL
+ $ axis.panel       :List of 3
+  ..$ x    : num 0
+  ..$ units: chr "mm"
+  ..$ data : NULL
+ $ strip.left       :List of 3
+  ..$ x    : num 1
+  ..$ units: chr "lines"
+  ..$ data : NULL
+ $ panel            :List of 3
+  ..$ x    : num 1
+  ..$ units: chr "null"
+  ..$ data : NULL
+ $ between          :List of 3
+  ..$ x    : num 5
+  ..$ units: chr "mm"
+  ..$ data : NULL
+ $ axis.right       :List of 3
+  ..$ x    : num 0
+  ..$ units: chr "mm"
+  ..$ data : NULL
+ $ axis.key.padding :List of 2
+  ..$ x    : num 0.5
+  ..$ units: chr "char"
+ $ ylab.right       :List of 3
+  ..$ x    : num 0
+  ..$ units: chr "grobwidth"
+  ..$ data :List of 11
+  .. ..- attr(*, "class")= chr [1:3] "text" "grob" "gDesc"
+ $ key.right        :List of 3
+  ..$ x    : num 0
+  ..$ units: chr "grobwidth"
+  ..$ data :List of 11
+  .. ..- attr(*, "class")= chr [1:3] "text" "grob" "gDesc"
+ $ right.padding    :List of 2
+  ..$ x    : num 0.5
+  ..$ units: chr "char"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("level.colors")
+> ### * level.colors
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: D_level.colors
+> ### Title: A function to compute false colors representing a numeric or
+> ###   categorical variable
+> ### Aliases: level.colors
+> ### Keywords: utilities
+> 
+> ### ** Examples
+> 
+> 
+> depth.col <-
++     with(quakes, 
++          level.colors(depth, at = do.breaks(range(depth), 30),
++                       col.regions = terrain.colors))
+> 
+> 
+> xyplot(lat ~ long | equal.count(stations), quakes,
++        strip = strip.custom(var.name = "Stations"),
++        colours = depth.col,
++        panel = function(x, y, colours, subscripts, ...) {
++            panel.xyplot(x, y, pch = 21, col = "transparent",
++                         fill = colours[subscripts], ...)
++        })
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("levelplot")
+> ### * levelplot
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_06_levelplot
+> ### Title: Level plots and contour plots
+> ### Aliases: levelplot contourplot levelplot.formula contourplot.formula
+> ###   levelplot.table contourplot.table levelplot.array contourplot.array
+> ###   levelplot.matrix contourplot.matrix
+> ### Keywords: hplot
+> 
+> ### ** Examples
+> 
+> x <- seq(pi/4, 5 * pi, length.out = 100)
+> y <- seq(pi/4, 5 * pi, length.out = 100)
+> r <- as.vector(sqrt(outer(x^2, y^2, "+")))
+> grid <- expand.grid(x=x, y=y)
+> grid$z <- cos(r^2) * exp(-r/(pi^3))
+> levelplot(z ~ x * y, grid, cuts = 50, scales=list(log="e"), xlab="",
++           ylab="", main="Weird Function", sub="with log scales",
++           colorkey = FALSE, region = TRUE)
+> ## triangular end-points in color key
+> levelplot(z ~ x * y, grid, col.regions = topo.colors(10),
++           at = c(-Inf, seq(-0.8, 0.8, by = 0.2), Inf))
+> 
+> #S-PLUS example
+> require(stats)
+> attach(environmental)
+> ozo.m <- loess((ozone^(1/3)) ~ wind * temperature * radiation,
++        parametric = c("radiation", "wind"), span = 1, degree = 2)
+> w.marginal <- seq(min(wind), max(wind), length.out = 50)
+> t.marginal <- seq(min(temperature), max(temperature), length.out = 50)
+> r.marginal <- seq(min(radiation), max(radiation), length.out = 4)
+> wtr.marginal <- list(wind = w.marginal, temperature = t.marginal,
++         radiation = r.marginal)
+> grid <- expand.grid(wtr.marginal)
+> grid[, "fit"] <- c(predict(ozo.m, grid))
+> contourplot(fit ~ wind * temperature | radiation, data = grid,
++             cuts = 10, region = TRUE,
++             xlab = "Wind Speed (mph)",
++             ylab = "Temperature (F)",
++             main = "Cube Root Ozone (cube root ppb)")
+> detach()
+> 
+> 
+> 
+> cleanEx()
+> nameEx("make.groups")
+> ### * make.groups
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: D_make.groups
+> ### Title: Grouped data from multiple vectors
+> ### Aliases: make.groups
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> sim.dat <-
++     make.groups(uniform = runif(200),
++                 exponential = rexp(175),
++                 lognormal = rlnorm(150),
++                 normal = rnorm(125))
+> qqmath( ~ data | which, sim.dat, scales = list(y = "free"))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("melanoma")
+> ### * melanoma
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: H_melanoma
+> ### Title: Melanoma skin cancer incidence
+> ### Aliases: melanoma
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> # Time-series plot.  Figure 3.64 from Cleveland.
+> xyplot(incidence ~ year,
++   data = melanoma,
++ 	aspect = "xy",
++ 	panel = function(x, y)
++ 		panel.xyplot(x, y, type="o", pch = 16),
++ 	ylim = c(0, 6),
++ 	xlab = "Year",
++ 	ylab = "Incidence")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("packet.panel.default")
+> ### * packet.panel.default
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: G_packet.panel.default
+> ### Title: Associating Packets with Panels
+> ### Aliases: packet.panel.default
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> packet.panel.page <- function(n)
++ {
++     ## returns a function that when used as the 'packet.panel'
++     ## argument in print.trellis plots page number 'n' only
++     function(layout, page, ...) {
++         stopifnot(layout[3] == 1)
++         packet.panel.default(layout = layout, page = n, ...)
++     }
++ }
+> 
+> data(mtcars)
+> HP <- equal.count(mtcars$hp, 6)
+> p <- 
++     xyplot(mpg ~ disp | HP * factor(cyl),
++            mtcars, layout = c(0, 6, 1))
+> 
+> print(p, packet.panel = packet.panel.page(1))
+> print(p, packet.panel = packet.panel.page(2))
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("panel.barchart")
+> ### * panel.barchart
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: F_1_panel.barchart
+> ### Title: Default Panel Function for barchart
+> ### Aliases: panel.barchart
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> barchart(yield ~ variety | site, data = barley,
++          groups = year, layout = c(1,6), origin = 0,
++          ylab = "Barley Yield (bushels/acre)",
++          scales = list(x = list(abbreviate = TRUE,
++                                 minlength = 5)))
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("panel.bwplot")
+> ### * panel.bwplot
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: F_1_panel.bwplot
+> ### Title: Default Panel Function for bwplot
+> ### Aliases: panel.bwplot
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> bwplot(voice.part ~ height, data = singer,
++        xlab = "Height (inches)",
++        panel = function(...) {
++            panel.grid(v = -1, h = 0)
++            panel.bwplot(...)
++        },
++        par.settings = list(plot.symbol = list(pch = 4)))
+> 
+> bwplot(voice.part ~ height, data = singer,
++        xlab = "Height (inches)",
++        notch = TRUE, pch = "|")
+> 
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("panel.functions")
+> ### * panel.functions
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: F_2_panel.functions
+> ### Title: Useful Panel Function Components
+> ### Aliases: panel.functions panel.abline panel.refline panel.curve
+> ###   panel.fill panel.grid panel.mathdensity panel.rug panel.lmline
+> ###   panel.average panel.linejoin
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> ## Interaction Plot
+> 
+> bwplot(yield ~ site, barley, groups = year,
++        panel = function(x, y, groups, subscripts, ...) {
++            panel.grid(h = -1, v = 0)
++            panel.stripplot(x, y, ..., jitter.data = TRUE,
++                            groups = groups, subscripts = subscripts)
++            panel.superpose(x, y, ..., panel.groups = panel.average,
++                            groups = groups, subscripts = subscripts)
++        },
++        auto.key =
++        list(points = FALSE, lines = TRUE, columns = 2))
+> 
+> ## Superposing a fitted normal density on a Histogram
+> 
+> histogram( ~ height | voice.part, data = singer, layout = c(2, 4),
++           type = "density", border = "transparent", col.line = "grey60",
++           xlab = "Height (inches)",
++           ylab = "Density Histogram\n with Normal Fit",
++           panel = function(x, ...) {
++               panel.histogram(x, ...)
++               panel.mathdensity(dmath = dnorm,
++                                 args = list(mean=mean(x),sd=sd(x)), ...)
++           } )
+> 
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("panel.levelplot")
+> ### * panel.levelplot
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: F_1_panel.levelplot
+> ### Title: Panel Functions for levelplot and contourplot
+> ### Aliases: panel.levelplot panel.contourplot panel.levelplot.raster
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> require(grid)
+Loading required package: grid
+> 
+> levelplot(rnorm(10) ~ 1:10 + sort(runif(10)), panel = panel.levelplot)
+> 
+> suppressWarnings(plot(levelplot(rnorm(10) ~ 1:10 + sort(runif(10)),
++                                 panel = panel.levelplot.raster,
++                                 interpolate = TRUE)))
+> 
+> levelplot(volcano, panel = panel.levelplot.raster)
+> 
+> levelplot(volcano, panel = panel.levelplot.raster,
++           col.regions = topo.colors, cuts = 30, interpolate = TRUE)
+> 
+> 
+> 
+> 
+> cleanEx()
+
+detaching ‘package:grid’
+
+> nameEx("panel.pairs")
+> ### * panel.pairs
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: F_1_panel.pairs
+> ### Title: Default Superpanel Function for splom
+> ### Aliases: panel.pairs diag.panel.splom
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> Cmat <- outer(1:6,1:6,
++               function(i,j) rainbow(11, start=.12, end=.5)[i+j-1])
+> 
+> splom(~diag(6), as.matrix = TRUE,
++       panel = function(x, y, i, j, ...) {
++           panel.fill(Cmat[i,j])
++           panel.text(.5,.5, paste("(",i,",",j,")",sep=""))
++       })
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("panel.qqmath")
+> ### * panel.qqmath
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: F_1_panel.qqmath
+> ### Title: Default Panel Function for qqmath
+> ### Aliases: panel.qqmath
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> set.seed(0)
+> xx <- rt(10000, df = 10)
+> qqmath(~ xx, pch = "+", distribution = qnorm,
++        grid = TRUE, abline = c(0, 1),
++        xlab.top = c("raw", "ppoints(100)", "tails.n = 50"),
++        panel = function(..., f.value) {
++            switch(panel.number(),
++                   panel.qqmath(..., f.value = NULL),
++                   panel.qqmath(..., f.value = ppoints(100)),
++                   panel.qqmath(..., f.value = ppoints(100), tails.n = 50))
++        }, layout = c(3, 1))[c(1,1,1)]
+> 
+> 
+> 
+> cleanEx()
+> nameEx("panel.smoothScatter")
+> ### * panel.smoothScatter
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: F_2_panel.smoothScatter
+> ### Title: Lattice panel function analogous to smoothScatter
+> ### Aliases: panel.smoothScatter
+> ### Keywords: hplot
+> 
+> ### ** Examples
+> 
+> 
+> ddf <- as.data.frame(matrix(rnorm(40000), ncol = 4) + 3 * rnorm(10000))
+> ddf[, c(2,4)] <- (-ddf[, c(2,4)])
+> xyplot(V1 ~ V2 + V3, ddf, outer = TRUE,
++        panel = panel.smoothScatter, aspect = "iso")
+(loaded the KernSmooth namespace)
+> splom(ddf, panel = panel.smoothScatter, nbin = 64, raster = TRUE)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("panel.violin")
+> ### * panel.violin
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: F_2_panel.violin
+> ### Title: Panel Function to create Violin Plots
+> ### Aliases: panel.violin
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> bwplot(voice.part ~ height, singer,
++        panel = function(..., box.ratio) {
++            panel.violin(..., col = "transparent",
++                         varwidth = FALSE, box.ratio = box.ratio)
++            panel.bwplot(..., fill = NULL, box.ratio = .1)
++        } )
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("panel.xyplot")
+> ### * panel.xyplot
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: F_1_panel.xyplot
+> ### Title: Default Panel Function for xyplot
+> ### Aliases: panel.xyplot panel.splom panel.qq
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> types.plain <- c("p", "l", "o", "r", "g", "s", "S", "h", "a", "smooth")
+> types.horiz <- c("s", "S", "h", "a", "smooth")
+> horiz <- rep(c(FALSE, TRUE), c(length(types.plain), length(types.horiz)))
+> 
+> types <- c(types.plain, types.horiz)
+> 
+> x <- sample(seq(-10, 10, length.out = 15), 30, TRUE)
+> y <- x + 0.25 * (x + 1)^2 + rnorm(length(x), sd = 5)
+> 
+> xyplot(y ~ x | gl(1, length(types)),
++        xlab = "type", 
++        ylab = list(c("horizontal=TRUE", "horizontal=FALSE"), y = c(1/6, 4/6)),
++        as.table = TRUE, layout = c(5, 3),
++        between = list(y = c(0, 1)),
++        strip = function(...) {
++            panel.fill(trellis.par.get("strip.background")$col[1])
++            type <- types[panel.number()]
++            grid::grid.text(label = sprintf('"%s"', type), 
++                            x = 0.5, y = 0.5)
++            grid::grid.rect()
++        },
++        scales = list(alternating = c(0, 2), tck = c(0, 0.7), draw = FALSE),
++        par.settings = 
++        list(layout.widths = list(strip.left = c(1, 0, 0, 0, 0))),
++        panel = function(...) {
++            type <- types[panel.number()]
++            horizontal <- horiz[panel.number()]
++            panel.xyplot(..., 
++                         type = type,
++                         horizontal = horizontal)
++        })[rep(1, length(types))]
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("print.trellis")
+> ### * print.trellis
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: C_05_print.trellis
+> ### Title: Plot and Summarize Trellis Objects
+> ### Aliases: print.trellis plot.trellis summary.trellis dim.trellis
+> ###   dimnames.trellis panel.error
+> ### Keywords: hplot
+> 
+> ### ** Examples
+> 
+> 
+> p11 <- histogram( ~ height | voice.part, data = singer, xlab="Height")
+> p12 <- densityplot( ~ height | voice.part, data = singer, xlab = "Height")
+> p2 <- histogram( ~ height, data = singer, xlab = "Height")
+> 
+> 
+> ## simple positioning by split
+> print(p11, split=c(1,1,1,2), more=TRUE)
+> print(p2, split=c(1,2,1,2))
+> 
+> ## Combining split and position:
+> print(p11, position = c(0,0,.75,.75), split=c(1,1,1,2), more=TRUE)
+> print(p12, position = c(0,0,.75,.75), split=c(1,2,1,2), more=TRUE)
+> print(p2, position = c(.5,.75,1,1), more=FALSE)
+> 
+> ## Using seekViewport
+> 
+> ## repeat same plot, with different polynomial fits in each panel
+> xyplot(Armed.Forces ~ Year, longley, index.cond = list(rep(1, 6)),
++        layout = c(3, 2),
++        panel = function(x, y, ...)
++        {
++            panel.xyplot(x, y, ...)
++            fm <- lm(y ~ poly(x, panel.number()))
++            llines(x, predict(fm))
++        })
+> 
+> ## Not run: 
+> ##D grid::seekViewport(trellis.vpname("panel", 1, 1))
+> ##D cat("Click somewhere inside the first panel:\n")
+> ##D ltext(grid::grid.locator(), lab = "linear")
+> ## End(Not run)
+> 
+> grid::seekViewport(trellis.vpname("panel", 1, 1))
+> grid::grid.text("linear")
+> 
+> grid::seekViewport(trellis.vpname("panel", 2, 1))
+> grid::grid.text("quadratic")
+> 
+> grid::seekViewport(trellis.vpname("panel", 3, 1))
+> grid::grid.text("cubic")
+> 
+> grid::seekViewport(trellis.vpname("panel", 1, 2))
+> grid::grid.text("degree 4")
+> 
+> grid::seekViewport(trellis.vpname("panel", 2, 2))
+> grid::grid.text("degree 5")
+> 
+> grid::seekViewport(trellis.vpname("panel", 3, 2))
+> grid::grid.text("degree 6")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("qq")
+> ### * qq
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_05_qq
+> ### Title: Quantile-Quantile Plots of Two Samples
+> ### Aliases: qq qq.formula
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> qq(voice.part ~ height, aspect = 1, data = singer,
++    subset = (voice.part == "Bass 2" | voice.part == "Tenor 1"))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("qqmath")
+> ### * qqmath
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_04_qqmath
+> ### Title: Q-Q Plot with Theoretical Distribution
+> ### Aliases: qqmath qqmath.formula qqmath.numeric
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> qqmath(~ rnorm(100), distribution = function(p) qt(p, df = 10))
+> qqmath(~ height | voice.part, aspect = "xy", data = singer,
++        prepanel = prepanel.qqmathline,
++        panel = function(x, ...) {
++           panel.qqmathline(x, ...)
++           panel.qqmath(x, ...)
++        })
+> vp.comb <-
++     factor(sapply(strsplit(as.character(singer$voice.part), split = " "),
++                   "[", 1),
++            levels = c("Bass", "Tenor", "Alto", "Soprano"))
+> vp.group <-
++     factor(sapply(strsplit(as.character(singer$voice.part), split = " "),
++                   "[", 2))
+> qqmath(~ height | vp.comb, data = singer,
++        groups = vp.group, auto.key = list(space = "right"),
++        aspect = "xy",
++        prepanel = prepanel.qqmathline,
++        panel = function(x, ...) {
++           panel.qqmathline(x, ...)
++           panel.qqmath(x, ...)
++        })
+> 
+> 
+> 
+> cleanEx()
+> nameEx("rfs")
+> ### * rfs
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_10_rfs
+> ### Title: Residual and Fit Spread Plots
+> ### Aliases: rfs
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> rfs(oneway(height ~ voice.part, data = singer, spread = 1), aspect = 1)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("shingles")
+> ### * shingles
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: C_07_shingles
+> ### Title: shingles
+> ### Aliases: equal.count plot.shingle print.shingle
+> ###   as.character.shingleLevel print.shingleLevel summary.shingle
+> ###   as.data.frame.shingle as.factorOrShingle as.shingle [.shingle
+> ###   is.shingle shingle
+> ### Keywords: print hplot methods classes
+> 
+> ### ** Examples
+> 
+> z <- equal.count(rnorm(50))
+> plot(z)
+> print(z)
+
+Data:
+ [1] -0.62645381  0.18364332 -0.83562861  1.59528080  0.32950777 -0.82046838
+ [7]  0.48742905  0.73832471  0.57578135 -0.30538839  1.51178117  0.38984324
+[13] -0.62124058 -2.21469989  1.12493092 -0.04493361 -0.01619026  0.94383621
+[19]  0.82122120  0.59390132  0.91897737  0.78213630  0.07456498 -1.98935170
+[25]  0.61982575 -0.05612874 -0.15579551 -1.47075238 -0.47815006  0.41794156
+[31]  1.35867955 -0.10278773  0.38767161 -0.05380504 -1.37705956 -0.41499456
+[37] -0.39428995 -0.05931340  1.10002537  0.76317575 -0.16452360 -0.25336168
+[43]  0.69696338  0.55666320 -0.68875569 -0.70749516  0.36458196  0.76853292
+[49] -0.11234621  0.88110773
+
+Intervals:
+          min         max count
+1 -2.21578570 -0.30430257    14
+2 -0.68984151 -0.05504293    14
+3 -0.25444749  0.38875742    15
+4 -0.05489085  0.62091156    15
+5  0.38875742  0.88219354    14
+6  0.69587756  1.59636661    14
+
+Overlap between adjacent intervals:
+[1] 7 7 8 7 7
+> print(levels(z))
+            [,1]        [,2]
+[1,] -2.21578570 -0.30430257
+[2,] -0.68984151 -0.05504293
+[3,] -0.25444749  0.38875742
+[4,] -0.05489085  0.62091156
+[5,]  0.38875742  0.88219354
+[6,]  0.69587756  1.59636661
+> ## Don't show: 
+> data.frame(x = equal.count(rnorm(100)), y = rnorm(100))
+               x            y
+1    0.398105880  0.450187101
+2   -0.612026393 -0.018559833
+3    0.341119691 -0.318068375
+4   -1.129363096 -0.929362147
+5    1.433023702 -1.487460310
+6    1.980399899 -1.075192297
+7   -0.367221476  1.000028804
+8   -1.044134626 -0.621266695
+9    0.569719627 -1.384426847
+10  -0.135054604  1.869290622
+11   2.401617761  0.425100377
+12  -0.039240003 -0.238647101
+13   0.689739362  1.058483049
+14   0.028002159  0.886422651
+15  -0.743273209 -0.619243048
+16   0.188792300  2.206102465
+17  -1.804958629 -0.255027030
+18   1.465554862 -1.424494650
+19   0.153253338 -0.144399602
+20   2.172611670  0.207538339
+21   0.475509529  2.307978399
+22  -0.709946431  0.105802368
+23   0.610726353  0.456998805
+24  -0.934097632 -0.077152935
+25  -1.253633400 -0.334000842
+26   0.291446236 -0.034726028
+27  -0.443291873  0.787639606
+28   0.001105352  2.075245009
+29   0.074341324  1.027392439
+30  -0.589520946  1.207908398
+31  -0.568668733 -1.231323422
+32  -0.135178615  0.983895570
+33   1.178086997  0.219924804
+34  -1.523566800 -1.467250029
+35   0.593946188  0.521022743
+36   0.332950371 -0.158754605
+37   1.063099837  1.464587312
+38  -0.304183924 -0.766082000
+39   0.370018810 -0.430211754
+40   0.267098791 -0.926109497
+41  -0.542520031 -0.177103961
+42   1.207867806  0.402011779
+43   1.160402616 -0.731748173
+44   0.700213650  0.830373168
+45   1.586833455 -1.208082786
+46   0.558486426 -1.047984413
+47  -1.276592208  1.441157707
+48  -0.573265414 -1.015847465
+49  -1.224612615  0.411974712
+50  -0.473400636 -0.381076051
+51  -0.620366677  0.409401840
+52   0.042115873  1.688873286
+53  -0.910921649  1.586588433
+54   0.158028772 -0.330907801
+55  -0.654584644 -2.285235535
+56   1.767287269  2.497661590
+57   0.716707476  0.667066167
+58   0.910174229  0.541327336
+59   0.384185358 -0.013399523
+60   1.682176081  0.510108423
+61  -0.635736454 -0.164375832
+62  -0.461644730  0.420694643
+63   1.432282239 -0.400246744
+64  -0.650696353 -1.370207878
+65  -0.207380744  0.987838267
+66  -0.392807929  1.519745025
+67  -0.319992869 -0.308740569
+68  -0.279113303 -1.253289756
+69   0.494188331  0.642241306
+70  -0.177330482 -0.044709137
+71  -0.505957462 -1.733218407
+72   1.343038825  0.002131860
+73  -0.214579409 -0.630300334
+74  -0.179556530 -0.340968580
+75  -0.100190741 -1.156572363
+76   0.712666307  1.803141908
+77  -0.073564404 -0.331132036
+78  -0.037634171 -1.605513412
+79  -0.681660479  0.197193439
+80  -0.324270272  0.263175646
+81   0.060160440 -0.985826700
+82  -0.588894486 -2.888920672
+83   0.531496193 -0.640481703
+84  -1.518394082  0.570507636
+85   0.306557861 -0.059723276
+86  -1.536449824 -0.098178744
+87  -0.300976127  0.560820729
+88  -0.528279904 -1.186458639
+89  -0.652094781  1.096777044
+90  -0.056896778 -0.005344028
+91  -1.914359426  0.707310667
+92   1.176583312  1.034107735
+93  -1.664972436  0.223480415
+94  -0.463530401 -0.878707613
+95  -1.115920105  1.162964556
+96  -0.750819001 -2.000164945
+97   2.087166546 -0.544790740
+98   0.017395620 -0.255670709
+99  -1.286300530 -0.166121037
+100 -1.640605534  1.020463909
+> ## End(Don't show)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("simpleTheme")
+> ### * simpleTheme
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: C_03_simpleTheme
+> ### Title: Function to generate a simple theme
+> ### Aliases: simpleTheme
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> 
+> str(simpleTheme(pch = 16))
+List of 6
+ $ plot.symbol      :List of 1
+  ..$ pch: num 16
+ $ plot.line        : list()
+ $ plot.polygon     : list()
+ $ superpose.symbol :List of 1
+  ..$ pch: num 16
+ $ superpose.line   : list()
+ $ superpose.polygon: list()
+> 
+> dotplot(variety ~ yield | site, data = barley, groups = year,
++         auto.key = list(space = "right"),
++         par.settings = simpleTheme(pch = 16),
++         xlab = "Barley Yield (bushels/acre) ",
++         aspect=0.5, layout = c(1,6))
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("singer")
+> ### * singer
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: H_singer
+> ### Title: Heights of New York Choral Society singers
+> ### Aliases: singer
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> # Separate histogram for each voice part (Figure 1.2 from Cleveland)
+> histogram(~ height | voice.part,
++           data = singer,
++           aspect=1,
++           layout = c(2, 4), 
++           nint=15,
++           xlab = "Height (inches)")
+> 
+> # Quantile-Quantile plot (Figure 2.11 from Cleveland)
+> qqmath(~ height | voice.part,
++        data=singer,
++        aspect=1, 
++        layout=c(2,4),
++        prepanel = prepanel.qqmathline,
++        panel = function(x, ...) {
++          panel.grid()
++          panel.qqmathline(x, ...)
++          panel.qqmath(x, ...)
++        },
++        xlab = "Unit Normal Quantile",
++        ylab="Height (inches)")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("splom")
+> ### * splom
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_08_splom
+> ### Title: Scatter Plot Matrices
+> ### Aliases: splom parallel parallelplot splom.matrix splom.data.frame
+> ###   parallelplot.matrix parallelplot.data.frame splom.formula
+> ###   parallelplot.formula
+> ### Keywords: hplot
+> 
+> ### ** Examples
+> 
+> super.sym <- trellis.par.get("superpose.symbol")
+> splom(~iris[1:4], groups = Species, data = iris,
++       panel = panel.superpose,
++       key = list(title = "Three Varieties of Iris",
++                  columns = 3, 
++                  points = list(pch = super.sym$pch[1:3],
++                  col = super.sym$col[1:3]),
++                  text = list(c("Setosa", "Versicolor", "Virginica"))))
+> splom(~iris[1:3]|Species, data = iris, 
++       layout=c(2,2), pscales = 0,
++       varnames = c("Sepal\nLength", "Sepal\nWidth", "Petal\nLength"),
++       page = function(...) {
++           ltext(x = seq(.6, .8, length.out = 4), 
++                 y = seq(.9, .6, length.out = 4), 
++                 labels = c("Three", "Varieties", "of", "Iris"),
++                 cex = 2)
++       })
+> parallelplot(~iris[1:4] | Species, iris) 
+> parallelplot(~iris[1:4], iris, groups = Species,
++              horizontal.axis = FALSE, scales = list(x = list(rot = 90)))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("strip.default")
+> ### * strip.default
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: D_strip.default
+> ### Title: Default Trellis Strip Function
+> ### Aliases: strip.default strip.custom
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> ## Traditional use
+> xyplot(Petal.Length ~ Petal.Width | Species, iris,
++        strip = function(..., style) strip.default(..., style = 4))
+> 
+> ## equivalent call using strip.custom
+> xyplot(Petal.Length ~ Petal.Width | Species, iris,
++        strip = strip.custom(style = 4))
+> 
+> xyplot(Petal.Length ~ Petal.Width | Species, iris,
++        strip = FALSE,
++        strip.left = strip.custom(style = 4, horizontal = FALSE))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("tmd")
+> ### * tmd
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_09_tmd
+> ### Title: Tukey Mean-Difference Plot
+> ### Aliases: tmd tmd.formula tmd.trellis prepanel.tmd.default
+> ###   prepanel.tmd.qqmath panel.tmd.default panel.tmd.qqmath
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> tmd(qqmath(~height | voice.part, data = singer))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("trellis.par.get")
+> ### * trellis.par.get
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: C_02_trellis.par.get
+> ### Title: Graphical Parameters for Trellis Displays
+> ### Aliases: trellis.par.get trellis.par.set show.settings
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> show.settings()
+> 
+> tp <- trellis.par.get()
+> 
+> unusual <- c("grid.pars", "fontsize", "clip", "axis.components",
++              "layout.heights", "layout.widths")
+> 
+> for (u in unusual) tp[[u]] <- NULL
+> names.tp <- lapply(tp, names)
+> unames <- sort(unique(unlist(names.tp)))
+> ans <- matrix(0, nrow = length(names.tp), ncol = length(unames))
+> rownames(ans) <- names(names.tp)
+> colnames(ans) <- unames
+> for (i in seq(along = names.tp))
++     ans[i, ] <- as.numeric(unames %in% names.tp[[i]])
+> ans <- ans[, order(-colSums(ans))]
+> ans <- ans[order(rowSums(ans)), ]
+> ans[ans == 0] <- NA
+> 
+> levelplot(t(ans), colorkey = FALSE, 
++           scales = list(x = list(rot = 90)),
++           panel = function(x, y, z, ...) {
++               panel.abline(v = unique(as.numeric(x)), 
++                            h = unique(as.numeric(y)), 
++                            col = "darkgrey")
++               panel.xyplot(x, y, pch = 16 * z, ...)
++           },
++           xlab = "Graphical parameters", 
++           ylab = "Setting names")
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("update.trellis")
+> ### * update.trellis
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: C_06_update.trellis
+> ### Title: Retrieve and Update Trellis Object
+> ### Aliases: update.trellis [.trellis t.trellis trellis.last.object
+> ### Keywords: dplot
+> 
+> ### ** Examples
+> 
+> spots <- by(sunspots, gl(235, 12, labels = 1749:1983), mean)
+> old.options <- lattice.options(save.object = TRUE)
+> xyplot(spots ~ 1749:1983, xlab = "", type = "l",
++        scales = list(x = list(alternating = 2)),
++        main = "Average Yearly Sunspots")
+> update(trellis.last.object(), aspect = "xy")
+> trellis.last.object(xlab = "Year")
+> lattice.options(old.options)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("xyplot")
+> ### * xyplot
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_00_xyplot
+> ### Title: Common Bivariate Trellis Plots
+> ### Aliases: xyplot xyplot.formula barchart barchart.formula
+> ###   barchart.numeric barchart.default bwplot bwplot.formula
+> ###   bwplot.numeric dotplot dotplot.formula dotplot.numeric
+> ###   dotplot.default stripplot stripplot.formula stripplot.numeric
+> ### Keywords: hplot
+> 
+> ### ** Examples
+> 
+> require(stats)
+> 
+> ## Tonga Trench Earthquakes
+> 
+> Depth <- equal.count(quakes$depth, number=8, overlap=.1)
+> xyplot(lat ~ long | Depth, data = quakes)
+> update(trellis.last.object(),
++        strip = strip.custom(strip.names = TRUE, strip.levels = TRUE),
++        par.strip.text = list(cex = 0.75),
++        aspect = "iso")
+> 
+> ## Examples with data from `Visualizing Data' (Cleveland, 1993) obtained
+> ## from http://cm.bell-labs.com/cm/ms/departments/sia/wsc/
+> 
+> EE <- equal.count(ethanol$E, number=9, overlap=1/4)
+> 
+> ## Constructing panel functions on the fly; prepanel
+> xyplot(NOx ~ C | EE, data = ethanol,
++        prepanel = function(x, y) prepanel.loess(x, y, span = 1),
++        xlab = "Compression Ratio", ylab = "NOx (micrograms/J)",
++        panel = function(x, y) {
++            panel.grid(h = -1, v = 2)
++            panel.xyplot(x, y)
++            panel.loess(x, y, span=1)
++        },
++        aspect = "xy")
+> 
+> ## Extended formula interface 
+> 
+> xyplot(Sepal.Length + Sepal.Width ~ Petal.Length + Petal.Width | Species,
++        data = iris, scales = "free", layout = c(2, 2),
++        auto.key = list(x = .6, y = .7, corner = c(0, 0)))
+> 
+> 
+> ## user defined panel functions
+> 
+> states <- data.frame(state.x77,
++                      state.name = dimnames(state.x77)[[1]],
++                      state.region = state.region)
+> xyplot(Murder ~ Population | state.region, data = states,
++        groups = state.name,
++        panel = function(x, y, subscripts, groups) {
++            ltext(x = x, y = y, labels = groups[subscripts], cex=1,
++                  fontfamily = "HersheySans")
++        })
+> 
+> ## Stacked bar chart
+> 
+> barchart(yield ~ variety | site, data = barley,
++          groups = year, layout = c(1,6), stack = TRUE,
++          auto.key = list(space = "right"),
++          ylab = "Barley Yield (bushels/acre)",
++          scales = list(x = list(rot = 45)))
+> 
+> bwplot(voice.part ~ height, data=singer, xlab="Height (inches)")
+> 
+> dotplot(variety ~ yield | year * site, data=barley)
+> 
+> ## Grouped dot plot showing anomaly at Morris
+> 
+> dotplot(variety ~ yield | site, data = barley, groups = year,
++         key = simpleKey(levels(barley$year), space = "right"),
++         xlab = "Barley Yield (bushels/acre) ",
++         aspect=0.5, layout = c(1,6), ylab=NULL)
+> 
+> stripplot(voice.part ~ jitter(height), data = singer, aspect = 1,
++           jitter.data = TRUE, xlab = "Height (inches)")
+> 
+> ## Interaction Plot
+> 
+> xyplot(decrease ~ treatment, OrchardSprays, groups = rowpos,
++        type = "a",
++        auto.key =
++        list(space = "right", points = FALSE, lines = TRUE))
+> 
+> ## longer version with no x-ticks
+> 
+> ## Not run: 
+> ##D bwplot(decrease ~ treatment, OrchardSprays, groups = rowpos,
+> ##D        panel = "panel.superpose",
+> ##D        panel.groups = "panel.linejoin",
+> ##D        xlab = "treatment",
+> ##D        key = list(lines = Rows(trellis.par.get("superpose.line"),
+> ##D                   c(1:7, 1)),
+> ##D                   text = list(lab = as.character(unique(OrchardSprays$rowpos))),
+> ##D                   columns = 4, title = "Row position"))
+> ## End(Not run)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("xyplot.ts")
+> ### * xyplot.ts
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: B_01_xyplot.ts
+> ### Title: Time series plotting methods
+> ### Aliases: xyplot.ts
+> ### Keywords: hplot ts
+> 
+> ### ** Examples
+> 
+> xyplot(ts(c(1:10,10:1)))
+> 
+> ### Figure 14.1 from Sarkar (2008)
+> xyplot(sunspot.year, aspect = "xy",
++        strip = FALSE, strip.left = TRUE,
++        cut = list(number = 4, overlap = 0.05))
+> 
+> ### A multivariate example; first juxtaposed, then superposed
+> xyplot(EuStockMarkets, scales = list(y = "same"))
+> xyplot(EuStockMarkets, superpose = TRUE, aspect = "xy", lwd = 2,
++     type = c("l","g"), ylim = c(0, max(EuStockMarkets)))
+> 
+> ### Examples using screens (these two are identical)
+> xyplot(EuStockMarkets, screens = c(rep("Continental", 3), "UK"))
+> xyplot(EuStockMarkets, screens = list(FTSE = "UK", "Continental"))
+> 
+> ### Automatic group styles
+> xyplot(EuStockMarkets, screens = list(FTSE = "UK", "Continental"),
++     superpose = TRUE)
+> 
+> xyplot(EuStockMarkets, screens = list(FTSE = "UK", "Continental"),
++     superpose = TRUE, xlim = extendrange(1996:1998),
++     par.settings = standard.theme(color = FALSE))
+> 
+> ### Specifying styles for series by name
+> xyplot(EuStockMarkets, screens = list(FTSE = "UK", "Continental"),
++     col = list(DAX = "red", FTSE = "blue", "black"), auto.key = TRUE)
+> 
+> xyplot(EuStockMarkets, screens = list(FTSE = "UK", "Continental"),
++     col = list(DAX = "red"), lty = list(SMI = 2), lwd = 1:2,
++     auto.key = TRUE)
+> 
+> ### Example with simpler data, few data points
+> set.seed(1)
+> z <- ts(cbind(a = 1:5, b = 11:15, c = 21:25) + rnorm(5))
+> xyplot(z, screens = 1)
+> xyplot(z, screens = list(a = "primary (a)", "other (b & c)"),
++   type = list(a = c("p", "h"), b = c("p", "s"), "o"),
++   pch = list(a = 2, c = 3), auto.key = list(type = "o"))
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  8.017 0.069 10.589 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

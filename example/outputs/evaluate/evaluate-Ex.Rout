@@ -1,0 +1,163 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "evaluate"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('evaluate')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("inject_funs")
+> ### * inject_funs
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: inject_funs
+> ### Title: Inject functions into the environment of 'evaluate()'
+> ### Aliases: inject_funs
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> library(evaluate)
+> # normally you cannot capture the output of system
+> evaluate("system('R --version')")
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under the terms of the
+GNU General Public License versions 2 or 3.
+For more information about these matters see
+https://www.gnu.org/licenses/.
+
+[[1]]
+$src
+[1] "system('R --version')"
+
+attr(,"class")
+[1] "source"
+
+> 
+> # replace the system() function
+> inject_funs(system = function(...) cat(base::system(..., intern = TRUE), sep = "\n"))
+> 
+> evaluate("system('R --version')")
+[[1]]
+$src
+[1] "system('R --version')"
+
+attr(,"class")
+[1] "source"
+
+[[2]]
+[1] "R version 4.0.3 (2020-10-10) -- \"Bunny-Wunnies Freak Out\"\nCopyright (C) 2020 The R Foundation for Statistical Computing\nPlatform: x86_64-pc-linux-gnu (64-bit)\n\nR is free software and comes with ABSOLUTELY NO WARRANTY.\nYou are welcome to redistribute it under the terms of the\nGNU General Public License versions 2 or 3.\nFor more information about these matters see\nhttps://www.gnu.org/licenses/.\n\n"
+
+> 
+> inject_funs()  # empty previously injected functions
+> 
+> 
+> 
+> cleanEx()
+> nameEx("remove_hooks")
+> ### * remove_hooks
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: remove_hooks
+> ### Title: Remove hooks.
+> ### Aliases: remove_hooks
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> new1 <- list(before.plot.new = function() print("Plotted!"))
+> new2 <- list(before.plot.new = function() print("Plotted Again!"))
+> set_hooks(new1)
+> set_hooks(new2)
+> plot(1)
+[1] "Plotted!"
+[1] "Plotted Again!"
+> remove_hooks(new1)
+> plot(1)
+[1] "Plotted Again!"
+> remove_hooks(new2)
+> plot(1)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("replay")
+> ### * replay
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: replay
+> ### Title: Replay a list of evaluated results.
+> ### Aliases: replay
+> 
+> ### ** Examples
+> 
+> samples <- system.file("tests", "testthat", package = "evaluate")
+> if (file_test("-d", samples)) {
++     replay(evaluate(file(file.path(samples, "order.r"))))
++     replay(evaluate(file(file.path(samples, "plot.r"))))
++     replay(evaluate(file(file.path(samples, "data.r"))))
++ }
+> 
+> 
+> 
+> cleanEx()
+> nameEx("set_hooks")
+> ### * set_hooks
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: set_hooks
+> ### Title: Set hooks.
+> ### Aliases: set_hooks
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> new <- list(before.plot.new = function() print("Plotted!"))
+> hooks <- set_hooks(new)
+> plot(1)
+[1] "Plotted!"
+> set_hooks(hooks, "replace")
+> plot(1)
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.128 0.009 0.167 0.022 0.015 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

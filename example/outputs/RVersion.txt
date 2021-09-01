@@ -1,0 +1,15 @@
+               _                           
+platform       x86_64-pc-linux-gnu         
+arch           x86_64                      
+os             linux-gnu                   
+system         x86_64, linux-gnu           
+status                                     
+major          4                           
+minor          0.3                         
+year           2020                        
+month          10                          
+day            10                          
+svn rev        79318                       
+language       R                           
+version.string R version 4.0.3 (2020-10-10)
+nickname       Bunny-Wunnies Freak Out     

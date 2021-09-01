@@ -1,0 +1,62 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## PR#15678
+> 
+> library(nlme)
+> set.seed(1)
+> X1 <- gl(2,4)
+> X2 <- gl(2,2,8)
+> Y <- rnorm(8)
+> mis.dat <- data.frame(Y = Y,X1 = X1,X2 = X2)
+> mis.dat[3, "Y"] <- NA
+> 
+> ## Fit model -----------------------
+> model <- lme(Y ~ 1, random = ~ 1 | X1/X2, data = mis.dat, na.action = na.omit)
+> summary(model)
+Linear mixed-effects model fit by REML
+ Data: mis.dat 
+       AIC      BIC    logLik
+  24.16881 23.33585 -8.084405
+
+Random effects:
+ Formula: ~1 | X1
+         (Intercept)
+StdDev: 1.710956e-05
+
+ Formula: ~1 | X2 %in% X1
+        (Intercept)  Residual
+StdDev:   0.6305232 0.6131974
+
+Fixed effects: Y ~ 1 
+                Value Std.Error DF  t-value p-value
+(Intercept) 0.3602806 0.3947926  3 0.912582  0.4288
+
+Standardized Within-Group Residuals:
+       Min         Q1        Med         Q3        Max 
+-1.2548616 -0.5187205  0.3368379  0.4882496  0.9789656 
+
+Number of Observations: 7
+Number of Groups: 
+        X1 X2 %in% X1 
+         2          4 
+> 
+> labs <- with(na.omit(mis.dat), paste(X1, X2, sep = "/" ))
+> fit <- fitted(model)
+> stopifnot(identical(names(fit), labs))
+> 
+> 

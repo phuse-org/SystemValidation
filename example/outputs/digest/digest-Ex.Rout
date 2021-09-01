@@ -1,0 +1,578 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "digest"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('digest')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("AES")
+> ### * AES
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: AES
+> ### Title: Create AES block cipher object
+> ### Aliases: AES
+> 
+> ### ** Examples
+> 
+> # First in ECB mode: the repeated block is coded the same way each time
+> msg <- as.raw(c(1:16, 1:16))
+> key <- as.raw(1:16)
+> aes <- AES(key, mode="ECB")
+> aes$encrypt(msg)
+ [1] 34 c3 3b 7f 14 fd 53 dc ea 25 e0 1a 02 e1 67 27 34 c3 3b 7f 14 fd 53 dc ea
+[26] 25 e0 1a 02 e1 67 27
+> aes$decrypt(aes$encrypt(msg), raw=TRUE)
+ [1] 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 01 02 03 04 05 06 07 08 09
+[26] 0a 0b 0c 0d 0e 0f 10
+> 
+> # Now in CBC mode:  each encoding is different
+> iv <- sample(0:255, 16, replace=TRUE)
+> aes <- AES(key, mode="CBC", iv)
+> code <- aes$encrypt(msg)
+> code
+ [1] c4 3c ff df d8 ce 5b d6 ca 18 70 1e 86 41 60 01 d9 1d c8 cd 51 2f 23 ec 82
+[26] f5 5d 70 10 58 37 8e
+> 
+> # Need a new object for decryption in CBC mode
+> aes <- AES(key, mode="CBC", iv)
+> aes$decrypt(code, raw=TRUE)
+ [1] 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 01 02 03 04 05 06 07 08 09
+[26] 0a 0b 0c 0d 0e 0f 10
+> 
+> # CFB mode: IV must be the same length as the Block's block size
+> # Two different instances of AES are required for encryption and decryption
+> iv <- sample(0:255, 16, replace=TRUE)
+> aes <- AES(key, mode="CFB", iv)
+> code <- aes$encrypt(msg)
+> code
+ [1] 14 33 ff 11 20 f6 15 4a 41 d0 e4 40 10 1d ca c6 a2 03 64 78 4c 5e 55 60 9e
+[26] 58 d7 35 3a 4a bf d6
+> #decrypt
+> aes <-  AES(key, mode="CFB", iv)
+> aes$decrypt(code)
+[1] "\001\002\003\004\005\006\a\b\t\n\v\f\r\016\017\020\001\002\003\004\005\006\a\b\t\n\v\f\r\016\017\020"
+> 
+> 
+> # FIPS-197 examples
+> 
+> hextextToRaw <- function(text) {
++   vals <- matrix(as.integer(as.hexmode(strsplit(text, "")[[1]])), ncol=2, byrow=TRUE)
++   vals <- vals %*% c(16, 1)
++   as.raw(vals)
++ }
+> 
+> plaintext       <- hextextToRaw("00112233445566778899aabbccddeeff")
+> 
+> aes128key       <- hextextToRaw("000102030405060708090a0b0c0d0e0f")
+> aes128output    <- hextextToRaw("69c4e0d86a7b0430d8cdb78070b4c55a")
+> aes <- AES(aes128key)
+> aes128 <- aes$encrypt(plaintext)
+> stopifnot(identical(aes128, aes128output))
+> stopifnot(identical(plaintext, aes$decrypt(aes128, raw=TRUE)))
+> 
+> aes192key       <- hextextToRaw("000102030405060708090a0b0c0d0e0f1011121314151617")
+> aes192output    <- hextextToRaw("dda97ca4864cdfe06eaf70a0ec0d7191")
+> aes <- AES(aes192key)
+> aes192 <- aes$encrypt(plaintext)
+> stopifnot(identical(aes192, aes192output))
+> stopifnot(identical(plaintext, aes$decrypt(aes192, raw=TRUE)))
+> 
+> aes256key       <- hextextToRaw("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
+> aes256output     <- hextextToRaw("8ea2b7ca516745bfeafc49904b496089")
+> aes <- AES(aes256key)
+> aes256 <- aes$encrypt(plaintext)
+> stopifnot(identical(aes256, aes256output))
+> stopifnot(identical(plaintext, aes$decrypt(aes256, raw=TRUE)))
+> 
+> # SP800-38a examples
+> 
+> plaintext <- hextextToRaw(paste("6bc1bee22e409f96e93d7e117393172a",
++                                 "ae2d8a571e03ac9c9eb76fac45af8e51",
++                                 "30c81c46a35ce411e5fbc1191a0a52ef",
++                                 "f69f2445df4f9b17ad2b417be66c3710",sep=""))
+> key <- hextextToRaw("2b7e151628aed2a6abf7158809cf4f3c")
+> 
+> ecb128output <- hextextToRaw(paste("3ad77bb40d7a3660a89ecaf32466ef97",
++                                    "f5d3d58503b9699de785895a96fdbaaf",
++                                    "43b1cd7f598ece23881b00e3ed030688",
++                                    "7b0c785e27e8ad3f8223207104725dd4",sep=""))
+> aes <- AES(key)
+> ecb128 <- aes$encrypt(plaintext)
+> stopifnot(identical(ecb128, ecb128output))
+> stopifnot(identical(plaintext, aes$decrypt(ecb128, raw=TRUE)))
+> 
+> cbc128output <- hextextToRaw(paste("7649abac8119b246cee98e9b12e9197d",
++                                    "5086cb9b507219ee95db113a917678b2",
++                                    "73bed6b8e3c1743b7116e69e22229516",
++                                    "3ff1caa1681fac09120eca307586e1a7",sep=""))
+> iv <- hextextToRaw("000102030405060708090a0b0c0d0e0f")
+> aes <- AES(key, mode="CBC", IV=iv)
+> cbc128 <- aes$encrypt(plaintext)
+> stopifnot(identical(cbc128, cbc128output))
+> aes <- AES(key, mode="CBC", IV=iv)
+> stopifnot(identical(plaintext, aes$decrypt(cbc128, raw=TRUE)))
+> 
+> 
+> cfb128output <- hextextToRaw(paste("3b3fd92eb72dad20333449f8e83cfb4a",
++                                    "c8a64537a0b3a93fcde3cdad9f1ce58b",
++                                    "26751f67a3cbb140b1808cf187a4f4df",
++                                    "c04b05357c5d1c0eeac4c66f9ff7f2e6",sep=""))
+> aes <- AES(key, mode="CFB", IV=iv)
+> cfb128 <- aes$encrypt(plaintext)
+> stopifnot(identical(cfb128, cfb128output))
+> aes <- AES(key, mode="CFB", IV=iv)
+> stopifnot(identical(plaintext, aes$decrypt(cfb128, raw=TRUE)))
+> 
+> 
+> ctr128output <- hextextToRaw(paste("874d6191b620e3261bef6864990db6ce",
++                                    "9806f66b7970fdff8617187bb9fffdff",
++                                    "5ae4df3edbd5d35e5b4f09020db03eab",
++                                    "1e031dda2fbe03d1792170a0f3009cee",sep=""))
+> iv <- hextextToRaw("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff")
+> aes <- AES(key, mode="CTR", IV=iv)
+> ctr128 <- aes$encrypt(plaintext)
+> stopifnot(identical(ctr128, ctr128output))
+> aes <- AES(key, mode="CTR", IV=iv)
+> stopifnot(identical(plaintext, aes$decrypt(ctr128, raw=TRUE)))
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("digest")
+> ### * digest
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: digest
+> ### Title: Create hash function digests for arbitrary R objects
+> ### Aliases: digest
+> ### Keywords: misc
+> 
+> ### ** Examples
+> 
+> 
+> ## Standard RFC 1321 test vectors
+> md5Input <-
++   c("",
++     "a",
++     "abc",
++     "message digest",
++     "abcdefghijklmnopqrstuvwxyz",
++     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
++     paste("12345678901234567890123456789012345678901234567890123456789012",
++           "345678901234567890", sep=""))
+> md5Output <-
++   c("d41d8cd98f00b204e9800998ecf8427e",
++     "0cc175b9c0f1b6a831c399e269772661",
++     "900150983cd24fb0d6963f7d28e17f72",
++     "f96b697d7cb7938d525a2f31aaf161d0",
++     "c3fcd3d76192e4007dfb496cca67e13b",
++     "d174ab98d277d9f5a5611c2c9f419d9f",
++     "57edf4a22be3c955ac49da2e2107b67a")
+> 
+> for (i in seq(along=md5Input)) {
++   md5 <- digest(md5Input[i], serialize=FALSE)
++   stopifnot(identical(md5, md5Output[i]))
++ }
+> 
+> sha1Input <-
++   c("abc", "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")
+> sha1Output <-
++   c("a9993e364706816aba3e25717850c26c9cd0d89d",
++     "84983e441c3bd26ebaae4aa1f95129e5e54670f1")
+> 
+> for (i in seq(along=sha1Input)) {
++   sha1 <- digest(sha1Input[i], algo="sha1", serialize=FALSE)
++   stopifnot(identical(sha1, sha1Output[i]))
++ }
+> 
+> crc32Input <-
++   c("abc",
++     "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")
+> crc32Output <-
++   c("352441c2",
++     "171a3f5f")
+> 
+> for (i in seq(along=crc32Input)) {
++   crc32 <- digest(crc32Input[i], algo="crc32", serialize=FALSE)
++   stopifnot(identical(crc32, crc32Output[i]))
++ }
+> 
+> 
+> sha256Input <-
++   c("abc",
++     "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")
+> sha256Output <-
++   c("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
++     "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1")
+> 
+> for (i in seq(along=sha256Input)) {
++   sha256 <- digest(sha256Input[i], algo="sha256", serialize=FALSE)
++   stopifnot(identical(sha256, sha256Output[i]))
++ }
+> 
+> # SHA 512 example
+> sha512Input <-
++   c("abc",
++     "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")
+> sha512Output <-
++   c(paste("ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a",
++           "2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f",
++           sep=""),
++     paste("204a8fc6dda82f0a0ced7beb8e08a41657c16ef468b228a8279be331a703c335",
++           "96fd15c13b1b07f9aa1d3bea57789ca031ad85c7a71dd70354ec631238ca3445",
++           sep=""))
+> 
+> for (i in seq(along=sha512Input)) {
++   sha512 <- digest(sha512Input[i], algo="sha512", serialize=FALSE)
++   stopifnot(identical(sha512, sha512Output[i]))
++ }
+> 
+> ## xxhash32 example
+> xxhash32Input <-
++     c("abc",
++       "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
++       "")
+> xxhash32Output <-
++     c("32d153ff",
++       "89ea60c3",
++       "02cc5d05")
+> 
+> for (i in seq(along=xxhash32Input)) {
++     xxhash32 <- digest(xxhash32Input[i], algo="xxhash32", serialize=FALSE)
++     cat(xxhash32, "\n")
++     stopifnot(identical(xxhash32, xxhash32Output[i]))
++ }
+32d153ff 
+89ea60c3 
+02cc5d05 
+> 
+> ## xxhash64 example
+> xxhash64Input <-
++     c("abc",
++       "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
++       "")
+> xxhash64Output <-
++     c("44bc2cf5ad770999",
++       "f06103773e8585df",
++       "ef46db3751d8e999")
+> 
+> for (i in seq(along=xxhash64Input)) {
++     xxhash64 <- digest(xxhash64Input[i], algo="xxhash64", serialize=FALSE)
++     cat(xxhash64, "\n")
++     stopifnot(identical(xxhash64, xxhash64Output[i]))
++ }
+44bc2cf5ad770999 
+f06103773e8585df 
+ef46db3751d8e999 
+> 
+> ## these outputs were calculated using mmh3 python package
+> murmur32Input <-
++     c("abc",
++       "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
++       "")
+> murmur32Output <-
++     c("b3dd93fa",
++       "ee925b90",
++       "00000000")
+> 
+> for (i in seq(along=murmur32Input)) {
++     murmur32 <- digest(murmur32Input[i], algo="murmur32", serialize=FALSE)
++     cat(murmur32, "\n")
++     stopifnot(identical(murmur32, murmur32Output[i]))
++ }
+b3dd93fa 
+ee925b90 
+00000000 
+> 
+> ## these outputs were calculated using spooky python package
+> spookyInput <-
++     c("a",
++       "abc",
++       "message digest")
+> spookyOutput <-
++     c("bdc9bba09181101a922a4161f0584275",
++       "67c93775f715ab8ab01178caf86713c6",
++       "9630c2a55c0987a0db44434f9d67a192")
+> 
+> for (i in seq(along=spookyInput)) {
++     # skip = 30 skips the serialization header and just hashes the strings
++     spooky <- digest(spookyInput[i], algo="spookyhash", skip = 30)
++     cat(spooky, "\n")
++     stopifnot(identical(spooky, spookyOutput[i]))
++ }
+bdc9bba09181101a922a4161f0584275 
+67c93775f715ab8ab01178caf86713c6 
+9630c2a55c0987a0db44434f9d67a192 
+> 
+> ## blake3 example
+> blake3Input <-
++     c("abc",
++       "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
++       "")
+> blake3Output <-
++     c("6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
++       "c19012cc2aaf0dc3d8e5c45a1b79114d2df42abb2a410bf54be09e891af06ff8",
++       "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262")
+> 
+> for (i in seq(along=blake3Input)) {
++     blake3 <- digest(blake3Input[i], algo="blake3", serialize=FALSE)
++     cat(blake3, "\n")
++     stopifnot(identical(blake3, blake3Output[i]))
++ }
+6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85 
+c19012cc2aaf0dc3d8e5c45a1b79114d2df42abb2a410bf54be09e891af06ff8 
+af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262 
+> 
+> # example of a digest of a standard R list structure
+> digest(list(LETTERS, data.frame(a=letters[1:5], b=matrix(1:10,ncol=2))))
+[1] "a3bd4d45da8cc4b923bd40cbb98af657"
+> 
+> # test 'length' parameter and file input
+> fname <- file.path(R.home(),"COPYING")
+> x <- readChar(fname, file.info(fname)$size) # read file
+> for (alg in c("sha1", "md5", "crc32")) {
++   # partial file
++   h1 <- digest(x    , length=18000, algo=alg, serialize=FALSE)
++   h2 <- digest(fname, length=18000, algo=alg, serialize=FALSE, file=TRUE)
++   h3 <- digest( substr(x,1,18000) , algo=alg, serialize=FALSE)
++   stopifnot( identical(h1,h2), identical(h1,h3) )
++   # whole file
++   h1 <- digest(x    , algo=alg, serialize=FALSE)
++   h2 <- digest(fname, algo=alg, serialize=FALSE, file=TRUE)
++   stopifnot( identical(h1,h2) )
++ }
+> 
+> # compare md5 algorithm to other tools
+> library(tools)
+> fname <- file.path(R.home(),"COPYING")
+> h1 <- as.character(md5sum(fname))
+> h2 <- digest(fname, algo="md5", file=TRUE)
+> stopifnot( identical(h1,h2) )
+> 
+> ## digest is _designed_ to return one has summary per object to for a desired
+> ## For vectorised output see digest::getVDigest() which provides
+> ## better performance than base::Vectorize()
+> 
+> md5 <- getVDigest()
+> v <- md5(1:5)     			# digest integers 1 to 5
+> stopifnot(identical(v[1], digest(1L)),	# check first and third result
++           identical(v[3], digest(3L)))
+> 
+> 
+> 
+> 
+> cleanEx()
+
+detaching ‘package:tools’
+
+> nameEx("digest2int")
+> ### * digest2int
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: digest2int
+> ### Title: hash arbitrary string to integer
+> ### Aliases: digest2int
+> ### Keywords: misc
+> 
+> ### ** Examples
+> 
+> 
+> current <- digest2int("The quick brown fox jumps over the lazy dog", 0L)
+> target <- 1369346549L
+> stopifnot(identical(target, current))
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("hmac")
+> ### * hmac
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: hmac
+> ### Title: compute a hash-based message authentication code
+> ### Aliases: hmac
+> ### Keywords: misc
+> 
+> ### ** Examples
+> 
+> 
+> 
+> 
+> ## Standard RFC 2104 test vectors
+> current <- hmac('Jefe', 'what do ya want for nothing?', "md5")
+> target <- '750c783e6ab0b503eaa86e310a5db738'
+> stopifnot(identical(target, as.character(current)))
+> 
+> current <- hmac(rep(0x0b, 16), 'Hi There', "md5")
+> target <- '9294727a3638bb1c13f48ef8158bfc9d'
+> stopifnot(identical(target, as.character(current)))
+> 
+> current <- hmac(rep(0xaa, 16), rep(0xdd, 50), "md5")
+> target <- '56be34521d144c88dbb8c733f0e8b3f6'
+> stopifnot(identical(target, as.character(current)))
+> 
+> ## SHA1 tests inspired to the RFC 2104 and checked against the python
+> ## hmac implementation.
+> current <- hmac('Jefe', 'what do ya want for nothing?', "sha1")
+> target <- 'effcdf6ae5eb2fa2d27416d5f184df9c259a7c79'
+> stopifnot(identical(target, as.character(current)))
+> 
+> current <- hmac(rep(0x0b, 16), 'Hi There', "sha1")
+> target <- '675b0b3a1b4ddf4e124872da6c2f632bfed957e9'
+> stopifnot(identical(target, as.character(current)))
+> 
+> current <- hmac(rep(0xaa, 16), rep(0xdd, 50), "sha1")
+> target <- 'd730594d167e35d5956fd8003d0db3d3f46dc7bb'
+> stopifnot(identical(target, as.character(current)))
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("makeRaw")
+> ### * makeRaw
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: makeRaw
+> ### Title: Create a raw object
+> ### Aliases: makeRaw makeRaw.default makeRaw.raw makeRaw.character
+> ###   makeRaw.digest
+> 
+> ### ** Examples
+> 
+> makeRaw("1234567890ABCDE")
+ [1] 31 32 33 34 35 36 37 38 39 30 41 42 43 44 45
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vdigest")
+> ### * vdigest
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: getVDigest
+> ### Title: Set a vectorised function for creating hash function digests
+> ### Aliases: getVDigest
+> ### Keywords: misc
+> 
+> ### ** Examples
+> 
+> stretch_key <- function(d, n) {
++     md5 <- getVDigest()
++     for (i in seq_len(n))
++         d <- md5(d, serialize = FALSE)
++     d
++ }
+> stretch_key('abc123', 65e3)
+[1] "342092becf80e5bbd7cb80f013b9abc8"
+> sha1 <- getVDigest(algo = 'sha1')
+> sha1(letters)
+ [1] "1f9928593251410322823fefea8c3ef79b4d0254"
+ [2] "ee6e7fdb03a0d35b3a6f499d0f8f610686551d51"
+ [3] "8e7f9fe32c49050c5ca146150fc58b93fbeea245"
+ [4] "e59165f73b7dc7e0d6ae94ec9aac9e8e95fd8a2c"
+ [5] "7f608bde8f0e308aa8866d737ddebbfae9674163"
+ [6] "86e99e22d003547538a5f446165488f7861fa2c3"
+ [7] "ce27dce0e84ad90d3e90e9b571a73720d0fb4890"
+ [8] "221799200137b7d72dfc4a618465bec71333a58b"
+ [9] "13b5c7533cccc95d2f7cd18df78ea78ed9111c02"
+[10] "88b7c7c5f6921ec9e914488067552829a17a42a4"
+[11] "6127e4cdbf02f18898554c037f0d4acb95c608ab"
+[12] "984ca0fd9ed47ac08a31aeb88f9c9a5f905aeaa2"
+[13] "954da0ea9a5d0aa42516beebc5542c638161934c"
+[14] "7d1e34387808d9f726efbb1c8eb0819a115afb52"
+[15] "2e21764867596d832896d9d28d6e6489a0b27249"
+[16] "666881f1f74c498e0292ccf3d9d26089ee79dae7"
+[17] "966dbbe6cf1c43ac784a8257b57896db9fd3f357"
+[18] "4ab40e0c23010553e9e4c058ef58f50088f9e87c"
+[19] "bfa0e51b33ebd3b9a823368b7e4c357b2b98790b"
+[20] "fc1ba0a4718421f0050cc5e159703838f733aa59"
+[21] "25cce9eca8abedab78a765b49e74fba77f4463d4"
+[22] "9d453f3128cb2fd55684b979a11d47c97f12dc87"
+[23] "d612108f47c8accbeffd2d9d54c1fa7f74fb432d"
+[24] "ef60fa66262167e7a31398b16fa762151c6d1b28"
+[25] "a235e3cc7109def777a99e660b9829cea48ce9a4"
+[26] "d19d82f849bad81a39da932d3087a60c78de82c1"
+> 
+> md5Input <-
++     c("",
++       "a",
++       "abc",
++       "message digest",
++       "abcdefghijklmnopqrstuvwxyz",
++       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
++       paste("12345678901234567890123456789012345678901234567890123456789012",
++             "345678901234567890", sep=""))
+> md5Output <-
++     c("d41d8cd98f00b204e9800998ecf8427e",
++       "0cc175b9c0f1b6a831c399e269772661",
++       "900150983cd24fb0d6963f7d28e17f72",
++       "f96b697d7cb7938d525a2f31aaf161d0",
++       "c3fcd3d76192e4007dfb496cca67e13b",
++       "d174ab98d277d9f5a5611c2c9f419d9f",
++       "57edf4a22be3c955ac49da2e2107b67a")
+> 
+> md5 <- getVDigest()
+> stopifnot(identical(md5(md5Input, serialize = FALSE), md5Output))
+> stopifnot(identical(digest(list("abc")),
++                  md5(list(list("abc")))))
+> 
+> sha512Input <-c(
++     "",
++     "The quick brown fox jumps over the lazy dog."
++     )
+> sha512Output <- c(
++     paste0("cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce",
++            "47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"),
++     paste0("91ea1245f20d46ae9a037a989f54f1f790f0a47607eeb8a14d12890cea77a1bb",
++            "c6c7ed9cf205e67b7f2b8fd4c7dfd3a7a8617e45f3c463d481c7e586c39ac1ed")
++     )
+> 
+> sha512 <- getVDigest(algo = 'sha512')
+> stopifnot(identical(sha512(sha512Input, serialize = FALSE), sha512Output))
+> 
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.594 0.018 0.613 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

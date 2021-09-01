@@ -1,0 +1,88 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## PR#13788
+> 
+> library(nlme)
+> packageDescription("nlme")# gets the .Library one even in R CMD checking < FIXME !
+Package: nlme
+Version: 3.1-149
+Date: 2020-08-21
+Priority: recommended
+Title: Linear and Nonlinear Mixed Effects Models
+Authors@R: c(person("José", "Pinheiro", role = "aut", comment = "S
+        version"), person("Douglas", "Bates", role = "aut", comment =
+        "up to 2007"), person("Saikat", "DebRoy", role = "ctb", comment
+        = "up to 2002"), person("Deepayan", "Sarkar", role = "ctb",
+        comment = "up to 2005"), person("EISPACK authors", role =
+        "ctb", comment = "src/rs.f"), person("Siem", "Heisterkamp",
+        role = "ctb", comment = "Author fixed sigma"), person("Bert",
+        "Van Willigen",role = "ctb", comment = "Programmer fixed
+        sigma"), person("R-core", email = "R-core@R-project.org", role
+        = c("aut", "cre")))
+Contact: see 'MailingList'
+Description: Fit and compare Gaussian linear and nonlinear
+        mixed-effects models.
+Depends: R (>= 3.4.0)
+Imports: graphics, stats, utils, lattice
+Suggests: Hmisc, MASS
+LazyData: yes
+ByteCompile: yes
+Encoding: UTF-8
+License: GPL (>= 2) | file LICENCE
+BugReports: https://bugs.r-project.org
+MailingList: R-help@r-project.org
+URL: https://svn.r-project.org/R-packages/trunk/nlme/
+NeedsCompilation: yes
+Packaged: 2020-08-21 12:48:52 UTC; ripley
+Author: José Pinheiro [aut] (S version), Douglas Bates [aut] (up to
+        2007), Saikat DebRoy [ctb] (up to 2002), Deepayan Sarkar [ctb]
+        (up to 2005), EISPACK authors [ctb] (src/rs.f), Siem
+        Heisterkamp [ctb] (Author fixed sigma), Bert Van Willigen [ctb]
+        (Programmer fixed sigma), R-core [aut, cre]
+Maintainer: R-core <R-core@R-project.org>
+Repository: CRAN
+Date/Publication: 2020-08-23 05:23:28 UTC
+Built: R 4.0.3; x86_64-pc-linux-gnu; 2021-05-03 20:13:11 UTC; unix
+
+-- File: /usr/local/lib/R/library/nlme/Meta/package.rds 
+> 
+> qm <-  lmList(height ~ age | Subject, data = Oxboys)
+> nd <- with(Oxboys,
++            expand.grid(age = seq(min(age),max(age),length=50),
++                        Subject = levels(Subject))
++            )
+> 
+> ## failed in 3.1-92
+> res <- predict(qm, nd, se=TRUE)
+> stopifnot(is.data.frame(res), dim(res) == c(1300, 3),
++           identical(names(res), c("Subject", "fit", "se.fit")))
+> 
+> req <- ranef(qm)
+> (p.req <- plot(req, xlab = "R.Eff.", ylab = "Subj"))
+> # Fails (p.re2 <- plot(req, age ~ fitted(.)))
+> iqm <- intervals(qm)
+> stopifnot(is.array(iqm), dim(iqm) == c(26,3,2))
+> p.iq <- plot(iqm, ylab = "Subject [factor]")
+> ## Error: formal argument "ylab" matched by multiple .. in 3.1.137
+> stopifnot(inherits(p.iq, "trellis"),
++           inherits(p.req, "trellis"),
++           identical( unclass(p.req)[c("xlab","ylab")],
++                     list(xlab = "R.Eff.", ylab = "Subj")),
++           formula(p.iq) == (group ~ intervals | what))
+> p.iq
+> 

@@ -1,0 +1,67 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## From: Winston Chang
+> ## To: R Devel List ...@r-project.org
+> ## Subject: [Rd] recordPlot/replayPlot not working with saveRDS/readRDS
+> ## Date: Mon, 2 Apr 2018 12:23:06 -0500
+> 
+> # Save displaylist for a simple plot
+> png('test.png')
+> dev.control(displaylist ="enable")
+> plot(1:5, 1:5)
+> r <- recordPlot()
+> dev.off()
+null device 
+          1 
+> 
+> # Replay plot. This works.
+> png('test1.png')
+> replayPlot(r)
+> dev.off()
+null device 
+          1 
+> 
+> ## Save the plot and load it, then replay it (in *same* R session):
+> ## Now works, too
+> saveRDS(r, 'recordedplot.rds')
+> r2 <- readRDS('recordedplot.rds')
+> png('test2.png')
+> replayPlot(r2)
+> ## Gave  Error: NULL value passed as symbol address
+> dev.off()
+null device 
+          1 
+> 
+> ## Now check the three PNG graphics files do not differ:
+> (files <- dir(pattern = "test.*[.]png"))
+[1] "test.png"  "test1.png" "test2.png"
+> tt <- lapply(files, readBin, what = "raw", n = 2^12)
+> lengths(tt)
+[1] 3304 3304 3304
+> sapply(tt, head)
+     [,1] [,2] [,3]
+[1,]   89   89   89
+[2,]   50   50   50
+[3,]   4e   4e   4e
+[4,]   47   47   47
+[5,]   0d   0d   0d
+[6,]   0a   0a   0a
+> stopifnot(
++     identical(tt[[1]], tt[[2]]),
++     identical(tt[[3]], tt[[2]]))
+> 

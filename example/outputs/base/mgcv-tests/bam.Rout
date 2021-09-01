@@ -1,0 +1,54 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## bam donttest case
+> library(mgcv)
+Loading required package: nlme
+This is mgcv 1.8-33. For overview type 'help("mgcv-package")'.
+> set.seed(3); k <- 12; bs <- "cr"
+> dat <- gamSim(1,n=25000,dist="normal",scale=20)
+Gu & Wahba 4 term additive model
+> ba <- bam(y ~ s(x0,bs=bs,k=k)+s(x1,bs=bs,k=k)+s(x2,bs=bs,k=k)+
++             s(x3,bs=bs,k=k),data=dat,method="GCV.Cp") ## use GCV
+> summary(ba)
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+y ~ s(x0, bs = bs, k = k) + s(x1, bs = bs, k = k) + s(x2, bs = bs, 
+    k = k) + s(x3, bs = bs, k = k)
+
+Parametric coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   7.9449     0.1276   62.27   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+        edf Ref.df      F  p-value    
+s(x0) 2.602  3.242  7.364 4.36e-05 ***
+s(x1) 2.722  3.390 65.177  < 2e-16 ***
+s(x2) 7.893  9.272 55.005  < 2e-16 ***
+s(x3) 6.680  8.048  1.635    0.109    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0297   Deviance explained = 3.05%
+GCV = 406.39  Scale est. = 406.05    n = 25000
+> 
+> 

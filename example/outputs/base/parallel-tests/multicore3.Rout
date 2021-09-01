@@ -1,0 +1,40 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(parallel)
+> 
+> # use the same random numbers for all values
+> set.seed(1)
+> simplify2array(mclapply(rep(4, 5), rnorm))
+           [,1]       [,2]       [,3]       [,4]       [,5]
+[1,]  0.4807862  0.4932315 -0.9718052 -0.9342477 -0.2620856
+[2,]  1.0743693 -0.4270380  1.9736819 -0.8315428  1.2822613
+[3,] -1.4636933 -2.1349026 -1.6637488  0.0861561  2.0884311
+[4,]  0.2822822 -1.9651898 -1.7482269 -0.9170539 -1.9117731
+> 
+> set.seed(1)
+> simplify2array(mclapply(rep(4, 5), rnorm, mc.preschedule = FALSE,
++                 mc.set.seed = FALSE))
+           [,1]       [,2]       [,3]       [,4]       [,5]
+[1,] -0.6264538 -0.6264538 -0.6264538 -0.6264538 -0.6264538
+[2,]  0.1836433  0.1836433  0.1836433  0.1836433  0.1836433
+[3,] -0.8356286 -0.8356286 -0.8356286 -0.8356286 -0.8356286
+[4,]  1.5952808  1.5952808  1.5952808  1.5952808  1.5952808
+> 
+> proc.time()
+   user  system elapsed 
+  0.357   0.306   0.257 

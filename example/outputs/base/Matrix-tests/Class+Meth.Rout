@@ -1,0 +1,373 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(Matrix)
+> source(system.file("test-tools.R", package = "Matrix"))# identical3(),
+Loading required package: tools
+>                                         # further  checkMatrix(), etc
+> if(interactive()) options(error = recover)
+> options(warn=1)# show as they happen
+> cat("doExtras:",doExtras,"\n")
+doExtras: FALSE 
+> 
+> no.Mcl <- function(cl) ## TRUE if MatrixClass() returns empty, i
++     identical(Matrix:::MatrixClass(cl), character(0))
+> 
+> setClass("myDGC", contains = "dgCMatrix")
+> M <- new("myDGC", as(Matrix(c(-2:4, rep(0,9)), 4), "CsparseMatrix"))
+> M
+4 x 4 sparse Matrix of class "myDGC"
+             
+[1,] -2 2 . .
+[2,] -1 3 . .
+[3,]  . 4 . .
+[4,]  1 . . .
+> stopifnot(M[-4,2] == 2:4,
++ 	  Matrix:::MatrixClass("myDGC"    ) == "dgCMatrix",
++ 	  Matrix:::MatrixClass("Cholesky" ) == "dtrMatrix",
++ 	  Matrix:::MatrixClass("pCholesky") == "dtpMatrix",
++ 	  Matrix:::MatrixClass("corMatrix") == "dpoMatrix",
++ 	  no.Mcl("pMatrix"),
++ 	  no.Mcl("indMatrix"))
+> 
+> ## FIXME:  Export  MatrixClass !!
+> 
+> ## [matrix-Bugs][6182] Coercion method doesn't work on child class
+> ## Bugs item #6182, at 2015-09-01 17:49 by Vitalie Spinu
+> setClass("A", contains = "ngCMatrix")
+> ngc <- as(diag(3), "ngCMatrix")
+> validObject(dd <- as(ngc, "dgCMatrix")) # fine
+[1] TRUE
+> A. <- as(ngc, "A")
+> stopifnot(identical(as(A., "dgCMatrix"), dd))
+> ## as(.) coercion failed in Matrix <= 1.2.3
+> stopifnot(all( abs(A.)# failed too
++               == diag(3)))
+> 
+> setClass("posDef", contains = "dspMatrix")
+> N <- as(as(crossprod(M) + Diagonal(4), "denseMatrix"),"dspMatrix")
+> (N <- new("posDef", N))
+4 x 4 Matrix of class "posDef"
+     [,1] [,2] [,3] [,4]
+[1,]    7   -7    0    0
+[2,]   -7   30    0    0
+[3,]    0    0    1    0
+[4,]    0    0    0    1
+> stopifnot(is(N[1:2, 1:2], "symmetricMatrix"))
+> 
+> #### Automatically display the class inheritance structure
+> #### possibly augmented with methods
+> 
+> allCl <- getClasses("package:Matrix")
+> cat("actual and virtual classes:\n")
+actual and virtual classes:
+> tt <- table( isVirt <- sapply(allCl, isVirtualClass) )
+> names(tt) <- c('"actual"', "virtual")
+> tt
+"actual"  virtual 
+      68       34 
+> ## The "actual" Matrix classes:
+> aCl <- allCl[!isVirt]
+> (aMcl <- aCl[grep("Matrix$", aCl)]) # length 48
+ [1] "indMatrix" "dppMatrix" "lgTMatrix" "ngRMatrix" "ltTMatrix" "ntpMatrix"
+ [7] "nsyMatrix" "lsTMatrix" "ngeMatrix" "ntRMatrix" "dpoMatrix" "nsCMatrix"
+[13] "nspMatrix" "ltCMatrix" "nsRMatrix" "dgTMatrix" "ntrMatrix" "dtTMatrix"
+[19] "corMatrix" "dsTMatrix" "lgCMatrix" "dtCMatrix" "lgRMatrix" "ltpMatrix"
+[25] "dgCMatrix" "lsyMatrix" "lgeMatrix" "ltRMatrix" "lsCMatrix" "lspMatrix"
+[31] "lsRMatrix" "ldiMatrix" "ngTMatrix" "ltrMatrix" "dgRMatrix" "dtpMatrix"
+[37] "ntTMatrix" "dsyMatrix" "dgeMatrix" "dtRMatrix" "dsCMatrix" "dspMatrix"
+[43] "pMatrix"   "nsTMatrix" "ntCMatrix" "dsRMatrix" "ddiMatrix" "dtrMatrix"
+[49] "ngCMatrix"
+> aMc2 <-  aCl[sapply(aCl, extends, class2 = "Matrix")]
+> stopifnot(all( aMcl %in% aMc2 ))
+> aMc2[!(aMc2 %in% aMcl)] ## only 4 : p?Cholesky & p?BunchKaufman
+[1] "pBunchKaufman" "BunchKaufman"  "Cholesky"      "pCholesky"    
+> 
+> ## Really nice would be to construct an inheritance graph and display
+> ## it.  Following things are computational variations on the theme..
+> 
+> ## We use a version of  canCoerce()  that works with two *classes* instead of
+> ## canCoerce <- function (object, Class)
+> classCanCoerce <- function (class1, class2)
++ {
++     extends(class1, class2) ||
++     !is.null(selectMethod("coerce", optional = TRUE,
++ 			  signature    = c(from = class1, to = class2),
++ 			  useInherited = c(from = TRUE,	  to = FALSE)))
++ }
+> .dq <- function(ch) paste0('"', ch, '"')
+> .subclasses <- function(cnam) {
++     cd <- getClass(cnam)
++     unique(c(cd@className, unlist(lapply(names(cd@subclasses), .subclasses))))
++ }
+> for(n in allCl) {
++     if(isVirtualClass(n))
++         cat("Virtual class", .dq(n),"\n")
++     else {
++         cat("\"Actual\" class", .dq(n),":\n")
++         x <- new(n)
++         if(doExtras) for(m in allCl)
++             if(classCanCoerce(n,m)) {
++                 ext <- extends(n, m)
++                 if(ext) {
++                     cat(sprintf("   extends  %20s %20s \n", "", .dq(m)))
++                 } else {
++                     cat(sprintf("   can coerce: %20s -> %20s: ", .dq(n), .dq(m)))
++                     tt <- try(as(x, m), silent = TRUE)
++                     if(inherits(tt, "try-error")) {
++                         cat("\t *ERROR* !!\n")
++                     } else {
++                         cat("as() ok; validObject: ")
++                         vo <- validObject(tt, test = TRUE)
++                         cat(if(isTRUE(vo)) "ok" else paste("OOOOOOPS:", vo), "\n")
++                     }
++                 }
++             }
++         cat("---\n")
++     }
++ }
+"Actual" class "indMatrix" :
+---
+"Actual" class "sparseQR" :
+---
+Virtual class "ldenseMatrix" 
+Virtual class "atomicVector" 
+Virtual class "zMatrix" 
+"Actual" class "dppMatrix" :
+---
+"Actual" class "lgTMatrix" :
+---
+Virtual class "CsparseMatrix" 
+Virtual class "RsparseMatrix" 
+"Actual" class "ngRMatrix" :
+---
+"Actual" class "ltTMatrix" :
+---
+"Actual" class "rleDiff" :
+---
+"Actual" class "ntpMatrix" :
+---
+Virtual class "triangularMatrix" 
+"Actual" class "abIndex" :
+---
+"Actual" class "pBunchKaufman" :
+---
+Virtual class "CHMsuper" 
+"Actual" class "nsyMatrix" :
+---
+"Actual" class "lsTMatrix" :
+---
+"Actual" class "ngeMatrix" :
+---
+"Actual" class "ntRMatrix" :
+---
+"Actual" class "dpoMatrix" :
+---
+"Actual" class "nsCMatrix" :
+---
+"Actual" class "nspMatrix" :
+---
+"Actual" class "zsparseVector" :
+---
+"Actual" class "ltCMatrix" :
+---
+Virtual class "sparseVector" 
+"Actual" class "BunchKaufman" :
+---
+"Actual" class "nsRMatrix" :
+---
+"Actual" class "dgTMatrix" :
+---
+"Actual" class "Cholesky" :
+---
+Virtual class "denseMatrix" 
+"Actual" class "ntrMatrix" :
+---
+"Actual" class "lsparseVector" :
+---
+"Actual" class "dtTMatrix" :
+---
+Virtual class "lsparseMatrix" 
+Virtual class "xsparseVector" 
+Virtual class "CHMfactor" 
+Virtual class "Matrix" 
+"Actual" class "corMatrix" :
+---
+"Actual" class "dsTMatrix" :
+---
+"Actual" class "lgCMatrix" :
+---
+Virtual class "LU" 
+Virtual class "CholeskyFactorization" 
+"Actual" class "dtCMatrix" :
+---
+"Actual" class "dCHMsimpl" :
+---
+Virtual class "ddenseMatrix" 
+Virtual class "symmetricMatrix" 
+Virtual class "nMatrix" 
+"Actual" class "nsparseVector" :
+---
+"Actual" class "Schur" :
+---
+"Actual" class "lgRMatrix" :
+---
+"Actual" class "pCholesky" :
+---
+Virtual class "replValue" 
+"Actual" class "ltpMatrix" :
+---
+Virtual class "sparseMatrix" 
+"Actual" class "dgCMatrix" :
+---
+"Actual" class "lsyMatrix" :
+---
+Virtual class "index" 
+"Actual" class "lgeMatrix" :
+---
+"Actual" class "ltRMatrix" :
+---
+"Actual" class "dCHMsuper" :
+---
+"Actual" class "lsCMatrix" :
+---
+"Actual" class "lspMatrix" :
+---
+Virtual class "ndenseMatrix" 
+Virtual class "lMatrix" 
+"Actual" class "sparseLU" :
+---
+"Actual" class "lsRMatrix" :
+---
+"Actual" class "nCHMsimpl" :
+---
+Virtual class "iMatrix" 
+"Actual" class "ldiMatrix" :
+---
+"Actual" class "ngTMatrix" :
+---
+"Actual" class "ltrMatrix" :
+---
+"Actual" class "dgRMatrix" :
+---
+Virtual class "diagonalMatrix" 
+"Actual" class "dtpMatrix" :
+---
+"Actual" class "isparseVector" :
+---
+"Actual" class "ntTMatrix" :
+---
+Virtual class "CHMsimpl" 
+Virtual class "MatrixFactorization" 
+"Actual" class "dsyMatrix" :
+---
+"Actual" class "dgeMatrix" :
+---
+"Actual" class "dtRMatrix" :
+---
+Virtual class "nsparseMatrix" 
+"Actual" class "dsCMatrix" :
+---
+"Actual" class "dspMatrix" :
+---
+"Actual" class "pMatrix" :
+---
+"Actual" class "nsTMatrix" :
+---
+Virtual class "compMatrix" 
+Virtual class "generalMatrix" 
+"Actual" class "ntCMatrix" :
+---
+"Actual" class "dsRMatrix" :
+---
+Virtual class "number" 
+"Actual" class "ddiMatrix" :
+---
+"Actual" class "dtrMatrix" :
+---
+Virtual class "TsparseMatrix" 
+Virtual class "dMatrix" 
+"Actual" class "denseLU" :
+---
+"Actual" class "dsparseVector" :
+---
+Virtual class "dsparseMatrix" 
+"Actual" class "ngCMatrix" :
+---
+"Actual" class "nCHMsuper" :
+---
+> 
+> cat('Time elapsed: ', proc.time(),'\n') # for the above "part I"
+Time elapsed:  1.619 0.331 1.565 0.009 0.002 
+> 
+> 
+> if(doExtras && !interactive()) { # don't want to see on source()
++ 
++ cat("All classes in the 'Matrix' package:\n")
++ for(cln in allCl) {
++     cat("\n-----\n\nClass", dQuote(cln),":\n      ",
++         paste(rep("~",nchar(cln)),collapse=''),"\n")
++     ## A smarter version would use  getClass() instead of showClass(),
++     ## build the "graph" and only then display.
++     ##
++     showClass(cln)
++ }
++ 
++ cat("\n\n")
++ 
++ ## One could extend the `display' by using (something smarter than)
++ ## are the "coerce" methods showing more than the 'Extends' output above?
++ cat("All (S4) methods in the 'Matrix' package:\n")
++ showMethods(where="package:Matrix")
++ 
++ } # end{non-interactive}
+> 
+> ## 1-indexing instead of 0-indexing for direct "dgT" should give error:
+> ii <- as.integer(c(1,2,2))
+> jj <- as.integer(c(1,1,3))
+> assertError(new("dgTMatrix",  i=ii, j=jj,        x= 10*(1:3), Dim=2:3))
+> assertError(new("dgTMatrix",  i=ii, j=jj - 1:1,  x= 10*(1:3), Dim=2:3))
+> assertError(new("dgTMatrix",  i=ii - 1:1, j=jj,  x= 10*(1:3), Dim=2:3))
+> (mm <- new("dgTMatrix",  i=ii - 1:1, j=jj - 1:1, x= 10*(1:3), Dim=2:3))
+2 x 3 sparse Matrix of class "dgTMatrix"
+            
+[1,] 10 .  .
+[2,] 20 . 30
+> validObject(mm)
+[1] TRUE
+> 
+> ### Sparse Logical:
+> m <- Matrix(c(0,0,2:0), 3,5)
+> mT <- as(mC <- as(m, "CsparseMatrix"), "TsparseMatrix")
+> stopifnot(identical(as(mT,"CsparseMatrix"), mC))
+> (mC. <- as(mT[1:2, 2:3], "CsparseMatrix"))
+2 x 2 sparse Matrix of class "dgCMatrix"
+        
+[1,] 1 .
+[2,] . 2
+> (mlC <- as(mC. , "lMatrix"))
+2 x 2 sparse Matrix of class "lgCMatrix"
+        
+[1,] | .
+[2,] . |
+> as(mlC,"ltCMatrix")
+2 x 2 sparse Matrix of class "ltCMatrix"
+        
+[1,] | .
+[2,] . |
+> 
+> if(!doExtras && !interactive()) q("no") ## (saving testing time)

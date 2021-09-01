@@ -1,0 +1,2 @@
+Error in loadVignetteBuilder(vigns$pkgdir) : 
+  vignette builder 'R.rsp' not found

@@ -1,0 +1,248 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "lifecycle"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('lifecycle')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("deprecate_soft")
+> ### * deprecate_soft
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: deprecate_soft
+> ### Title: Deprecate functions and arguments
+> ### Aliases: deprecate_soft deprecate_warn deprecate_stop
+> 
+> ### ** Examples
+> 
+> # A deprecated function `foo`:
+> deprecate_warn("1.0.0", "foo()")
+Warning: `foo()` was deprecated in <NA> 1.0.0.
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_warnings()` to see where this warning was generated.
+> 
+> # A deprecated argument `arg`:
+> deprecate_warn("1.0.0", "foo(arg)")
+Warning: The `arg` argument of `foo()` is deprecated as of <NA> 1.0.0.
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_warnings()` to see where this warning was generated.
+> 
+> # A partially deprecated argument `arg`:
+> deprecate_warn("1.0.0", "foo(arg = 'must be a scalar integer')")
+Warning: The `arg` argument of `foo()` must be a scalar integer as of <NA> 1.0.0.
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_warnings()` to see where this warning was generated.
+> 
+> # A deprecated function with a function replacement:
+> deprecate_warn("1.0.0", "foo()", "bar()")
+Warning: `foo()` was deprecated in <NA> 1.0.0.
+Please use `bar()` instead.
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_warnings()` to see where this warning was generated.
+> 
+> # A deprecated function with a function replacement from a
+> # different package:
+> deprecate_warn("1.0.0", "foo()", "otherpackage::bar()")
+Warning: `foo()` was deprecated in <NA> 1.0.0.
+Please use `otherpackage::bar()` instead.
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_warnings()` to see where this warning was generated.
+> 
+> # A deprecated function with custom message:
+> deprecate_warn(
++   when = "1.0.0",
++   what = "foo()",
++   details = "Please use `otherpackage::bar(foo = TRUE)` instead"
++ )
+Warning: `foo()` was deprecated in <NA> 1.0.0.
+Please use `otherpackage::bar(foo = TRUE)` instead
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_warnings()` to see where this warning was generated.
+> 
+> # A deprecated function with custom bulleted list:
+> deprecate_warn(
++   when = "1.0.0",
++   what = "foo()",
++   details = c(
++     x = "This is dangerous",
++     i = "Did you mean `safe_foo()` instead?"
++   )
++ )
+Warning: `foo()` was deprecated in <NA> 1.0.0.
+✖ This is dangerous
+ℹ Did you mean `safe_foo()` instead?
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_warnings()` to see where this warning was generated.
+> 
+> 
+> 
+> cleanEx()
+> nameEx("deprecated")
+> ### * deprecated
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: deprecated
+> ### Title: Mark an argument as deprecated
+> ### Aliases: deprecated is_present
+> 
+> ### ** Examples
+> 
+> foobar_adder <- function(foo, bar, baz = deprecated()) {
++   # Check if user has supplied `baz` instead of `bar`
++   if (lifecycle::is_present(baz)) {
++ 
++     # Signal the deprecation to the user
++     deprecate_warn("1.0.0", "foo::bar_adder(baz = )", "foo::bar_adder(bar = )")
++ 
++     # Deal with the deprecated argument for compatibility
++     bar <- baz
++   }
++ 
++   foo + bar
++ }
+> 
+> foobar_adder(1, 2)
+[1] 3
+> foobar_adder(1, baz = 2)
+Warning: The `baz` argument of `bar_adder()` is deprecated as of foo 1.0.0.
+Please use the `bar` argument instead.
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_warnings()` to see where this warning was generated.
+[1] 3
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("last_warnings")
+> ### * last_warnings
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: last_warnings
+> ### Title: Display last deprecation warnings
+> ### Aliases: last_warnings last_warning
+> 
+> ### ** Examples
+> 
+> # These examples are not run because `last_warnings()` does not
+> # work well within knitr and pkgdown
+> ## Not run: 
+> ##D 
+> ##D f <- function() invisible(g())
+> ##D g <- function() list(h(), i())
+> ##D h <- function() deprecate_warn("1.0.0", "this()")
+> ##D i <- function() deprecate_warn("1.0.0", "that()")
+> ##D f()
+> ##D 
+> ##D # Print all the warnings that occurred during the last command:
+> ##D last_warnings()
+> ##D 
+> ##D # Print only the last one:
+> ##D last_warning()
+> ##D 
+> ##D 
+> ##D # By default, the backtraces are printed in their simplified form.
+> ##D # Use `simplify` to control the verbosity:
+> ##D print(last_warnings(), simplify = "none")
+> ##D 
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("signal_stage")
+> ### * signal_stage
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: signal_stage
+> ### Title: Signal other experimental or superseded features
+> ### Aliases: signal_stage
+> 
+> ### ** Examples
+> 
+> foofy <- function(x, y, z) {
++   signal_stage("experimental", "foofy()")
++   x + y / z
++ }
+> foofy(1, 2, 3)
+[1] 1.666667
+> 
+> 
+> 
+> cleanEx()
+> nameEx("verbosity")
+> ### * verbosity
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: verbosity
+> ### Title: Control the verbosity of deprecation signals
+> ### Aliases: verbosity
+> 
+> ### ** Examples
+> 
+> if (rlang::is_installed("testthat")) {
++   library(testthat)
++ 
++   mytool <- function() {
++     deprecate_soft("1.0.0", "mytool()")
++     10 * 10
++   }
++ 
++   # Forcing the verbosity level is useful for unit testing. You can
++   # force errors to test that the function is indeed deprecated:
++   test_that("mytool is deprecated", {
++     rlang::with_options(lifecycle_verbosity = "error", {
++       expect_error(mytool(), class = "defunctError")
++     })
++   })
++ 
++   # Or you can enforce silence to safely test that the function
++   # still works:
++   test_that("mytool still works", {
++     rlang::with_options(lifecycle_verbosity = "quiet", {
++       expect_equal(mytool(), 100)
++     })
++   })
++ }
+> 
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.246 0.008 0.254 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

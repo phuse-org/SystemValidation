@@ -1,0 +1,73 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## stepAIC on an lme object: an example from Robert Cuffe
+> if(require(nlme)) {
++     library(MASS)
++     set.seed(321) # to be sure
++     a <- data.frame( resp=rnorm(250), cov1=rnorm(250),
++                     cov2=rnorm(250), group=rep(letters[1:10],25) )
++     mod1 <- lme(resp~cov1, a, ~cov1|group, method="ML")
++     mod2 <- stepAIC(mod1, scope=list(upper=~(cov1+cov2)^2, lower=~1) )
++ 
++     beav <- beav2
++     set.seed(123)
++     beav$dummy <- rnorm(nrow(beav))
++     beav.gls <- gls(temp ~ activ + dummy, data = beav,
++                     corr = corAR1(0.8), method = "ML")
++     stepAIC(beav.gls)
++ }
+Loading required package: nlme
+Start:  AIC=700.38
+resp ~ cov1
+
+       Df    AIC
+<none>    700.38
+- cov1  1 701.25
++ cov2  1 702.33
+Start:  AIC=-124.01
+temp ~ activ + dummy
+
+        Df     AIC
+- dummy  1 -125.55
+<none>     -124.01
+- activ  1 -108.39
+
+Step:  AIC=-125.55
+temp ~ activ
+
+        Df     AIC
+<none>     -125.55
+- activ  1 -110.10
+Generalized least squares fit by maximum likelihood
+  Model: temp ~ activ 
+  Data: beav 
+  Log-likelihood: 66.77523
+
+Coefficients:
+(Intercept)       activ 
+ 37.1919453   0.6141777 
+
+Correlation Structure: AR(1)
+ Formula: ~1 
+ Parameter estimate(s):
+      Phi 
+0.8731771 
+Degrees of freedom: 100 total; 98 residual
+Residual standard error: 0.2527856 
+> 
+> 

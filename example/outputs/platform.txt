@@ -1,0 +1,24 @@
+$OS.type
+[1] "unix"
+
+$file.sep
+[1] "/"
+
+$dynlib.ext
+[1] ".so"
+
+$GUI
+[1] "X11"
+
+$endian
+[1] "little"
+
+$pkgType
+[1] "source"
+
+$path.sep
+[1] ":"
+
+$r_arch
+[1] ""
+

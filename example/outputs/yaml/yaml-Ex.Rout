@@ -1,0 +1,271 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "yaml"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('yaml')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("as.yaml")
+> ### * as.yaml
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as.yaml
+> ### Title: Convert an R object into a YAML string
+> ### Aliases: as.yaml
+> ### Keywords: data manip
+> 
+> ### ** Examples
+> 
+>   as.yaml(1:10)
+[1] "- 1\n- 2\n- 3\n- 4\n- 5\n- 6\n- 7\n- 8\n- 9\n- 10\n"
+>   as.yaml(list(foo=1:10, bar=c("test1", "test2")))
+[1] "foo:\n- 1\n- 2\n- 3\n- 4\n- 5\n- 6\n- 7\n- 8\n- 9\n- 10\nbar:\n- test1\n- test2\n"
+>   as.yaml(list(foo=1:10, bar=c("test1", "test2")), indent=3)
+[1] "foo:\n- 1\n- 2\n- 3\n- 4\n- 5\n- 6\n- 7\n- 8\n- 9\n- 10\nbar:\n- test1\n- test2\n"
+>   as.yaml(list(foo=1:10, bar=c("test1", "test2")), indent.mapping.sequence=TRUE)
+[1] "foo:\n  - 1\n  - 2\n  - 3\n  - 4\n  - 5\n  - 6\n  - 7\n  - 8\n  - 9\n  - 10\nbar:\n  - test1\n  - test2\n"
+>   as.yaml(data.frame(a=1:10, b=letters[1:10], c=11:20))
+[1] "a:\n- 1\n- 2\n- 3\n- 4\n- 5\n- 6\n- 7\n- 8\n- 9\n- 10\nb:\n- a\n- b\n- c\n- d\n- e\n- f\n- g\n- h\n- i\n- j\nc:\n- 11\n- 12\n- 13\n- 14\n- 15\n- 16\n- 17\n- 18\n- 19\n- 20\n"
+>   as.yaml(list(a=1:2, b=3:4), omap=TRUE)
+[1] "!omap\n- a:\n  - 1\n  - 2\n- b:\n  - 3\n  - 4\n"
+>   as.yaml("multi\nline\nstring")
+[1] "|-\n  multi\n  line\n  string\n"
+>   as.yaml(function(x) x + 1)
+[1] "!expr |\n  function (x)\n  x + 1\n"
+>   as.yaml(list(foo=list(list(x = 1, y = 2), list(x = 3, y = 4))))
+[1] "foo:\n- x: 1.0\n  'y': 2.0\n- x: 3.0\n  'y': 4.0\n"
+> 
+>   # custom handler
+>   as.yaml(Sys.time(), handlers = list(
++     POSIXct = function(x) format(Sys.time(), "%Y-%m-%d")
++   ))
+[1] "'2021-08-31'\n"
+> 
+>   # custom handler with verbatim output to change how logical vectors are
+>   # emitted
+>   as.yaml(c(TRUE, FALSE), handlers = list(
++     logical = function(x) {
++       result <- ifelse(x, "true", "false")
++       class(result) <- "verbatim"
++       return(result)
++     }
++   ))
+[1] "- true\n- false\n"
+> 
+>   # custom tag for scalar
+>   x <- "thing"
+>   attr(x, "tag") <- "!thing"
+>   as.yaml(x)
+[1] "!thing thing\n"
+> 
+>   # custom tag for sequence
+>   x <- 1:10
+>   attr(x, "tag") <- "!thing"
+>   as.yaml(x)
+[1] "!thing\n- 1\n- 2\n- 3\n- 4\n- 5\n- 6\n- 7\n- 8\n- 9\n- 10\n"
+> 
+>   # custom tag for mapping
+>   x <- data.frame(a = letters[1:5], b = letters[6:10])
+>   attr(x, "tag") <- "!thing"
+>   as.yaml(x)
+[1] "!thing\na:\n- a\n- b\n- c\n- d\n- e\nb:\n- f\n- g\n- h\n- i\n- j\n"
+> 
+>   # custom tag for each element in a list
+>   x <- list(1, 2, 3)
+>   attr(x[[1]], "tag") <- "!a"
+>   attr(x[[2]], "tag") <- "!b"
+>   attr(x[[3]], "tag") <- "!c"
+>   as.yaml(x)
+[1] "- !a 1.0\n- !b 2.0\n- !c 3.0\n"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read_yaml")
+> ### * read_yaml
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read_yaml
+> ### Title: Read a YAML file
+> ### Aliases: read_yaml
+> ### Keywords: programming data manip
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D   # reading from a file connection
+> ##D   filename <- tempfile()
+> ##D   cat("test: data\n", file = filename)
+> ##D   con <- file(filename, "r")
+> ##D   read_yaml(con)
+> ##D   close(con)
+> ##D 
+> ##D   # using a filename to specify input file
+> ##D   read_yaml(filename)
+> ## End(Not run)
+> 
+>   # reading from a character vector
+>   read_yaml(text="- hey\n- hi\n- hello")
+[1] "hey"   "hi"    "hello"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("write_yaml")
+> ### * write_yaml
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: write_yaml
+> ### Title: Write a YAML file
+> ### Aliases: write_yaml
+> ### Keywords: data manip
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D   # writing to a file connection
+> ##D   filename <- tempfile()
+> ##D   con <- file(filename, "w")
+> ##D   write_yaml(data.frame(a=1:10, b=letters[1:10], c=11:20), con)
+> ##D   close(con)
+> ##D 
+> ##D   # using a filename to specify output file
+> ##D   write_yaml(data.frame(a=1:10, b=letters[1:10], c=11:20), filename)
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("yaml.load")
+> ### * yaml.load
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: yaml.load
+> ### Title: Convert a YAML string into R objects
+> ### Aliases: yaml.load yaml.load_file
+> ### Keywords: programming data manip
+> 
+> ### ** Examples
+> 
+>   yaml.load("- hey\n- hi\n- hello")
+[1] "hey"   "hi"    "hello"
+>   yaml.load("foo: 123\nbar: 456")
+$foo
+[1] 123
+
+$bar
+[1] 456
+
+>   yaml.load("- foo\n- bar\n- 3.14")
+[[1]]
+[1] "foo"
+
+[[2]]
+[1] "bar"
+
+[[3]]
+[1] 3.14
+
+>   yaml.load("foo: bar\n123: 456", as.named.list = FALSE)
+[[1]]
+[1] "bar"
+
+[[2]]
+[1] 456
+
+attr(,"keys")
+attr(,"keys")[[1]]
+[1] "foo"
+
+attr(,"keys")[[2]]
+[1] 123
+
+> 
+> ## Not run: 
+> ##D   # reading from a file (uses readLines internally)
+> ##D   filename <- tempfile()
+> ##D   cat("foo: 123", file=filename, sep="\n")
+> ##D   yaml.load_file(filename)
+> ## End(Not run)
+> 
+>   # custom scalar handler
+>   my.float.handler <- function(x) { as.numeric(x) + 123 }
+>   yaml.load("123.456", handlers=list("float#fix"=my.float.handler))
+[1] 246.456
+> 
+>   # custom sequence handler
+>   yaml.load("- 1\n- 2\n- 3", handlers=list(seq=function(x) { as.integer(x) + 3 }))
+[1] 4 5 6
+> 
+>   # custom map handler
+>   yaml.load("foo: 123", handlers=list(map=function(x) { x$foo <- x$foo + 123; x }))
+$foo
+[1] 246
+
+> 
+>   # handling custom types
+>   yaml.load("!sqrt 555", handlers=list(sqrt=function(x) { sqrt(as.integer(x)) }))
+[1] 23.55844
+>   yaml.load("!foo\n- 1\n- 2", handlers=list(foo=function(x) { as.integer(x) + 1 }))
+[1] 2 3
+>   yaml.load("!bar\none: 1\ntwo: 2", handlers=list(foo=function(x) { x$one <- "one"; x }))
+$one
+[1] 1
+
+$two
+[1] 2
+
+> 
+>   # loading R expressions
+>   # NOTE: this will not be done by default in the near future
+>   doc <- yaml.load("inc: !expr function(x) x + 1")
+Warning in yaml.load("inc: !expr function(x) x + 1") :
+  Evaluating R expressions (!expr) will soon require explicit `eval.expr` option (see yaml.load help)
+>   doc$inc(1)
+[1] 2
+> 
+>   # adding a label to error messages
+>   try(yaml.load("*", error.label = "foo"))
+Error in yaml.load("*", error.label = "foo") : 
+  (foo) Scanner error: while scanning an alias at line 1, column 1 did not find expected alphabetic or numeric character at line 1, column 2
+
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.104 0.009 0.113 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

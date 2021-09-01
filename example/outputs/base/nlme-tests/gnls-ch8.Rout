@@ -1,0 +1,207 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## Really just one section from ../inst/scripts/ch08.R :
+> 
+> library(nlme)
+> 
+> (fm1Lis <- nlsList(rate ~ SSasympOff(pressure, Asym, lrc, c0) | QB,
++                    data = Dialyzer))
+Call:
+  Model: rate ~ SSasympOff(pressure, Asym, lrc, c0) | QB 
+   Data: Dialyzer 
+
+Coefficients:
+        Asym       lrc        c0
+200 44.98856 0.7648593 0.2242398
+300 62.21724 0.2528183 0.2248360
+
+Degrees of freedom: 140 total; 134 residual
+Residual standard error: 3.804328
+> (iLis <- intervals(fm1Lis))
+, , Asym
+
+       lower     est.    upper
+200 43.49957 44.98856 46.47755
+300 59.80171 62.21724 64.63277
+
+, , lrc
+
+        lower      est.     upper
+200 0.5974424 0.7648593 0.9322763
+300 0.1110943 0.2528183 0.3945423
+
+, , c0
+
+        lower      est.     upper
+200 0.1963814 0.2242398 0.2520982
+300 0.1925416 0.2248360 0.2571303
+
+> ## TODO: stopifnot(all.equal(..)) ?
+> 
+> fm1Dial.gnls <- gnls(rate ~ SSasympOff(pressure, Asym, lrc, c0),
++                      data = Dialyzer,
++                      params = list(Asym + lrc ~ QB, c0 ~ 1),
++                      start = c(53.6, 8.6, 0.51, -0.26, 0.225))
+> summary(fm1Dial.gnls)
+Generalized nonlinear least squares fit
+  Model: rate ~ SSasympOff(pressure, Asym, lrc, c0) 
+  Data: Dialyzer 
+       AIC      BIC    logLik
+  777.2903 794.9401 -382.6451
+
+Coefficients:
+                    Value Std.Error  t-value p-value
+Asym.(Intercept) 44.98645 0.7421718 60.61461       0
+Asym.QB300       17.24009 1.3584679 12.69083       0
+lrc.(Intercept)   0.76558 0.0784579  9.75787       0
+lrc.QB300        -0.51368 0.0900418 -5.70492       0
+c0                0.22449 0.0106228 21.13246       0
+
+ Correlation: 
+                As.(I) A.QB30 lr.(I) l.QB30
+Asym.QB300      -0.510                     
+lrc.(Intercept) -0.649  0.256              
+lrc.QB300        0.513 -0.701 -0.726       
+c0              -0.166 -0.125  0.457 -0.081
+
+Standardized residuals:
+        Min          Q1         Med          Q3         Max 
+-3.18826859 -0.48816639  0.09310318  0.60268546  2.71696659 
+
+Residual standard error: 3.790223 
+Degrees of freedom: 140 total; 135 residual
+> 
+> ## Modified Data (==> rename it !) ----------------------------------
+> DialyzerM <- Dialyzer
+> DialyzerM$QBcontr <- 2 * (Dialyzer$QB == 300) - 1
+> fm1Dial.nls <-
++   nls(rate ~ SSasympOff(pressure, Asym.Int + Asym.QB * QBcontr,
++                         lrc.Int + lrc.QB * QBcontr, c0),
++       data = DialyzerM,
++       start = c(Asym.Int = 53.6, Asym.QB = 8.6, lrc.Int = 0.51,
++                 lrc.QB = -0.26, c0 = 0.225))
+> summary(fm1Dial.nls)
+
+Formula: rate ~ SSasympOff(pressure, Asym.Int + Asym.QB * QBcontr, lrc.Int + 
+    lrc.QB * QBcontr, c0)
+
+Parameters:
+         Estimate Std. Error t value Pr(>|t|)    
+Asym.Int 53.60647    0.70540  75.994  < 2e-16 ***
+Asym.QB   8.62005    0.67923  12.691  < 2e-16 ***
+lrc.Int   0.50874    0.05523   9.211 5.53e-16 ***
+lrc.QB   -0.25684    0.04502  -5.705 7.04e-08 ***
+c0        0.22449    0.01062  21.133  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.79 on 135 degrees of freedom
+
+Number of iterations to convergence: 4 
+Achieved convergence tolerance: 7.248e-06
+
+> logLik(fm1Dial.nls)
+'log Lik.' -382.6451 (df=6)
+> plot(fm1Dial.gnls, resid(.) ~ pressure, abline = 0)
+> fm2Dial.gnls <- update(fm1Dial.gnls,
++                        weights = varPower(form = ~ pressure))
+> anova(fm1Dial.gnls, fm2Dial.gnls)
+             Model df      AIC      BIC    logLik   Test  L.Ratio p-value
+fm1Dial.gnls     1  6 777.2903 794.9401 -382.6451                        
+fm2Dial.gnls     2  7 748.4749 769.0664 -367.2375 1 vs 2 30.81533  <.0001
+> ACF(fm2Dial.gnls, form = ~ 1 | Subject)
+  lag          ACF
+1   0  1.000000000
+2   1  0.715670483
+3   2  0.504542187
+4   3  0.294812123
+5   4  0.209749340
+6   5  0.138569351
+7   6 -0.002018831
+> plot(ACF(fm2Dial.gnls, form = ~ 1 | Subject), alpha = 0.05)
+> fm3Dial.gnls <-
++     update(fm2Dial.gnls, corr = corAR1(0.716, form = ~ 1 | Subject))
+> fm3Dial.gnls
+Generalized nonlinear least squares fit
+  Model: rate ~ SSasympOff(pressure, Asym, lrc, c0) 
+  Data: Dialyzer 
+  Log-likelihood: -322.5212
+
+Coefficients:
+Asym.(Intercept)       Asym.QB300  lrc.(Intercept)        lrc.QB300 
+      46.9110316       16.3997956        0.5416619       -0.3394719 
+              c0 
+       0.2147754 
+
+Correlation Structure: AR(1)
+ Formula: ~1 | Subject 
+ Parameter estimate(s):
+      Phi 
+0.7444136 
+Variance function:
+ Structure: Power of variance covariate
+ Formula: ~pressure 
+ Parameter estimates:
+    power 
+0.5723172 
+Degrees of freedom: 140 total; 135 residual
+Residual standard error: 3.184479 
+> (im3 <- intervals(fm3Dial.gnls))
+Approximate 95% confidence intervals
+
+ Coefficients:
+                      lower       est.      upper
+Asym.(Intercept) 43.8766390 46.9110316 49.9454242
+Asym.QB300       11.6326920 16.3997956 21.1668991
+lrc.(Intercept)   0.4352688  0.5416619  0.6480551
+lrc.QB300        -0.4874327 -0.3394719 -0.1915111
+c0                0.2063689  0.2147754  0.2231819
+attr(,"label")
+[1] "Coefficients:"
+
+ Correlation structure:
+      lower      est.    upper
+Phi 0.62176 0.7444136 0.831428
+attr(,"label")
+[1] "Correlation structure:"
+
+ Variance function:
+          lower      est.     upper
+power 0.4426236 0.5723172 0.7020108
+attr(,"label")
+[1] "Variance function:"
+
+ Residual standard error:
+   lower     est.    upper 
+2.592276 3.127096 3.772257 
+> (a23 <- anova(fm2Dial.gnls, fm3Dial.gnls))
+             Model df      AIC      BIC    logLik   Test L.Ratio p-value
+fm2Dial.gnls     1  7 748.4749 769.0664 -367.2375                       
+fm3Dial.gnls     2  8 661.0424 684.5756 -322.5212 1 vs 2 89.4325  <.0001
+> 
+> anoC <-
++     cbind(fm2Dial.gnls =
++               c(df=7, AIC= 748.4749, BIC= 769.0664, logLik=-367.2375,
++                 L.Ratio=NA, "p-value"=NA),
++           fm3Dial.gnls=
++               c(8, 661.0424, 684.5756, -322.5212, 89.4325, 3.e-21))
+>                                         # NB: exact p-value irrelevant
+> stopifnot(
++     all.equal(anoC, t(data.matrix(a23)[,rownames(anoC)]), tol = 7e-7)
++ )
+> 

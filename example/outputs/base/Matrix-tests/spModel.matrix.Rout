@@ -1,0 +1,416 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(Matrix)
+> 
+> ## This is example(sp....) -- much extended
+> 
+> mEQ <- function(x,y, ...) {
++     ## first drop columns from y  which are all 0 :
++     if(any(i0 <- colSums(abs(x)) == 0)) {
++         message(gettextf("x had  %d  zero-columns", sum(i0)))
++         x <- x[, !i0, drop=FALSE]
++     }
++     if(any(i0 <- colSums(abs(y)) == 0)) {
++         message(gettextf("y had  %d  zero-columns", sum(i0)))
++         y <- y[, !i0, drop=FALSE]
++     }
++     isTRUE(all.equal(x,y, tolerance =0, ...))
++ }
+> 
+> ##' Is  sparse.model.matrix() giving the "same" as dense model.matrix() ?
+> ##'
+> ##' @return logical
+> ##' @param frml formula
+> ##' @param dat data frame
+> ##' @param showFactors
+> ##' @param ...
+> isEQsparseDense <- function(frml, dat,
++                             showFactors = isTRUE(getOption("verboseSparse")), ...)
++ {
++     ## Author: Martin Maechler, Date: 21 Jul 2009
++     stopifnot(inherits(frml, "formula"), is.data.frame(dat))
++     if(showFactors)
++         print(attr(terms(frml, data=dat), "factors"))
++     smm <- sparse.model.matrix(frml, dat, ...)
++      mm <-        model.matrix(frml, dat, ...)
++     sc <- smm@contrasts
++     mEQ(as(smm, "generalMatrix"), Matrix(mm, sparse=TRUE)) &
++      identical(smm@assign, attr(mm, "assign")) &
++      (if(is.null(mc <- attr(mm, "contrasts"))) length(sc) == 0 else identical(sc, mc))
++ }
+> 
+> ### ------------ all the "datasets" we construct for use -------------
+> dd <- data.frame(a = gl(3,4), b = gl(4,1,12))# balanced 2-way
+> (dd3 <- cbind(dd, c = gl(2,6), d = gl(3,8)))
+   a b c d
+1  1 1 1 1
+2  1 2 1 1
+3  1 3 1 1
+4  1 4 1 1
+5  2 1 1 1
+6  2 2 1 1
+7  2 3 2 1
+8  2 4 2 1
+9  3 1 2 2
+10 3 2 2 2
+11 3 3 2 2
+12 3 4 2 2
+13 1 1 1 2
+14 1 2 1 2
+15 1 3 1 2
+16 1 4 1 2
+17 2 1 1 3
+18 2 2 1 3
+19 2 3 2 3
+20 2 4 2 3
+21 3 1 2 3
+22 3 2 2 3
+23 3 3 2 3
+24 3 4 2 3
+> dd. <- dd3[- c(1, 13:15, 17), ]
+> set.seed(17)
+> dd4 <- cbind(dd, c = gl(2,6), d = gl(8,3))
+> dd4 <- cbind(dd4, x = round(rnorm(nrow(dd4)), 1))
+> dd4 <- dd4[- c(1, 13:15, 17), ]
+> ##-> 'd' has unused levels
+> dM <- dd4
+> dM$X <- outer(10*rpois(nrow(dM), 2), 1:3)
+> dM$Y <- cbind(pmax(0, dM$x - .3), floor(4*rnorm(nrow(dM))))
+> str(dM)# contains *matrices*
+'data.frame':	19 obs. of  7 variables:
+ $ a: Factor w/ 3 levels "1","2","3": 1 1 1 2 2 2 2 3 3 3 ...
+ $ b: Factor w/ 4 levels "1","2","3","4": 2 3 4 1 2 3 4 1 2 3 ...
+ $ c: Factor w/ 2 levels "1","2": 1 1 1 1 1 2 2 2 2 2 ...
+ $ d: Factor w/ 8 levels "1","2","3","4",..: 1 1 2 2 2 3 3 3 4 4 ...
+ $ x: num  -0.1 -0.2 -0.8 0.8 -0.2 1 1.7 0.3 0.4 1.2 ...
+ $ X: num [1:19, 1:3] 10 20 40 0 20 10 20 30 20 10 ...
+ $ Y: num [1:19, 1:2] 0 0 0 0.5 0 0.7 1.4 0 0.1 0.9 ...
+> 
+> options("contrasts") # the default:  "contr.treatment"
+$contrasts
+        unordered           ordered 
+"contr.treatment"      "contr.poly" 
+
+> op <- options(sparse.colnames = TRUE) # for convenience
+> 
+> stopifnot(identical(## non-sensical, but "should work" (with a warning each):
++ 		    sparse.model.matrix(a~ 1, dd),
++ 		    sparse.model.matrix( ~ 1, dd)))
+> sparse.model.matrix(~ a + b, dd, contrasts = list(a="contr.sum"))
+12 x 6 sparse Matrix of class "dgCMatrix"
+   (Intercept) a1 a2 b2 b3 b4
+1            1  1  .  .  .  .
+2            1  1  .  1  .  .
+3            1  1  .  .  1  .
+4            1  1  .  .  .  1
+5            1  .  1  .  .  .
+6            1  .  1  1  .  .
+7            1  .  1  .  1  .
+8            1  .  1  .  .  1
+9            1 -1 -1  .  .  .
+10           1 -1 -1  1  .  .
+11           1 -1 -1  .  1  .
+12           1 -1 -1  .  .  1
+> sparse.model.matrix(~ a + b, dd, contrasts = list(b="contr.SAS"))
+12 x 6 sparse Matrix of class "dgCMatrix"
+   (Intercept) a2 a3 b1 b2 b3
+1            1  .  .  1  .  .
+2            1  .  .  .  1  .
+3            1  .  .  .  .  1
+4            1  .  .  .  .  .
+5            1  1  .  1  .  .
+6            1  1  .  .  1  .
+7            1  1  .  .  .  1
+8            1  1  .  .  .  .
+9            1  .  1  1  .  .
+10           1  .  1  .  1  .
+11           1  .  1  .  .  1
+12           1  .  1  .  .  .
+> xm <-  sparse.model.matrix(~ x, dM) # {no warning anymore ...}
+> dxm <- Matrix(model.matrix(~ x, dM), sparse=TRUE)
+> stopifnot(is(xm, "sparseMatrix"), mEQ(as(xm,"generalMatrix"), dxm))
+> 
+> ## Sparse method is equivalent to the traditional one :
+> stopifnot(isEQsparseDense(~ a + b, dd),
++           suppressWarnings(isEQsparseDense(~ x, dM)),
++           isEQsparseDense(~ 0 + a + b, dd),
++ 	  identical(sparse.model.matrix(~  0 + a + b, dd),
++ 		    sparse.model.matrix(~ -1 + a + b, dd)),
++           isEQsparseDense(~ a + b, dd, contrasts = list(a="contr.sum")),
++           isEQsparseDense(~ a + b, dd, contrasts = list(a="contr.SAS")),
++ 	  ## contrasts as *functions* or contrast *matrices* :
++ 	  isEQsparseDense(~ a + b, dd,
++ 			  contrasts = list(a=contr.sum, b=contr.treatment(4))),
++ 	  isEQsparseDense(~ a + b, dd, contrasts =
++ 			  list(a=contr.SAS(3),# << ok after 'contrasts<-' update
++                                b = function(n, contr=TRUE, sparse=FALSE)
++                                contr.sum(n=n, contr=contr, sparse=sparse))))
+> 
+> sm <- sparse.model.matrix(~a * b, dd,
++                           contrasts = list(a= contr.SAS(3, sparse = TRUE)))
+> sm
+12 x 12 sparse Matrix of class "dgCMatrix"
+   (Intercept) a1 a2 b2 b3 b4 a1:b2 a2:b2 a1:b3 a2:b3 a1:b4 a2:b4
+1            1  1  .  .  .  .     .     .     .     .     .     .
+2            1  1  .  1  .  .     1     .     .     .     .     .
+3            1  1  .  .  1  .     .     .     1     .     .     .
+4            1  1  .  .  .  1     .     .     .     .     1     .
+5            1  .  1  .  .  .     .     .     .     .     .     .
+6            1  .  1  1  .  .     .     1     .     .     .     .
+7            1  .  1  .  1  .     .     .     .     1     .     .
+8            1  .  1  .  .  1     .     .     .     .     .     1
+9            1  .  .  .  .  .     .     .     .     .     .     .
+10           1  .  .  1  .  .     .     .     .     .     .     .
+11           1  .  .  .  1  .     .     .     .     .     .     .
+12           1  .  .  .  .  1     .     .     .     .     .     .
+> ## FIXME: Move part of this to ../../MatrixModels/tests/
+> ##stopifnot(all(sm == model.Matrix( ~a * b, dd, contrasts= list(a= contr.SAS(3)))))
+> 
+> ##
+> stopifnot(isEQsparseDense(~ a + b   + c + d, dd.))
+> stopifnot(isEQsparseDense(~ a + b:c + c + d, dd.))
+> ## no intercept -- works too
+> stopifnot(isEQsparseDense(~ -1+ a + b   + c + d, dd.))
+> stopifnot(isEQsparseDense(~ 0 + a + b:c + c + d, dd.))
+> 
+> 
+> Sparse.model.matrix <- function(...) {
++     s <- sparse.model.matrix(...)
++     as(s, "generalMatrix")# dropping 'assign',.. slots
++ }
+> ##
+> dim(mm <- Matrix(model.matrix(~ a + b + c + d, dd4), sparse=TRUE))
+[1] 19 14
+> dim(sm  <- Sparse.model.matrix(~ a + b + c + d, dd4))
+[1] 19 14
+> ## was (19 13), when 'drop.unused.levels' was implicitly TRUE
+> dim(sm. <- Sparse.model.matrix(~ a + b + c + d, dd4, drop.unused.levels=TRUE))
+[1] 19 13
+> stopifnot(mEQ(sm , mm), ## (both have a zero column)
++ 	  mEQ(sm., mm)) ## << that's ok, since mm has all-0 column !
+x had  1  zero-columns
+y had  1  zero-columns
+y had  1  zero-columns
+> ## look at this :
+> all(mm[,"d5"] == 0)  ## !!!! --- correct: a column of all 0  <--> dropped level!
+[1] TRUE
+> stopifnot(all.equal(sm., mm[, - which("d5" == colnames(mm))])) ## indeed !
+> ## i.e., sm has just dropped an all zero column --- which it should!
+> 
+> stopifnot(isEQsparseDense(~ 1 + sin(x) + b*c + a:x, dd4, show=TRUE))
+       sin(x) b c b:c a:x
+sin(x)      1 0 0   0   0
+b           0 1 0   1   0
+c           0 0 1   1   0
+a           0 0 0   0   2
+x           0 0 0   0   2
+> 
+> stopifnot(isEQsparseDense(~    I(a) + b*c + a:x, dd4, show=TRUE))
+     I(a) b c b:c a:x
+I(a)    1 0 0   0   0
+b       0 1 0   1   0
+c       0 0 1   1   0
+a       0 0 0   0   2
+x       0 0 0   0   2
+> ## no intercept -- works too
+> stopifnot(isEQsparseDense(~ 0+ I(a) + b*c + a:x, dd4, show=TRUE))
+     I(a) b c b:c a:x
+I(a)    1 0 0   0   0
+b       0 1 0   1   0
+c       0 0 1   1   0
+a       0 0 0   0   2
+x       0 0 0   0   2
+> 
+> f <- ~ 1 + a + b*c + a*x
+> attr(terms(f, data=dd4), "factors")
+  a b c x b:c a:x
+a 1 0 0 0   0   1
+b 0 1 0 0   1   0
+c 0 0 1 0   1   0
+x 0 0 0 1   0   1
+> dim(mm <- Matrix(model.matrix(f, data=dd4), sparse=TRUE))
+[1] 19 13
+> dim(sm <- Sparse.model.matrix(f, data=dd4)) # ==
+[1] 19 13
+> stopifnot(mEQ(sm, mm))
+> 
+> f <- ~ a*X + X*Y + a*c
+> attr(terms(f, data=dM), "factors")
+  a X Y c a:X X:Y a:c
+a 1 0 0 0   1   0   1
+X 0 1 0 0   1   1   0
+Y 0 0 1 0   0   1   0
+c 0 0 0 1   0   0   1
+> dim(mm <- Matrix(model.matrix(f, data=dM), sparse=TRUE))
+[1] 19 23
+> dim(sm <- Sparse.model.matrix(f, data=dM, verbose=TRUE))
+model.spmatrix(t, data, ..)  with t =
+Classes 'terms', 'formula'  language ~a * X + X * Y + a * c
+model.spm..(): (n=19, nVar=4 (m=4), nTrm=7)
+ --> indF =
+a c 
+1 4 
+ ---> f.matr list :
+List of 2
+ $ a:List of 2
+ $ c:List of 2
+term[ 1] “a”   .. sparseInt.r(<list>[1:1], f.Sp=TRUE): is.mat()= (.)
+ -- concatenating (r, rj): dim = (19, 1) | ( 2,19)
+term[ 2] “X”   .. sparseInt.r(<list>[1:1], f.Sp=TRUE): is.mat()= (|)
+ -- concatenating (r, rj): dim = (19, 3) | ( 3,19)
+term[ 3] “Y”   .. sparseInt.r(<list>[1:1], f.Sp=TRUE): is.mat()= (|)
+ -- concatenating (r, rj): dim = (19, 6) | ( 2,19)
+term[ 4] “c”   .. sparseInt.r(<list>[1:1], f.Sp=TRUE): is.mat()= (.)
+ -- concatenating (r, rj): dim = (19, 8) | ( 1,19)
+term[ 5] “a:X” .. sparseInt.r(<list>[1:2], f.Sp=TRUE): is.mat()= (.|)
+ sp..2int(<sparse>[2],<N>[3])  -- concatenating (r, rj): dim = (19, 9) | ( 6,19)
+term[ 6] “X:Y” .. sparseInt.r(<list>[1:2], f.Sp=TRUE): is.mat()= (||)
+ sp..2int(<N>[3],<N>[2])  -- concatenating (r, rj): dim = (19,15) | ( 6,19)
+term[ 7] “a:c” .. sparseInt.r(<list>[1:2], f.Sp=TRUE): is.mat()= (..)
+ sp..2int(<sparse>[2],<sparse>[1])  -- concatenating (r, rj): dim = (19,21) | ( 2,19)
+[1] 19 23
+> stopifnot(mEQ(sm, mm))
+> 
+> ## high order
+> f <- ~ a:b:X:c:Y
+> mm <- Matrix(model.matrix(f, data=dM), sparse=TRUE)
+> sm <- Sparse.model.matrix(f, data=dM, verbose=2)
+model.spmatrix(t, data, ..)  with t =
+Classes 'terms', 'formula'  language ~a:b:X:c:Y
+model.spm..(): (n=19, nVar=5 (m=5), nTrm=1)
+ --> indF =
+a b c 
+1 2 4 
+ ---> f.matr list :
+List of 3
+ $ a:List of 2
+  ..$ : NULL
+  ..$ :Formal class 'dgCMatrix' [package "Matrix"] with 6 slots
+ $ b:List of 2
+  ..$ : NULL
+  ..$ :Formal class 'dgCMatrix' [package "Matrix"] with 6 slots
+ $ c:List of 2
+  ..$ : NULL
+  ..$ :Formal class 'dgCMatrix' [package "Matrix"] with 6 slots
+term[ 1] “a:b:X:c:Y” .. sparseInt.r(<list>[1:5], f.Sp=TRUE): is.mat()= (..|.|)
+ sp..2int(<sparse>[3],<sparse>[4])  sp..2int(<sparse>[12],<N>[3])  sp..2int(<sparse>[36],<sparse>[2])  sp..2int(<sparse>[72],<N>[2])  -- concatenating (r, rj): dim = (19, 1) | (144,19)
+> stopifnot(mEQ(sm, mm))
+x had  102  zero-columns
+y had  102  zero-columns
+> 
+> 
+> f <- ~ 1 + a + b*c + a*x + b*d*x + b:c:d
+> attr(terms(f, data=dd4), "factors")
+  a b c x d b:c a:x b:d b:x x:d b:x:d b:c:d
+a 1 0 0 0 0   0   1   0   0   0     0     0
+b 0 1 0 0 0   1   0   1   1   0     1     2
+c 0 0 1 0 0   1   0   0   0   0     0     1
+x 0 0 0 1 0   0   1   0   1   1     1     0
+d 0 0 0 0 1   0   0   1   0   1     1     1
+> dim(mm <- Matrix(model.matrix(f, data=dd4), sparse=TRUE))            ## 19 100
+[1]  19 100
+> dim(sm  <- Sparse.model.matrix(f, data=dd4))                         ## (ditto)
+[1]  19 100
+> dim(sm. <- Sparse.model.matrix(f, data=dd4, drop.unused.levels=TRUE)) # 19  88
+[1] 19 88
+> stopifnot(mEQ(sm, mm), mEQ(sm., mm))# {32, 32;  20 and 32  zero-columns ..}
+x had  32  zero-columns
+y had  32  zero-columns
+x had  20  zero-columns
+y had  32  zero-columns
+> 
+> ## now get a bit courageous:
+> ##
+> 
+> ## stopifnot(isEQsparseDense(~ 1 + c + a:b:d,         dat=dd4))
+> dim(mm <- Matrix(model.matrix(~ 1 + a + b*c + a:b:c:d, data=dd4),
++                  sparse=TRUE)) ## 19 202
+[1]  19 202
+> dim(sm  <- Sparse.model.matrix(~ 1 + a + b*c + a:b:c:d, data=dd4))
+[1]  19 202
+> dim(sm. <- Sparse.model.matrix(~ 1 + a + b*c + a:b:c:d, data=dd4,
++ 			       drop.unused.levels=TRUE))
+[1]  19 178
+> stopifnot(mEQ(sm, mm), mEQ(sm., mm))# {173, 173, 149 and 173 zero-columns !}
+x had  173  zero-columns
+y had  173  zero-columns
+x had  149  zero-columns
+y had  173  zero-columns
+> 
+> ## stopifnot(isEQsparseDense(~ 1 + a + b*c + a:b:c:d, dat=dd4))
+> dim(mm <- Matrix(model.matrix(~ 1 + a + b:c + a:b:d, data=dd4),
++                  sparse=TRUE)) ## 19 107
+[1]  19 107
+> dim(sm  <- Sparse.model.matrix(~ 1 + a + b:c + a:b:d, data=dd4))
+[1]  19 107
+> dim(sm. <- Sparse.model.matrix(~ 1 + a + b:c + a:b:d, data=dd4,
++ 			       drop.unused.levels=TRUE))
+[1] 19 95
+> stopifnot(mEQ(sm, mm), mEQ(sm., mm))
+x had  77  zero-columns
+y had  77  zero-columns
+x had  65  zero-columns
+y had  77  zero-columns
+> 
+> dim(mm <- Matrix(model.matrix(~ a*b*c +c*d, dd4), sparse=TRUE)) ## 19 38
+[1] 19 38
+> dim(sm  <- Sparse.model.matrix(~ a*b*c +c*d, dd4))# (ditto)
+[1] 19 38
+> dim(sm. <- Sparse.model.matrix(~ a*b*c +c*d, dd4, drop.unused.levels=TRUE))
+[1] 19 36
+> stopifnot(mEQ(sm, mm), mEQ(sm., mm))
+x had  5  zero-columns
+y had  5  zero-columns
+x had  3  zero-columns
+y had  5  zero-columns
+> 
+> 
+> f1 <- ~ (a+b+c+d)^2 + (a+b):c:d + a:b:c:d
+> f2 <- ~ (a+b+c+d)^4 - a:b:c - a:b:d
+>     mm1 <- Matrix(model.matrix(f1, dd4), sparse=TRUE)
+> dim(mm2 <- Matrix(model.matrix(f2, dd4), sparse=TRUE))
+[1]  19 198
+>     sm1 <- sparse.model.matrix(f1, dd4)
+> dim(sm2 <- sparse.model.matrix(f2, dd4))
+[1]  19 198
+>     s.1 <- sparse.model.matrix(f1, dd4, drop.unused.levels=TRUE)
+> dim(s.2 <- sparse.model.matrix(f2, dd4, drop.unused.levels=TRUE))
+[1]  19 174
+> stopifnot(identical(mm1,mm2),
++ 	  identical(sm1,sm2), identical(s.1,s.2),
++ 		mEQ(sm1,mm1),	    mEQ(s.1,mm1))
+x had  120  zero-columns
+y had  120  zero-columns
+x had  96  zero-columns
+y had  120  zero-columns
+> 
+> str(dd <- data.frame(d = gl(10,6), a = ordered(gl(3,20))))
+'data.frame':	60 obs. of  2 variables:
+ $ d: Factor w/ 10 levels "1","2","3","4",..: 1 1 1 1 1 1 2 2 2 2 ...
+ $ a: Ord.factor w/ 3 levels "1"<"2"<"3": 1 1 1 1 1 1 1 1 1 1 ...
+> X. <- sparse.model.matrix(~ a + d, data = dd)
+> ## failed because of contr.poly default in Matrix 0.999375-33
+> stopifnot(dim(X.) == c(60, 12), nnzero(X.) == 234,
++ 	  isEQsparseDense(~ 0 + d + I(as.numeric(d)^2), dd))
+> ## I(.) failed (upto 2010-05-07)
+> 
+> cat('Time elapsed: ', proc.time(),'\n') # for ``statistical reasons''
+Time elapsed:  2.036 0.359 2.006 0.009 0.003 
+> 
+> if(!interactive()) warnings()
+> 

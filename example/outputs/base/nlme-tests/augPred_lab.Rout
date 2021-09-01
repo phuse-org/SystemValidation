@@ -1,0 +1,240 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(nlme)
+> if(require("Hmisc")) {
++     T.aug <- Orthodont
++     label(T.aug$age) <- 'anyL'
++     foo <- augPred(lme(distance ~ age, random = ~1|Subject, data=T.aug))
++     ## failed in 3.1-72
++ }
+Loading required package: Hmisc
+Warning message:
+In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘Hmisc’
+> 
+> ## failed even if there is a variable with a class that is not being used.
+> T.aug <- Orthodont
+> T.aug$newage <- T.aug$age
+> class(T.aug$newage) <- 'anyC'
+> foo <- augPred(lme(distance ~ age, random = ~1|Subject, data=T.aug))
+> ## failed in 3.1-72
+> 
+> ## [Bug 16715] New: nlme: unable to use  predict and augPredict functions in non linear mixed models
+> ## Date: Wed, 17 Feb 2016
+> 
+> M1.lis <- nlsList( SSlogis, data=Soybean)
+Warning message:
+2 errors caught in nls(y ~ 1/(1 + exp((xmid - x)/scal)), data = xy, start = list(xmid = aux[[1L]], scal = aux[[2L]]), algorithm = "plinear").  The error messages and their frequencies are
+
+                     number of iterations exceeded maximum of 50 
+                                                               1 
+step factor 0.000488281 reduced below 'minFactor' of 0.000976562 
+                                                               1  
+> ## prints "Error in qr.solve(QR.B, cc): singular matrix 'a' in solve"
+> ## ==> MM: 2016-03-11 "fixed": now prints it as warning [you could suppress or catch]
+> ## ==> one NA row '1989P8' in this:
+> M1.lis
+Call:
+  Model: weight ~ SSlogis(Time, Asym, xmid, scal) | Plot 
+   Data: Soybean 
+
+Coefficients:
+             Asym      xmid      scal
+1988F4  15.151550  52.83408  5.176820
+1988F2  19.745419  56.57507  8.406559
+1988F1  20.338407  57.40242  9.604743
+1988F7  19.871203  56.16159  8.069281
+1988F5  30.648921  64.12999 11.262835
+1988F8  22.777043  59.33033  9.000647
+1988F6  23.293137  59.59762  9.718840
+1988F3  23.697110  56.42461  7.642380
+1988P1  17.300492  48.84945  6.362358
+1988P5  17.703754  51.27156  6.809096
+1988P4  24.008910  57.75124 11.744706
+1988P8  28.249591  62.98014 10.947130
+1988P7  27.485995  61.49839 10.177799
+1988P3  24.939006  56.32520  8.315917
+1988P2  36.661160  66.56078 11.916114
+1988P6 163.702464 104.97341 17.929675
+1989F6   8.509308  55.27332  8.856063
+1989F5   9.669081  51.26706  7.205896
+1989F4  11.247524  53.81049  6.486573
+1989F1  11.251052  56.62630  6.068136
+1989F2  11.233333  52.24016  7.016427
+1989F7  10.071395  51.37754  5.500159
+1989F8  10.609519  47.96772  5.960926
+1989F3  18.419564  66.12355  9.224764
+1989P7  15.471897  46.34313  5.393890
+1989P4  18.177522  57.18041  8.402098
+1989P6  20.498831  58.23818 10.613533
+1989P5         NA        NA        NA
+1989P1  21.683985  59.69305  9.972837
+1989P3  22.283750  53.39565  7.900595
+1989P2  28.296972  67.17505 12.523509
+1989P8         NA        NA        NA
+1990F2  19.459102  66.28541 13.157219
+1990F3  19.867932  58.27752 12.796287
+1990F4  27.435518  70.27180 14.560188
+1990F5  18.719501  51.27603  7.758448
+1990F1  19.790735  55.69340  9.617031
+1990F8  20.290441  55.54949  7.771085
+1990F7  19.835326  54.73623  6.792194
+1990F6  21.197115  54.56184  9.263610
+1990P8  18.513513  52.44794  8.581012
+1990P7  19.160767  54.80233 10.847282
+1990P3  19.198083  49.71495  9.322305
+1990P1  18.448379  47.91706  6.611841
+1990P6  17.689700  50.23032  6.626907
+1990P5  19.544895  51.15028  7.293155
+1990P2  25.787243  62.35966 11.656924
+1990P4  26.128905  61.19885 10.971539
+
+Degrees of freedom: 396 total; 258 residual
+Residual standard error: 1.020867
+> ##  Nonlinear Logistic Growth -- each of the 3 par. (Asym, xmid, scal) has RE term
+> ##  Model: weight ~ SSlogis(Time, Asym, xmid, scal) | Plot
+> 
+> M1.nlme <- nlme( M1.lis )
+> summary(M1.nlme)
+Nonlinear mixed-effects model fit by maximum likelihood
+  Model: weight ~ SSlogis(Time, Asym, xmid, scal) 
+ Data: Soybean 
+       AIC      BIC    logLik
+  1499.671 1539.881 -739.8355
+
+Random effects:
+ Formula: list(Asym ~ 1, xmid ~ 1, scal ~ 1)
+ Level: Plot
+ Structure: General positive-definite, Log-Cholesky parametrization
+         StdDev   Corr       
+Asym     5.201193 Asym  xmid 
+xmid     4.197472 0.721      
+scal     1.404749 0.711 0.958
+Residual 1.123460            
+
+Fixed effects: list(Asym ~ 1, xmid ~ 1, scal ~ 1) 
+        Value Std.Error  DF  t-value p-value
+Asym 19.25301 0.8031927 362 23.97060       0
+xmid 55.01984 0.7272724 362 75.65232       0
+scal  8.40332 0.3152902 362 26.65267       0
+ Correlation: 
+     Asym  xmid 
+xmid 0.724      
+scal 0.620 0.807
+
+Standardized Within-Group Residuals:
+        Min          Q1         Med          Q3         Max 
+-6.08693060 -0.22160529 -0.03390446  0.29741276  4.84689258 
+
+Number of Observations: 412
+Number of Groups: 48 
+> ## R 3.2.2 (nlme 3.1-121) :
+> ## Nonlinear mixed-effects model fit by maximum likelihood
+> ##   Model: weight ~ SSlogis(Time, Asym, xmid, scal)
+> ##  Data: Soybean
+> ##        AIC      BIC    logLik
+> ##   1499.671 1539.881 -739.8354
+> 
+> ## Random effects:
+> ##  Formula: list(Asym ~ 1, xmid ~ 1, scal ~ 1)
+> ##  Level: Plot
+> ##  Structure: General positive-definite, Log-Cholesky parametrization
+> ##          StdDev   Corr
+> ## Asym     5.201186 Asym  xmid
+> ## xmid     4.197467 0.721
+> ## scal     1.404737 0.711 0.958
+> ## Residual 1.123461
+> 
+> ## Fixed effects: list(Asym ~ 1, xmid ~ 1, scal ~ 1)
+> ##         Value Std.Error  DF  t-value p-value
+> ## Asym 19.25301 0.8031921 362 23.97062       0
+> ## xmid 55.01985 0.7272721 362 75.65235       0
+> ## scal  8.40333 0.3152893 362 26.65276       0
+> ##  Correlation:
+> ##      Asym  xmid
+> ## xmid 0.724
+> ## scal 0.620 0.807
+> 
+> ## Standardized Within-Group Residuals:
+> ##         Min          Q1         Med          Q3         Max
+> ## -6.08691772 -0.22160816 -0.03390491  0.29741145  4.84688248
+> 
+> ## Number of Observations: 412
+> ## Number of Groups: 48
+> 
+> M1.Fix <- fixef(M1.nlme)
+> ## add fixed effect 'Variety' :
+> M2.nlme <- update(M1.nlme, fixed = Asym + xmid + scal ~ Variety,
++                   start = c(M1.Fix[1], 1, M1.Fix[2], 1, M1.Fix[3], 1))
+> summary(M2.nlme)
+Nonlinear mixed-effects model fit by maximum likelihood
+  Model: weight ~ SSlogis(Time, Asym, xmid, scal) 
+ Data: Soybean 
+       AIC      BIC   logLik
+  1484.756 1537.029 -729.378
+
+Random effects:
+ Formula: list(Asym ~ 1, xmid ~ 1, scal ~ 1)
+ Level: Plot
+ Structure: General positive-definite, Log-Cholesky parametrization
+                 StdDev   Corr         
+Asym.(Intercept) 4.652662 As.(I) xm.(I)
+xmid.(Intercept) 4.149106 0.798        
+scal.(Intercept) 1.373320 0.728  0.977 
+Residual         1.127914              
+
+Fixed effects: Asym + xmid + scal ~ Variety 
+                    Value Std.Error  DF  t-value p-value
+Asym.(Intercept) 16.94691 1.0307385 359 16.44153  0.0000
+Asym.VarietyP     4.56563 1.4629952 359  3.12074  0.0020
+xmid.(Intercept) 54.87641 1.0560204 359 51.96529  0.0000
+xmid.VarietyP     0.18128 1.4502850 359  0.12499  0.9006
+scal.(Intercept)  8.22891 0.4746845 359 17.33554  0.0000
+scal.VarietyP     0.37329 0.6343588 359  0.58846  0.5566
+ Correlation: 
+                 As.(I) Asy.VP xm.(I) xmd.VP sc.(I)
+Asym.VarietyP    -0.705                            
+xmid.(Intercept)  0.780 -0.549                     
+xmid.VarietyP    -0.568  0.790 -0.728              
+scal.(Intercept)  0.618 -0.435  0.801 -0.583       
+scal.VarietyP    -0.463  0.635 -0.599  0.812 -0.748
+
+Standardized Within-Group Residuals:
+        Min          Q1         Med          Q3         Max 
+-6.05908274 -0.21964060 -0.03792951  0.29898268  4.80292348 
+
+Number of Observations: 412
+Number of Groups: 48 
+> pred.m2 <- predict(M2.nlme, level = 0:1)
+> stopifnot(is.data.frame(pred.m2), dim(pred.m2) == c(412, 3))
+> 
+> augp.m2 <- augPred(M2.nlme, level = 0:1)
+> ## failed in nlme-3.1-124/5
+> 
+> stopifnot(is.data.frame(augp.m2), dim(augp.m2) == c(5308, 4)
++           ,
++           all.equal(colMeans(augp.m2[,c("Time","weight")]),
++                     c(Time = 48.585908, weight =7.8599693), tolerance = 1e-6)# was 1e-7, 2e-9 but failed with ATLAS builds
++           ,
++           identical(c(table(augp.m2[,".type"])),
++                     c(predict.fixed = 2448L, predict.Plot = 2448L, original = 412L))
++           ,
++           identical(c(table(as.vector(table(augp.m2[,".groups"])))),
++                     c("110" = 33L, "111" = 2L, "112" = 13L))
++ )
+> 

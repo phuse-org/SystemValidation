@@ -1,0 +1,225 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "mime"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('mime')
+Warning: package ‘mime’ was built under R version 4.0.5
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("guess_type")
+> ### * guess_type
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: guess_type
+> ### Title: Guess the MIME types from filenames
+> ### Aliases: guess_type
+> 
+> ### ** Examples
+> 
+> library(mime)
+> # well-known file types
+> guess_type(c("a/b/c.html", "d.pdf", "e.odt", "foo.docx", "tex"))
+[1] "text/html"                                                              
+[2] "application/pdf"                                                        
+[3] "application/vnd.oasis.opendocument.text"                                
+[4] "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+[5] "text/plain"                                                             
+> # not in the standard table, but in mimeextra
+> guess_type(c("a.md", "b.R"), mime_extra = NULL)
+[1] "text/markdown"            "application/octet-stream"
+> guess_type(c("a.md", "b.R"))
+[1] "text/markdown" "text/plain"   
+> 
+> # override the standard MIME table (tex is text/x-tex by default)
+> guess_type("tex", mime_extra = c(tex = "text/plain"))
+[1] "text/plain"
+> # unknown extension 'bar'
+> guess_type("foo.bar")
+[1] "application/octet-stream"
+> # force unknown types to be plain text
+> guess_type("foo.bar", unknown = "text/plain")
+[1] "text/plain"
+> 
+> # empty file extension
+> guess_type("Makefile")
+[1] "text/plain"
+> # we know it is a plain text file
+> guess_type("Makefile", empty = "text/plain")
+[1] "text/plain"
+> 
+> # subtypes
+> guess_type(c("abc.html", "def.htm"), subtype = c("charset=UTF-8", ""))
+[1] "text/html; charset=UTF-8" "text/html"               
+> 
+> 
+> 
+> cleanEx()
+> nameEx("mimemap")
+> ### * mimemap
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: mimemap
+> ### Title: Tables for mapping filename extensions to MIME types
+> ### Aliases: mimemap mimeextra
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> str(as.list(mimemap))
+List of 545
+ $ ez         : chr "application/andrew-inset"
+ $ anx        : chr "application/annodex"
+ $ atom       : chr "application/atom+xml"
+ $ atomcat    : chr "application/atomcat+xml"
+ $ atomsrv    : chr "application/atomserv+xml"
+ $ lin        : chr "application/bbolin"
+ $ cu         : chr "application/cu-seeme"
+ $ davmount   : chr "application/davmount+xml"
+ $ dcm        : chr "application/dicom"
+ $ tsp        : chr "application/dsptype"
+ $ es         : chr "application/ecmascript"
+ $ otf        : chr "application/font-sfnt"
+ $ ttf        : chr "application/font-sfnt"
+ $ pfr        : chr "application/font-tdpfr"
+ $ woff       : chr "application/font-woff"
+ $ spl        : chr "application/futuresplash"
+ $ gz         : chr "application/gzip"
+ $ hta        : chr "application/hta"
+ $ jar        : chr "application/java-archive"
+ $ ser        : chr "application/java-serialized-object"
+ $ class      : chr "application/java-vm"
+ $ js         : chr "application/javascript"
+ $ json       : chr "application/json"
+ $ m3g        : chr "application/m3g"
+ $ hqx        : chr "application/mac-binhex40"
+ $ cpt        : chr "application/mac-compactpro"
+ $ nb         : chr "application/mathematica"
+ $ nbp        : chr "application/mathematica"
+ $ mbox       : chr "application/mbox"
+ $ mdb        : chr "application/msaccess"
+ $ doc        : chr "application/msword"
+ $ dot        : chr "application/msword"
+ $ mxf        : chr "application/mxf"
+ $ bin        : chr "application/octet-stream"
+ $ deploy     : chr "application/octet-stream"
+ $ msu        : chr "application/octet-stream"
+ $ msp        : chr "application/octet-stream"
+ $ oda        : chr "application/oda"
+ $ opf        : chr "application/oebps-package+xml"
+ $ ogx        : chr "application/ogg"
+ $ one        : chr "application/onenote"
+ $ onetoc2    : chr "application/onenote"
+ $ onetmp     : chr "application/onenote"
+ $ onepkg     : chr "application/onenote"
+ $ pdf        : chr "application/pdf"
+ $ pgp        : chr "application/pgp-encrypted"
+ $ key        : chr "application/pgp-keys"
+ $ sig        : chr "application/pgp-signature"
+ $ prf        : chr "application/pics-rules"
+ $ ps         : chr "application/postscript"
+ $ ai         : chr "application/postscript"
+ $ eps        : chr "application/postscript"
+ $ epsi       : chr "application/postscript"
+ $ epsf       : chr "application/postscript"
+ $ eps2       : chr "application/postscript"
+ $ eps3       : chr "application/postscript"
+ $ rar        : chr "application/rar"
+ $ rdf        : chr "application/rdf+xml"
+ $ rtf        : chr "application/rtf"
+ $ stl        : chr "application/sla"
+ $ smi        : chr "application/smil+xml"
+ $ smil       : chr "application/smil+xml"
+ $ xhtml      : chr "application/xhtml+xml"
+ $ xht        : chr "application/xhtml+xml"
+ $ xml        : chr "application/xml"
+ $ xsd        : chr "application/xml"
+ $ xsl        : chr "application/xslt+xml"
+ $ xslt       : chr "application/xslt+xml"
+ $ xspf       : chr "application/xspf+xml"
+ $ zip        : chr "application/zip"
+ $ apk        : chr "application/vnd.android.package-archive"
+ $ cdy        : chr "application/vnd.cinderella"
+ $ deb        : chr "application/vnd.debian.binary-package"
+ $ ddeb       : chr "application/vnd.debian.binary-package"
+ $ udeb       : chr "application/vnd.debian.binary-package"
+ $ sfd        : chr "application/vnd.font-fontforge-sfd"
+ $ kml        : chr "application/vnd.google-earth.kml+xml"
+ $ kmz        : chr "application/vnd.google-earth.kmz"
+ $ xul        : chr "application/vnd.mozilla.xul+xml"
+ $ xls        : chr "application/vnd.ms-excel"
+ $ xlb        : chr "application/vnd.ms-excel"
+ $ xlt        : chr "application/vnd.ms-excel"
+ $ xlam       : chr "application/vnd.ms-excel.addin.macroEnabled.12"
+ $ xlsb       : chr "application/vnd.ms-excel.sheet.binary.macroEnabled.12"
+ $ xlsm       : chr "application/vnd.ms-excel.sheet.macroEnabled.12"
+ $ xltm       : chr "application/vnd.ms-excel.template.macroEnabled.12"
+ $ eot        : chr "application/vnd.ms-fontobject"
+ $ thmx       : chr "application/vnd.ms-officetheme"
+ $ cat        : chr "application/vnd.ms-pki.seccat"
+ $ ppt        : chr "application/vnd.ms-powerpoint"
+ $ pps        : chr "application/vnd.ms-powerpoint"
+ $ ppam       : chr "application/vnd.ms-powerpoint.addin.macroEnabled.12"
+ $ pptm       : chr "application/vnd.ms-powerpoint.presentation.macroEnabled.12"
+ $ sldm       : chr "application/vnd.ms-powerpoint.slide.macroEnabled.12"
+ $ ppsm       : chr "application/vnd.ms-powerpoint.slideshow.macroEnabled.12"
+ $ potm       : chr "application/vnd.ms-powerpoint.template.macroEnabled.12"
+ $ docm       : chr "application/vnd.ms-word.document.macroEnabled.12"
+ $ dotm       : chr "application/vnd.ms-word.template.macroEnabled.12"
+ $ odc        : chr "application/vnd.oasis.opendocument.chart"
+  [list output truncated]
+> mimemap["pdf"]
+              pdf 
+"application/pdf" 
+> mimemap[c("html", "js", "css")]
+                    html                       js                      css 
+             "text/html" "application/javascript"               "text/css" 
+> # additional MIME types (not exported)
+> mime:::mimeextra
+                         geojson                             gpkg 
+      "application/vnd.geo+json" "application/geopackage+sqlite3" 
+                           jsonp                                r 
+        "application/javascript"                     "text/plain" 
+                              rd                              rmd 
+                    "text/plain"                "text/x-markdown" 
+                             rnw                            rproj 
+                 "text/x-sweave"                   "text/rstudio" 
+                             yml                             scss 
+                     "text/yaml"                       "text/css" 
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.163 0.015 0.18 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

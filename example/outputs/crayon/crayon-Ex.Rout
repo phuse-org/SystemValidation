@@ -1,0 +1,559 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "crayon"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('crayon')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("col_align")
+> ### * col_align
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: col_align
+> ### Title: Align an ANSI colored string
+> ### Aliases: col_align
+> 
+> ### ** Examples
+> 
+> col_align(red("foobar"), 20, "left")
+[1] "foobar              "
+> col_align(red("foobar"), 20, "center")
+[1] "       foobar       "
+> col_align(red("foobar"), 20, "right")
+[1] "              foobar"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("col_nchar")
+> ### * col_nchar
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: col_nchar
+> ### Title: Count number of characters in an ANSI colored string
+> ### Aliases: col_nchar
+> 
+> ### ** Examples
+> 
+> str <- paste(
++   red("red"),
++   "default",
++   green("green")
++ )
+> 
+> cat(str, "\n")
+red default green 
+> nchar(str)
+[1] 17
+> col_nchar(str)
+[1] 17
+> nchar(strip_style(str))
+[1] 17
+> 
+> 
+> 
+> cleanEx()
+> nameEx("col_strsplit")
+> ### * col_strsplit
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: col_strsplit
+> ### Title: Split an ANSI colored string
+> ### Aliases: col_strsplit
+> 
+> ### ** Examples
+> 
+> str <- red("I am red---") %+%
++   green("and I am green-") %+%
++   underline("I underlined")
+> 
+> cat(str, "\n")
+I am red---and I am green-I underlined 
+> 
+> # split at dashes, keep color
+> cat(col_strsplit(str, "[-]+")[[1]], sep = "\n")
+I am red
+and I am green
+I underlined
+> strsplit(strip_style(str), "[-]+")
+[[1]]
+[1] "I am red"       "and I am green" "I underlined"  
+
+> 
+> # split to characters, keep color
+> cat(col_strsplit(str, "")[[1]], "\n", sep = " ")
+I   a m   r e d - - - a n d   I   a m   g r e e n - I   u n d e r l i n e d 
+> strsplit(strip_style(str), "")
+[[1]]
+ [1] "I" " " "a" "m" " " "r" "e" "d" "-" "-" "-" "a" "n" "d" " " "I" " " "a" "m"
+[20] " " "g" "r" "e" "e" "n" "-" "I" " " "u" "n" "d" "e" "r" "l" "i" "n" "e" "d"
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("col_substr")
+> ### * col_substr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: col_substr
+> ### Title: Substring(s) of an ANSI colored string
+> ### Aliases: col_substr
+> 
+> ### ** Examples
+> 
+> str <- paste(
++   red("red"),
++   "default",
++   green("green")
++ )
+> 
+> cat(str, "\n")
+red default green 
+> cat(col_substr(str, 1, 5), "\n")
+red d 
+> cat(col_substr(str, 1, 15), "\n")
+red default gre 
+> cat(col_substr(str, 3, 7), "\n")
+d def 
+> 
+> substr(strip_style(str), 1, 5)
+[1] "red d"
+> substr(strip_style(str), 1, 15)
+[1] "red default gre"
+> substr(strip_style(str), 3, 7)
+[1] "d def"
+> 
+> str2 <- "another " %+%
++   red("multi-", sep = "", underline("style")) %+%
++   " text"
+> 
+> cat(str2, "\n")
+another multi-style text 
+> cat(col_substr(c(str, str2), c(3,5), c(7, 18)), sep = "\n")
+d def
+her multi-styl
+> substr(strip_style(c(str, str2)), c(3,5), c(7, 18))
+[1] "d def"          "her multi-styl"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("col_substring")
+> ### * col_substring
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: col_substring
+> ### Title: Substring(s) of an ANSI colored string
+> ### Aliases: col_substring
+> 
+> ### ** Examples
+> 
+> str <- paste(
++   red("red"),
++   "default",
++   green("green")
++ )
+> 
+> cat(str, "\n")
+red default green 
+> cat(col_substring(str, 1, 5), "\n")
+red d 
+> cat(col_substring(str, 1, 15), "\n")
+red default gre 
+> cat(col_substring(str, 3, 7), "\n")
+d def 
+> 
+> substring(strip_style(str), 1, 5)
+[1] "red d"
+> substring(strip_style(str), 1, 15)
+[1] "red default gre"
+> substring(strip_style(str), 3, 7)
+[1] "d def"
+> 
+> str2 <- "another " %+%
++   red("multi-", sep = "", underline("style")) %+%
++   " text"
+> 
+> cat(str2, "\n")
+another multi-style text 
+> cat(col_substring(str2, c(3,5), c(7, 18)), sep = "\n")
+other
+her multi-styl
+> substring(strip_style(str2), c(3,5), c(7, 18))
+[1] "other"          "her multi-styl"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("combine_styles")
+> ### * combine_styles
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: combine_styles
+> ### Title: Combine two or more ANSI styles
+> ### Aliases: combine_styles $.crayon
+> 
+> ### ** Examples
+> 
+> ## Use style names
+> alert <- combine_styles("bold", "red4", "bgCyan")
+> cat(alert("Warning!"), "\n")
+Warning! 
+> 
+> ## Or style functions
+> alert <- combine_styles(bold, red, bgCyan)
+> cat(alert("Warning!"), "\n")
+Warning! 
+> 
+> ## Combine a composite style
+> alert <- combine_styles(bold, combine_styles(red, bgCyan))
+> cat(alert("Warning!"), "\n")
+Warning! 
+> 
+> ## Shorter notation
+> alert <- bold $ red $ bgCyan
+> cat(alert("Warning!"), "\n")
+Warning! 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("concat")
+> ### * concat
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: concat
+> ### Title: Concatenate character vectors
+> ### Aliases: concat %+%
+> 
+> ### ** Examples
+> 
+> "foo" %+% "bar"
+[1] "foobar"
+> 
+> letters[1:10] %+% chr(1:10)
+ [1] "a1"  "b2"  "c3"  "d4"  "e5"  "f6"  "g7"  "h8"  "i9"  "j10"
+> 
+> letters[1:10] %+% "-" %+% chr(1:10)
+ [1] "a-1"  "b-2"  "c-3"  "d-4"  "e-5"  "f-6"  "g-7"  "h-8"  "i-9"  "j-10"
+> 
+> ## This is empty (unlike for parse)
+> character() %+% "*"
+character(0)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("crayon")
+> ### * crayon
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: crayon
+> ### Title: Colored terminal output
+> ### Aliases: crayon reset bold blurred italic underline inverse hidden
+> ###   strikethrough black red green yellow blue magenta cyan white silver
+> ###   bgBlack bgRed bgGreen bgYellow bgBlue bgMagenta bgCyan bgWhite
+> 
+> ### ** Examples
+> 
+> cat(blue("Hello", "world!"))
+Hello world!> 
+> cat("... to highlight the " %+% red("search term") %+%
++     " in a block of text")
+... to highlight the search term in a block of text> 
+> cat(yellow$bgMagenta$bold('Hello world!'))
+Hello world!> 
+> cat(green(
++  'I am a green line ' %+%
++  blue$underline$bold('with a blue substring') %+%
++  ' that becomes green again!'
++ ))
+I am a green line with a blue substring that becomes green again!> 
+> error <- red $ bold
+> warn <- magenta $ underline
+> note <- cyan
+> cat(error("Error: subscript out of bounds!\n"))
+Error: subscript out of bounds!
+> cat(warn("Warning: shorter argument was recycled.\n"))
+Warning: shorter argument was recycled.
+> cat(note("Note: no such directory.\n"))
+Note: no such directory.
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("drop_style")
+> ### * drop_style
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: drop_style
+> ### Title: Remove a style
+> ### Aliases: drop_style
+> 
+> ### ** Examples
+> 
+> make_style(new_style = "maroon", bg = TRUE)
+Crayon style function, new_style: example output.
+> cat(style("I am maroon", "new_style"), "\n")
+I am maroon 
+> drop_style("new_style")
+> "new_style" %in% names(styles())
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("has_color")
+> ### * has_color
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: has_color
+> ### Title: Does the current R session support ANSI colors?
+> ### Aliases: has_color
+> 
+> ### ** Examples
+> 
+> has_color()
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("has_style")
+> ### * has_style
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: has_style
+> ### Title: Check if a string has some ANSI styling
+> ### Aliases: has_style
+> 
+> ### ** Examples
+> 
+> ## The second one has style if crayon is enabled
+> has_style("foobar")
+[1] FALSE
+> has_style(red("foobar"))
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("hyperlink")
+> ### * hyperlink
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: hyperlink
+> ### Title: Terminal Hyperlinks
+> ### Aliases: hyperlink has_hyperlink
+> 
+> ### ** Examples
+> 
+> cat("This is an", hyperlink("R", "https://r-project.org"), "link.\n")
+This is an R link.
+> has_hyperlink()
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("make_style")
+> ### * make_style
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: make_style
+> ### Title: Create an ANSI color style
+> ### Aliases: make_style
+> 
+> ### ** Examples
+> 
+> ## Create a style function without creating a style
+> pink <- make_style("pink")
+> bgMaroon <- make_style(rgb(0.93, 0.19, 0.65), bg = TRUE)
+> cat(bgMaroon(pink("I am pink if your terminal wants it, too.\n")))
+I am pink if your terminal wants it, too.
+> 
+> ## Create a new style for pink and maroon background
+> make_style(pink = "pink")
+Crayon style function, pink: example output.
+> make_style(bgMaroon = rgb(0.93, 0.19, 0.65), bg = TRUE)
+Crayon style function, bgMaroon: example output.
+> "pink" %in% names(styles())
+[1] TRUE
+> "bgMaroon" %in% names(styles())
+[1] TRUE
+> cat(style("I am pink, too!\n", "pink", bg = "bgMaroon"))
+I am pink, too!
+> 
+> 
+> 
+> cleanEx()
+> nameEx("num_ansi_colors")
+> ### * num_ansi_colors
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: num_ansi_colors
+> ### Title: Detect the number of ANSI colors to use
+> ### Aliases: num_ansi_colors
+> 
+> ### ** Examples
+> 
+> num_ansi_colors()
+[1] 1
+> 
+> 
+> 
+> cleanEx()
+> nameEx("num_colors")
+> ### * num_colors
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: num_colors
+> ### Title: Number of colors the terminal supports
+> ### Aliases: num_colors
+> 
+> ### ** Examples
+> 
+> num_colors()
+[1] 1
+> 
+> 
+> 
+> cleanEx()
+> nameEx("start.crayon")
+> ### * start.crayon
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: start.crayon
+> ### Title: Switch on or off a style
+> ### Aliases: start.crayon finish finish.crayon
+> 
+> ### ** Examples
+> 
+> ## The input is red (if color is supported)
+> get_name <- function() {
++   cat("Enter your name:", start(red))
++   input <- readline()
++   cat(finish(red))
++   input
++ }
+> name <- get_name()
+Enter your name: 
+> name
+[1] ""
+> 
+> 
+> 
+> cleanEx()
+> nameEx("strip_style")
+> ### * strip_style
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: strip_style
+> ### Title: Remove ANSI escape sequences from a string
+> ### Aliases: strip_style
+> 
+> ### ** Examples
+> 
+> strip_style(red("foobar")) == "foobar"
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("style")
+> ### * style
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: style
+> ### Title: Add style to a string
+> ### Aliases: style
+> 
+> ### ** Examples
+> 
+> ## These are equivalent
+> style("foobar", bold)
+[1] "foobar"
+> style("foobar", "bold")
+[1] "foobar"
+> bold("foobar")
+[1] "foobar"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("styles")
+> ### * styles
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: styles
+> ### Title: ANSI escape sequences of crayon styles
+> ### Aliases: styles
+> 
+> ### ** Examples
+> 
+> names(styles())
+ [1] "reset"         "bold"          "blurred"       "italic"       
+ [5] "underline"     "inverse"       "hidden"        "strikethrough"
+ [9] "black"         "red"           "green"         "yellow"       
+[13] "blue"          "magenta"       "cyan"          "white"        
+[17] "silver"        "bgBlack"       "bgRed"         "bgGreen"      
+[21] "bgYellow"      "bgBlue"        "bgMagenta"     "bgCyan"       
+[25] "bgWhite"       "pink"          "bgMaroon"     
+> cat(styles()[["bold"]]$close)
+[22m> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.126 0.012 0.139 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

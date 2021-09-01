@@ -1,0 +1,496 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ### PR#14682 : https://bugs.r-project.org/bugzilla3/show_bug.cgi?id=14682
+> ##  ========
+> ## Subject:    getQ0() returns a non-positive covariance matrix
+> ## Date:       Tue, 20 Sep 2011 12:06:16 -0400
+> ## ReportedBy: raphaelrossignol@...
+> 
+> ## ...........
+> 
+> ## I tried to replace getQ0 in two ways. The first one is to compute first the
+> ## covariance matrix of (X_{t-1},...,X_{t-p},Z_t,...,Z_{t-q}) and this is achieved
+> ## through the method of difference equations
+> ## (eq. (3.3.8), (3.3.9), p.93 of Brockwell and Davis).
+> ## This way was apparently suggested by a referee to Gardner et al. paper (see
+> ## page 314 of their paper).
+> 
+> Q0bis <- function(phi,theta, tol=.Machine$double.eps) {
++     ## Computes the initial covariance matrix for the state space representation
++     ## of Gardner et al.
++     p <- length(phi)
++     q <- length(theta)
++     r <- max(p,q+1)
++     ttheta <- c(1,theta,rep(0,r-q-1))
++ 
++     A1 <- matrix(0,r,p)
++     C <- (col(A1)+row(A1)-1)
++     B <- (C <= p) ## == (col(A1)+row(A1) <= p+1)
++     A1[B] <- phi[C[B]]
++ 
++     A2 <- matrix(0,r,q+1)
++     C <- (col(A2)+row(A2)-1)
++     B <- (C <= q+1)
++     A2[B] <- ttheta[C[B]]
++ 
++     A <- cbind(A1,A2)
++     if (p==0) {
++         S <- diag(q+1)
++     }
++     else {
++         ## Compute the autocovariance function of U, the AR part of X
++         r2 <- max(p+q, p+1)
++         tphi <- c(1,-phi)
++ 
++         C1 <- C2 <- matrix(0,r2,r2)
++         F <- row(C1)-col(C1)+1
++         E <- (1 <= F) & (F <= p+1)
++         C1[E] <- tphi[F[E]]
++ 
++         F <- col(C2)+row(C2)-1
++         E <- (F <= p+1) & col(C2) >= 2
++         C2[E] <- tphi[F[E]]
++ 
++         Gam <- C1 + C2
++         g <- matrix(0,r2,1)
++         g[1] <- 1
++         rU <- solve(Gam, g, tol=tol)
++         ##    ---------  --
++         SU <- toeplitz(rU[1:(p+q),1])
++         ## End of the difference equations method
++ 
++         ## Then, compute correlation matrix of X
++         A2 <- matrix(0,p,p+q)
++         C <- col(A2)-row(A2)+1
++         B <- (1 <= C) & (C <= q+1)
++         A2[B] <- ttheta[C[B]]
++         SX <- A2 %*% SU %*% t(A2)
++ 
++         ## Now, compute correlation matrix between X and Z
++         C1 <- matrix(0,q,q)
++         F <- row(C1)-col(C1)+1
++         E <- 1 <= F & F <= p+1
++         C1[E] <- tphi[F[E]]
++         g <- matrix(0,q,1)
++         if (q) {
++             g[1:q,1] <- ttheta[1:q]
++             rXZ <- forwardsolve(C1,g)
++         } else rXZ <- numeric()
++         SXZ <- matrix(0, p, q+1)
++         F <- col(SXZ)-row(SXZ)
++         E <- F >= 1
++         SXZ[E] <- rXZ[F[E]]
++         S <- rbind(cbind(  SX  ,   SXZ),
++                    cbind(t(SXZ), diag(q+1)))
++     }
++     A %*% S %*% t(A)
++     ## == 2 x 2 Block matrix product; A = [A1 | A2 ]
++     ## == A1 SX A1' + A1 SXZ A2' + (A1 SXZ A2')' + A2 A2'
++ 
++ }## {Q0bis}
+> 
+> ## The second way is to resolve brutally the equation of Gardner et al. in the
+> ## form (12), page 314 of their paper.
+> 
+> Q0ter <- function(phi,theta) {
++   p <- length(phi)
++   q <- length(theta)
++   r <- max(p,q+1)
++   T <- V <- matrix(0,r,r)
++   if (p) T[1:p,1] <- phi
++   if (r >= 2) T[1:(r-1),2:r] <- diag(r-1)
++   ttheta <- c(1,theta)
++   V[1:(q+1),1:(q+1)] <- ttheta %x% t(ttheta)
++   S <- diag(r*r) - T %x% T
++   Q0 <- solve(S, c(V))
++   matrix(Q0, ncol=r)
++ }
+> 
+> Q0.orig <- function(phi,theta) .Call(stats:::C_getQ0, phi, theta)
+> 
+> Q0bisC <- function(phi,theta, tol=.Machine$double.eps)
++     .Call(stats:::C_getQ0bis, phi, theta, tol=tol)
+> 
+> ##' The k smallest eigenvalues of m
+> EV.k <- function(m, k = 2) {
++     ev <- eigen(m, only.values=TRUE)$values
++     m <- length(ev)
++     ev[m:(m-k+1)]
++ }
+> 
+> chkQ0 <- function(phi,theta, tol=.Machine$double.eps^0.5,
++                   tolC=1e-15, strict=TRUE, doEigen=FALSE)
++ {
++   Q0  <- Q0.orig(phi, theta)
++   Q0bis <- Q0bis(phi, theta)
++   Q0ter <- Q0ter(phi, theta)
++ 
++   eig <- if(doEigen) rbind("0" = EV.k(Q0), bis = EV.k(Q0bis), ter = EV.k(Q0ter))
++   ## else NULL
++ 
++   a.eq <- list(cRC = all.equal(Q0bis,Q0bisC(phi,theta), tol= tolC),
++                c12 = all.equal(Q0,   Q0bis, tol=tol),
++                c13 = all.equal(Q0,   Q0ter, tol=tol),
++                c23 = all.equal(Q0bis,Q0ter, tol=tol))
++   if(strict) do.call(stopifnot, a.eq)
++   invisible(list(Q0 = Q0, Q0bis = Q0bis, Q0ter = Q0ter,
++                  all.eq = a.eq, eigen = eig))
++ }
+> 
+> ##' @title AR-phi corresponding to AR(1) + Seasonality(s)
+> ##' @param s: seasonality
+> ##' @param phi1, phis: phi[1], phi[s] .. defaults: close to non-stationarity
+> mkPhi <- function(s, phi1 = 0.0001, phis = 0.99) {
++     stopifnot(length(s) > 0, s == as.integer(s), s >= 2,
++               length(phi1) == 1, is.numeric(phi1), length(phis) == 1)
++     c(phi1, rep(0, s-2), phis, -phi1*phis)
++ }
+> 
+> ##--{end of function defs}-------------------------------------------------------
+> 
+> ## cases with p=0, q=0 :
+> chkQ0(numeric(), numeric())
+> chkQ0(   .5,     numeric())
+> chkQ0(numeric(), .7)
+> chkQ0(numeric(), c(.7, .2))
+> 
+> chkQ <- function(s, theta) chkQ0(mkPhi(s=s), theta=theta, tol = 0, strict=FALSE)
+> all.eq2num <- function(ae) as.numeric(sub(".* difference: ", '', ae))
+> getN12 <- function(r) all.eq2num(r$all.eq$c12)
+> ss <- setNames(,2:20)
+> chk0 <- lapply(ss, chkQ, theta= numeric())
+> chk1 <- lapply(ss, chkQ, theta= 0.75)
+> chk2 <- lapply(ss, chkQ, theta= c(0.75, -0.5))
+> chks <- list(q0 = chk0, q1 = chk1, q2 = chk2)
+> ## Quite platform dependent, in F19, 32 bit looks slightly better than 64:
+> (re <- sapply(chks, function(C) sapply(C, getN12)))
+             q0           q1           q2
+2  2.356449e-15 1.393320e-15 1.494528e-15
+3  1.195252e-15 1.037378e-15 2.738827e-15
+4  1.278369e-15 6.266181e-14 1.443726e-13
+5  2.740010e-15 2.760163e-13 5.276744e-13
+6  1.237326e-12 1.441837e-09 4.179162e-10
+7  1.626375e-12 9.625913e-09 3.558845e-09
+8  1.200016e-08 7.184236e-05 1.586208e-05
+9  3.709884e-08 6.881558e-05 4.473058e-05
+10 1.335425e-04 3.270231e-01 1.381010e-01
+11 2.090404e-05 2.835956e-01 1.225344e-01
+12 2.276653e-04 1.857286e-01 8.724784e-02
+13 2.167399e-04 3.954330e-01 3.297741e-02
+14 5.842153e-05 1.875296e-01 1.170509e-01
+15 5.841978e-05 1.875266e-01 1.170655e-01
+16 5.843539e-05 1.875803e-01 1.170941e-01
+17 5.843963e-05 1.875976e-01 1.171051e-01
+18 5.844340e-05 1.876130e-01 1.171148e-01
+19 5.844678e-05 1.876268e-01 1.171235e-01
+20 5.844982e-05 1.876392e-01 1.171314e-01
+> matplot(ss, re, type = "b", log="y", pch = paste(0:2))
+> stopifnot(re[paste(2:7),] < 1e-7, # max(.) seen 9.626e-9
++           re < 0.9) # max(.) seen 0.395
+> 
+> ## The smallest few eigen values:
+> round(t(sapply(lapply(chk1, `[[`, "Q0"), EV.k, k=3)), 3)
+      [,1]    [,2]    [,3]
+2    0.000   3.016 153.035
+3    0.000  40.276  40.415
+4    0.000   3.047  77.176
+5    0.000  17.220  17.273
+6    0.000   3.057  40.146
+7    0.000  10.384  10.431
+8    0.000   3.052  24.786
+9    0.000   7.522   7.547
+10 -70.369 -19.210 -19.110
+11  -0.001   3.781   3.799
+12 -16.843 -16.822   0.000
+13 -65.810 -65.751  -0.001
+14 -11.321 -11.307   0.000
+15 -17.644 -17.624   0.000
+16  -4.629  -4.616  -0.016
+17 -18.335 -18.319   0.000
+18 -12.365 -12.350   0.000
+19 -15.506 -15.494   0.000
+20 -17.646 -17.632   0.000
+> ev3.0 <- lapply(chks, function(ck) t(sapply(lapply(ck, `[[`, "Q0"), EV.k, k=3)))
+> lapply(ev3.0, round, digits=3) ## problem for q >= 1 (none for q=0)
+$q0
+   [,1]   [,2]   [,3]
+2     0 49.251 50.251
+3     0 49.251 49.251
+4     0 49.251 49.251
+5     0 49.251 49.251
+6     0 49.251 49.251
+7     0 49.251 49.251
+8     0 49.251 49.251
+9     0 49.251 49.251
+10    0 49.245 49.245
+11    0 49.250 49.250
+12    0 49.240 49.242
+13    0 49.241 49.242
+14    0 49.248 49.249
+15    0 49.248 49.248
+16    0 49.248 49.249
+17    0 49.248 49.249
+18    0 49.248 49.249
+19    0 49.248 49.249
+20    0 49.248 49.248
+
+$q1
+      [,1]    [,2]    [,3]
+2    0.000   3.016 153.035
+3    0.000  40.276  40.415
+4    0.000   3.047  77.176
+5    0.000  17.220  17.273
+6    0.000   3.057  40.146
+7    0.000  10.384  10.431
+8    0.000   3.052  24.786
+9    0.000   7.522   7.547
+10 -70.369 -19.210 -19.110
+11  -0.001   3.781   3.799
+12 -16.843 -16.822   0.000
+13 -65.810 -65.751  -0.001
+14 -11.321 -11.307   0.000
+15 -17.644 -17.624   0.000
+16  -4.629  -4.616  -0.016
+17 -18.335 -18.319   0.000
+18 -12.365 -12.350   0.000
+19 -15.506 -15.494   0.000
+20 -17.646 -17.632   0.000
+
+$q2
+      [,1]   [,2]   [,3]
+2    0.243  3.330 78.348
+3    0.000 77.332 96.539
+4    0.000  3.203 77.259
+5    0.000 44.352 44.747
+6    0.000  3.161 77.150
+7    0.000 25.311 25.613
+8    0.000  3.138 63.383
+9    0.000 16.831 17.045
+10 -25.041  0.000 72.390
+11   0.000 15.878 16.042
+12   0.000 18.158 18.312
+13   0.000 11.908 12.034
+14 -20.179  0.000 39.809
+15  -3.509 -3.410  0.000
+16 -20.189  0.000 29.232
+17  -7.012 -6.929  0.000
+18 -20.194  0.000 20.872
+19  -9.535 -9.462  0.000
+20 -20.198  0.000 14.289
+
+> ev3.bis <- lapply(chks, function(ck) t(sapply(lapply(ck, `[[`, "Q0bis"), EV.k, k=3)))
+> lapply(ev3.bis[-1], round, digits=3) ## all fine
+$q1
+   [,1]   [,2]    [,3]
+2     0  3.016 153.035
+3     0 40.276  40.415
+4     0  3.047  77.176
+5     0 17.220  17.273
+6     0  3.057  40.146
+7     0 10.384  10.431
+8     0  3.063  24.775
+9     0  7.516   7.552
+10    0  3.066  17.204
+11    0  6.053   6.082
+12    0  3.068  12.977
+13    0  5.209   5.232
+14    0  3.069  10.389
+15    0  4.678   4.697
+16    0  3.070   8.694
+17    0  4.323   4.339
+18    0  3.071   7.525
+19    0  4.073   4.088
+20    0  3.072   6.685
+
+$q2
+    [,1]   [,2]   [,3]
+2  0.243  3.330 78.348
+3  0.000 77.332 96.539
+4  0.000  3.203 77.259
+5  0.000 44.352 44.747
+6  0.000  3.161 77.150
+7  0.000 25.311 25.613
+8  0.000  3.140 63.380
+9  0.000 16.829 17.046
+10 0.000  3.128 44.258
+11 0.000 12.387 12.549
+12 0.000  3.119 32.691
+13 0.000  9.787  9.912
+14 0.000  3.114 25.295
+15 0.000  8.138  8.239
+16 0.000  3.109 20.320
+17 0.000  7.028  7.112
+18 0.000  3.106 16.829
+19 0.000  6.247  6.318
+20 0.000  3.103 14.290
+
+> e1.bis <- sapply(ev3.bis, function(m) m[,1])
+> min(e1.bis) # -7.1e-15 , -7.5e-15
+[1] -1.177909e-14
+> stopifnot(e1.bis > -1e-12)
+> 
+> 
+> ## Now Rossignol's example
+> phi <- mkPhi(s = 12)
+> theta <- 0.7
+> true.cf <- c(ar1=phi[1], ma1=theta, sar1=phi[12])
+> tt <- chkQ0(phi,theta, tol=0.50, doEigen=TRUE)
+> tt$eigen
+             [,1]       [,2]
+0   -8.345901e+01 -83.375307
+bis  1.718203e-22   4.422551
+ter -5.256642e-22   4.422551
+> 
+> out.0 <- makeARIMA(phi, theta, NULL)
+> out.R <- makeARIMA(phi, theta, NULL, SSinit="Rossignol")
+> 
+> set.seed(7)
+> x <- arima.sim(1000,model=list(ar=phi,ma=theta))
+> str(k0 <- KalmanLike(x, mod=out.0))
+List of 2
+ $ Lik: num NaN
+ $ s2 : num 1.05
+> str(kS <- KalmanLike(x, mod=out.R))
+List of 2
+ $ Lik: num 0.0519
+ $ s2 : num 1.06
+> stopifnot(sapply(kS, is.finite))
+> 
+> ini.ph <- true.cf
+> ## Default  method = "CSS-ML" works fine
+> fm1 <- arima(x, order= c(1,0,1), seasonal= list(period=12, order=c(1,0,0)),
++              include.mean=FALSE, init=ini.ph)
+> stopifnot(all.equal(true.cf, coef(fm1), tol = 0.05))
+> 
+> ## Using  'ML'  seems "harder" :
+> e1 <- try(
++ arima(x, order= c(1,0,1), seasonal= list(period=12, order=c(1,0,0)),
++       include.mean=FALSE, init=ini.ph, method='ML')
++ )
+Error in optim(init[mask], armafn, method = optim.method, hessian = TRUE,  : 
+  non-finite value supplied by optim
+In addition: Warning message:
+In makeARIMA(trarma[[1L]], trarma[[2L]], Delta, kappa, SSinit) :
+  NAs in 'phi'
+> ## Error: NAs in 'phi'
+> e2 <- try(
++ arima(x, order= c(1,0,1), seasonal= list(period=12, order=c(1,0,0)),
++       include.mean=FALSE, init=ini.ph, method='ML', transform.pars=FALSE)
++ )
+Error in optim(init[mask], armafn, method = optim.method, hessian = TRUE,  : 
+  initial value in 'vmmin' is not finite
+> ## Error in optim(init[mask], armafn, ..): initial value in 'vmmin' is not finite
+> 
+> ## MM: The new Q0 does *not* help here, really:
+> e3 <- try(
++ arima(x, order= c(1,0,1), seasonal= list(period=12, order=c(1,0,0)),
++       include.mean=FALSE, init=ini.ph, method='ML', SSinit = "Rossi")
++  )
+Error in solve.default(structure(c(1, -0.000100000000333333, 0, 0, 0,  : 
+  Lapack routine dgesv: system is exactly singular: U[4,4] = 0
+In addition: Warning message:
+In makeARIMA(trarma[[1L]], trarma[[2L]], Delta, kappa, SSinit) :
+  NAs in 'phi'
+> ## actually fails still, but *not* transforming parameters works :
+> fm2 <-
++ arima(x, order= c(1,0,1), seasonal= list(period=12, order=c(1,0,0)),
++       include.mean=FALSE, init=ini.ph, method='ML', SSinit = "Rossi", transform.p=FALSE)
+> 
+> stopifnot(all.equal(confint(fm1),
++                     confint(fm2), tol = 4e-4))
+> 
+> ###---------- PR#16278 --------------------------------------
+> 
+> ##  xreg  *and*  differentiation order d >= 1 :
+> set.seed(0)
+> n <- 5
+> x <- cumsum(rnorm(n, sd=0.01))
+> Vr <- var(diff(x))                 # 6.186e-5 : REML
+> V. <- var(diff(x)) * (n-2) / (n-1) # 4.640e-5 : ML
+> 
+> f00   <- arima0(x, c(0,1,0), method="ML", xreg=1:n)
+> (fit1 <- arima (x, c(0,1,0), method="ML", xreg=1:n))
+
+Call:
+arima(x = x, order = c(0, 1, 0), xreg = 1:n, method = "ML")
+
+Coefficients:
+         1:n
+      0.0067
+s.e.  0.0034
+
+sigma^2 estimated as 4.64e-05:  log likelihood = 14.28,  aic = -24.56
+> stopifnot(all.equal(fit1$sigma2, V.), fit1$nobs == n-1,
++ 	  all.equal(fit1$loglik, 14.28, tol=4e-4),
++ 	  all.equal(f00$sigma2, fit1$sigma2),
++ 	  all.equal(f00$loglik, fit1$loglik))
+> 
+> (fit2 <- arima (x, c(0,2,0), method="ML", xreg=(1:n)^2))
+
+Call:
+arima(x = x, order = c(0, 2, 0), xreg = (1:n)^2, method = "ML")
+
+Coefficients:
+      (1:n)^2
+       0.0012
+s.e.   0.0031
+
+sigma^2 estimated as 0.00011:  log likelihood = 9.42,  aic = -14.83
+> stopifnot(all.equal(fit2$sigma2, 0.000109952342),
++           all.equal(fit2$loglik, 9.4163797), fit2$nobs == n-2)
+> 
+> ## "well"-fitting higher order model  {optim failed in R <= 3.0.1)
+> n <- length(x. <- c(1:4,3:-2,2*(0:3),4:5,5:-4)/32)
+> xr <- poly(x., 3)
+> x. <- cumsum(cumsum(cumsum(x.))) + xr %*% 10^(0:2)
+> (fit3 <- arima (x., c(0,3,0), method="ML", xreg = xr))
+
+Call:
+arima(x = x., order = c(0, 3, 0), xreg = xr, method = "ML")
+
+Coefficients:
+           1       2         3
+      0.7052  9.9415  100.1062
+s.e.  0.2529  0.0896    0.0870
+
+sigma^2 estimated as 0.008598:  log likelihood = 22.06,  aic = -36.12
+> stopifnot(fit3$ nobs == n-3,
++ 	  all.equal(fit3$ sigma2, 0.00859843, tol = 1e-6),
++ 	  all.equal(fit3$ loglik, 22.06043, tol = 1e-6),
++           all.equal(unname(coef(fit3)),
++                     c(0.70517, 9.9415, 100.106), tol = 1e-5))
+> 
+> x.[5:6] <- NA
+> (fit3N <- arima (x., c(0,3,0), method="ML", xreg = xr))
+
+Call:
+arima(x = x., order = c(0, 3, 0), xreg = xr, method = "ML")
+
+Coefficients:
+           1       2         3
+      0.6490  9.9266  100.1255
+s.e.  0.2842  0.0974    0.0977
+
+sigma^2 estimated as 0.009297:  log likelihood = 16.74,  aic = -25.48
+> stopifnot(fit3N$ nobs == n-3-2, # ==  #{obs} - d - #{NA}
++ 	  all.equal(fit3N$ sigma2, 0.009297345, tol = 1e-6),
++ 	  all.equal(fit3N$ loglik, 16.73918,    tol = 1e-6),
++ 	  all.equal(unname(coef(fit3N)),
++ 		    c(0.64904, 9.92660, 100.126), tol = 1e-5))
+> 
+> 

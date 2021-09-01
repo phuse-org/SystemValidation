@@ -1,0 +1,2804 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "cluster"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('cluster')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("agnes")
+> ### * agnes
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: agnes
+> ### Title: Agglomerative Nesting (Hierarchical Clustering)
+> ### Aliases: agnes
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> data(votes.repub)
+> agn1 <- agnes(votes.repub, metric = "manhattan", stand = TRUE)
+> agn1
+Call:	 agnes(x = votes.repub, metric = "manhattan", stand = TRUE) 
+Agglomerative coefficient:  0.7977555 
+Order of objects:
+ [1] Alabama        Georgia        Arkansas       Louisiana      Mississippi   
+ [6] South Carolina Alaska         Vermont        Arizona        Montana       
+[11] Nevada         Colorado       Idaho          Wyoming        Utah          
+[16] California     Oregon         Washington     Minnesota      Connecticut   
+[21] New York       New Jersey     Illinois       Ohio           Indiana       
+[26] Michigan       Pennsylvania   New Hampshire  Wisconsin      Delaware      
+[31] Kentucky       Maryland       Missouri       New Mexico     West Virginia 
+[36] Iowa           South Dakota   North Dakota   Kansas         Nebraska      
+[41] Maine          Massachusetts  Rhode Island   Florida        North Carolina
+[46] Tennessee      Virginia       Oklahoma       Hawaii         Texas         
+Height (summary):
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  8.382  12.804  18.528  23.118  28.411  87.455 
+
+Available components:
+[1] "order"     "height"    "ac"        "merge"     "diss"      "call"     
+[7] "method"    "order.lab" "data"     
+> plot(agn1)
+> 
+> op <- par(mfrow=c(2,2))
+> agn2 <- agnes(daisy(votes.repub), diss = TRUE, method = "complete")
+> plot(agn2)
+> ## alpha = 0.625 ==> beta = -1/4  is "recommended" by some
+> agnS <- agnes(votes.repub, method = "flexible", par.meth = 0.625)
+> plot(agnS)
+> par(op)
+> 
+> ## "show" equivalence of three "flexible" special cases
+> d.vr <- daisy(votes.repub)
+> a.wgt  <- agnes(d.vr, method = "weighted")
+> a.sing <- agnes(d.vr, method = "single")
+> a.comp <- agnes(d.vr, method = "complete")
+> iC <- -(6:7) # not using 'call' and 'method' for comparisons
+> stopifnot(
++   all.equal(a.wgt [iC], agnes(d.vr, method="flexible", par.method = 0.5)[iC])   ,
++   all.equal(a.sing[iC], agnes(d.vr, method="flex", par.method= c(.5,.5,0, -.5))[iC]),
++   all.equal(a.comp[iC], agnes(d.vr, method="flex", par.method= c(.5,.5,0, +.5))[iC]))
+> 
+> ## Exploring the dendrogram structure
+> (d2 <- as.dendrogram(agn2)) # two main branches
+'dendrogram' with 2 branches and 50 members total, at height 281.9508 
+> d2[[1]] # the first branch
+'dendrogram' with 2 branches and 8 members total, at height 116.7048 
+> d2[[2]] # the 2nd one  { 8 + 42  = 50 }
+'dendrogram' with 2 branches and 42 members total, at height 178.4119 
+> d2[[1]][[1]]# first sub-branch of branch 1 .. and shorter form
+'dendrogram' with 2 branches and 6 members total, at height 72.92212 
+> identical(d2[[c(1,1)]],
++           d2[[1]][[1]])
+[1] TRUE
+> ## a "textual picture" of the dendrogram :
+> str(d2)
+--[dendrogram w/ 2 branches and 50 members at h = 282]
+  |--[dendrogram w/ 2 branches and 8 members at h = 117]
+  |  |--[dendrogram w/ 2 branches and 6 members at h = 72.9]
+  |  |  |--[dendrogram w/ 2 branches and 3 members at h = 60.9]
+  |  |  |  |--[dendrogram w/ 2 branches and 2 members at h = 48.2]
+  |  |  |  |  |--leaf "Alabama" 
+  |  |  |  |  `--leaf "Georgia" 
+  |  |  |  `--leaf "Louisiana" 
+  |  |  `--[dendrogram w/ 2 branches and 3 members at h = 58.8]
+  |  |     |--[dendrogram w/ 2 branches and 2 members at h = 56.1]
+  |  |     |  |--leaf "Arkansas" 
+  |  |     |  `--leaf "Florida" 
+  |  |     `--leaf "Texas" 
+  |  `--[dendrogram w/ 2 branches and 2 members at h = 63.1]
+  |     |--leaf "Mississippi" 
+  |     `--leaf "South Carolina" 
+  `--[dendrogram w/ 2 branches and 42 members at h = 178]
+     |--[dendrogram w/ 2 branches and 37 members at h = 121]
+     |  |--[dendrogram w/ 2 branches and 31 members at h = 80.5]
+     |  |  |--[dendrogram w/ 2 branches and 17 members at h = 64.5]
+     |  |  |  |--[dendrogram w/ 2 branches and 13 members at h = 56.4]
+     |  |  |  |  |--[dendrogram w/ 2 branches and 10 members at h = 47.2]
+     |  |  |  |  |  |--[dendrogram w/ 2 branches and 2 members at h = 28.1]
+     |  |  |  |  |  |  |--leaf "Alaska" 
+     |  |  |  |  |  |  `--leaf "Michigan" 
+     |  |  |  |  |  `--[dendrogram w/ 2 branches and 8 members at h = 39.2]
+     |  |  |  |  |     |--[dendrogram w/ 2 branches and 5 members at h = 36.8]
+     |  |  |  |  |     |  |--[dendrogram w/ 2 branches and 3 members at h = 32.9]
+     |  |  |  |  |     |  |  |--[dendrogram w/ 2 branches and 2 members at h = 19.4]
+     |  |  |  |  |     |  |  |  |--leaf "Connecticut" 
+     |  |  |  |  |     |  |  |  `--leaf "New York" 
+     |  |  |  |  |     |  |  `--leaf "New Hampshire" 
+     |  |  |  |  |     |  `--[dendrogram w/ 2 branches and 2 members at h = 20.2]
+     |  |  |  |  |     |     |--leaf "Indiana" 
+     |  |  |  |  |     |     `--leaf "Ohio" 
+     |  |  |  |  |     `--[dendrogram w/ 2 branches and 3 members at h = 25.3]
+     |  |  |  |  |        |--[dendrogram w/ 2 branches and 2 members at h = 20.9]
+     |  |  |  |  |        |  |--leaf "Illinois" 
+     |  |  |  |  |        |  `--leaf "New Jersey" 
+     |  |  |  |  |        `--leaf "Pennsylvania" 
+     |  |  |  |  `--[dendrogram w/ 2 branches and 3 members at h = 42.2]
+     |  |  |  |     |--leaf "Minnesota" 
+     |  |  |  |     `--[dendrogram w/ 2 branches and 2 members at h = 33.7]
+     |  |  |  |        |--leaf "North Dakota" 
+     |  |  |  |        `--leaf "Wisconsin" 
+     |  |  |  `--[dendrogram w/ 2 branches and 4 members at h = 37.5]
+     |  |  |     |--[dendrogram w/ 2 branches and 2 members at h = 26.2]
+     |  |  |     |  |--leaf "Iowa" 
+     |  |  |     |  `--leaf "South Dakota" 
+     |  |  |     `--[dendrogram w/ 2 branches and 2 members at h = 25.9]
+     |  |  |        |--leaf "Kansas" 
+     |  |  |        `--leaf "Nebraska" 
+     |  |  `--[dendrogram w/ 2 branches and 14 members at h = 70.5]
+     |  |     |--[dendrogram w/ 2 branches and 8 members at h = 48]
+     |  |     |  |--[dendrogram w/ 2 branches and 4 members at h = 43.4]
+     |  |     |  |  |--[dendrogram w/ 2 branches and 3 members at h = 27.8]
+     |  |     |  |  |  |--[dendrogram w/ 2 branches and 2 members at h = 23.4]
+     |  |     |  |  |  |  |--leaf "Arizona" 
+     |  |     |  |  |  |  `--leaf "Nevada" 
+     |  |     |  |  |  `--leaf "Montana" 
+     |  |     |  |  `--leaf "Oklahoma" 
+     |  |     |  `--[dendrogram w/ 2 branches and 4 members at h = 43.7]
+     |  |     |     |--leaf "Colorado" 
+     |  |     |     `--[dendrogram w/ 2 branches and 3 members at h = 31.2]
+     |  |     |        |--[dendrogram w/ 2 branches and 2 members at h = 17.2]
+     |  |     |        |  |--leaf "Idaho" 
+     |  |     |        |  `--leaf "Wyoming" 
+     |  |     |        `--leaf "Utah" 
+     |  |     `--[dendrogram w/ 2 branches and 6 members at h = 54.3]
+     |  |        |--[dendrogram w/ 2 branches and 3 members at h = 33.2]
+     |  |        |  |--leaf "California" 
+     |  |        |  `--[dendrogram w/ 2 branches and 2 members at h = 22.2]
+     |  |        |     |--leaf "Oregon" 
+     |  |        |     `--leaf "Washington" 
+     |  |        `--[dendrogram w/ 2 branches and 3 members at h = 35.1]
+     |  |           |--[dendrogram w/ 2 branches and 2 members at h = 21.1]
+     |  |           |  |--leaf "Missouri" 
+     |  |           |  `--leaf "New Mexico" 
+     |  |           `--leaf "West Virginia" 
+     |  `--[dendrogram w/ 2 branches and 6 members at h = 66.8]
+     |     |--[dendrogram w/ 2 branches and 3 members at h = 43.4]
+     |     |  |--leaf "Delaware" 
+     |     |  `--[dendrogram w/ 2 branches and 2 members at h = 33.5]
+     |     |     |--leaf "Kentucky" 
+     |     |     `--leaf "Maryland" 
+     |     `--[dendrogram w/ 2 branches and 3 members at h = 30.2]
+     |        |--[dendrogram w/ 2 branches and 2 members at h = 29.5]
+     |        |  |--leaf "North Carolina" 
+     |        |  `--leaf "Tennessee" 
+     |        `--leaf "Virginia" 
+     `--[dendrogram w/ 2 branches and 5 members at h = 83.1]
+        |--[dendrogram w/ 2 branches and 4 members at h = 55.4]
+        |  |--[dendrogram w/ 2 branches and 2 members at h = 32.8]
+        |  |  |--leaf "Hawaii" 
+        |  |  `--leaf "Maine" 
+        |  `--[dendrogram w/ 2 branches and 2 members at h = 22.6]
+        |     |--leaf "Massachusetts" 
+        |     `--leaf "Rhode Island" 
+        `--leaf "Vermont" 
+> 
+> data(agriculture)
+> 
+> ## Plot similar to Figure 7 in ref
+> ## Not run: plot(agnes(agriculture), ask = TRUE)
+> ## Don't show: 
+> plot(agnes(agriculture))
+> ## End(Don't show)
+> 
+> data(animals)
+> aa.a  <- agnes(animals) # default method = "average"
+> aa.ga <- agnes(animals, method = "gaverage")
+> op <- par(mfcol=1:2, mgp=c(1.5, 0.6, 0), mar=c(.1+ c(4,3,2,1)),
++           cex.main=0.8)
+> plot(aa.a,  which.plot = 2)
+> plot(aa.ga, which.plot = 2)
+> par(op)
+> ## Don't show: 
+> ## equivalence
+> stopifnot( ## below show  ave == gave(0); here  ave == gave(c(1,1,0,0)):
++   all.equal(aa.a [iC], agnes(animals, method="gave", par.meth= c(1,1,0,0))[iC]),
++   all.equal(aa.ga[iC], agnes(animals, method="gave", par.meth= -0.1)[iC]),
++   all.equal(aa.ga[iC], agnes(animals, method="gav", par.m= c(1.1,1.1,-0.1,0))[iC]))
+> ## End(Don't show)
+> 
+> ## Show how "gaverage" is a "generalized average":
+> aa.ga.0 <- agnes(animals, method = "gaverage", par.method = 0)
+> stopifnot(all.equal(aa.ga.0[iC], aa.a[iC]))
+> 
+> 
+> 
+> graphics::par(get("par.postscript", pos = 'CheckExEnv'))
+> cleanEx()
+> nameEx("agnes.object")
+> ### * agnes.object
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: agnes.object
+> ### Title: Agglomerative Nesting (AGNES) Object
+> ### Aliases: agnes.object
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> data(agriculture)
+> ag.ag <- agnes(agriculture)
+> class(ag.ag)
+[1] "agnes" "twins"
+> pltree(ag.ag) # the dendrogram
+> 
+> ## cut the dendrogram -> get cluster assignments:
+> (ck3 <- cutree(ag.ag, k = 3))
+ [1] 1 1 1 2 3 1 3 1 1 1 2 1
+> (ch6 <- cutree(as.hclust(ag.ag), h = 6))
+  B  DK   D  GR   E   F IRL   I   L  NL   P  UK 
+  1   1   1   2   3   1   3   1   1   1   2   1 
+> stopifnot(identical(unname(ch6), ck3))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("agriculture")
+> ### * agriculture
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: agriculture
+> ### Title: European Union Agricultural Workforces
+> ### Aliases: agriculture
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> data(agriculture)
+> 
+> ## Compute the dissimilarities using Euclidean metric and without
+> ## standardization
+> daisy(agriculture, metric = "euclidean", stand = FALSE)
+Dissimilarities :
+            B        DK         D        GR         E         F       IRL
+DK   5.408327                                                            
+D    2.061553  3.405877                                                  
+GR  22.339651 22.570113 22.661200                                        
+E    9.818350 11.182576 10.394710 12.567418                              
+F    3.448188  3.512834  2.657066 20.100995  8.060397                    
+IRL 12.747549 13.306014 13.080138  9.604166  3.140064 10.564563          
+I    5.803447  5.470832  5.423099 17.383325  5.727128  2.773085  7.920859
+L    4.275512  2.220360  2.300000 24.035391 12.121056  4.060788 14.569145
+NL   1.649242  5.096077  2.435159 20.752349  8.280097  2.202272 11.150785
+P   17.236299 17.864490 17.664088  5.162364  7.430343 15.164432  4.601087
+UK   2.828427  8.052950  4.850773 21.485344  8.984431  5.303772 12.103718
+            I         L        NL         P
+DK                                         
+D                                          
+GR                                         
+E                                          
+F                                          
+IRL                                        
+I                                          
+L    6.660330                              
+NL   4.204759  4.669047                    
+P   12.515990 19.168985 15.670673          
+UK   6.723095  7.102112  3.124100 16.323296
+
+Metric :  euclidean 
+Number of objects : 12
+> 
+> ## 2nd plot is similar to Figure 3 in Struyf et al (1996)
+> plot(pam(agriculture, 2))
+> 
+> ## Plot similar to Figure 7 in Struyf et al (1996)
+> ## Not run: plot(agnes(agriculture), ask = TRUE)
+> ## Don't show: 
+> plot(agnes(agriculture))
+> ## End(Don't show)
+> 
+> ## Plot similar to Figure 8 in Struyf et al (1996)
+> ## Not run: plot(diana(agriculture), ask = TRUE)
+> ## Don't show: 
+> plot(diana(agriculture))
+> ## End(Don't show)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("animals")
+> ### * animals
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: animals
+> ### Title: Attributes of Animals
+> ### Aliases: animals
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> data(animals)
+> apply(animals,2, table) # simple overview
+  war fly ver end gro hai
+1  10  16   6  12   6  11
+2  10   4  14   6  11   9
+> 
+> ma <- mona(animals)
+> ma
+mona(x, ..) fit;  x of dimension 20x6
+Because of NA's, revised data:
+    war fly ver end gro hai
+ant   0   0   0   0   1   0
+bee   0   1   0   0   1   1
+cat   1   0   1   0   0   1
+cpl   0   0   0   0   0   1
+chi   1   0   1   1   1   1
+cow   1   0   1   0   1   1
+duc   1   1   1   0   1   0
+eag   1   1   1   1   0   0
+ele   1   0   1   1   1   0
+fly   0   1   0   0   0   0
+fro   0   0   1   1   0   0
+her   0   0   1   0   1   0
+lio   1   0   1   1   1   1
+liz   0   0   1   0   0   0
+lob   0   0   0   0   0   0
+man   1   0   1   1   1   1
+rab   1   0   1   0   1   1
+sal   0   0   1   0   0   0
+spi   0   0   0   0   0   1
+wha   1   0   1   1   1   0
+Order of objects:
+ [1] ant cpl spi lob bee fly fro her liz sal cat cow rab chi lio man ele wha duc
+[20] eag
+Variable used:
+ [1] gro  NULL hai  fly  gro  ver  end  gro  NULL war  gro  NULL end  NULL NULL
+[16] hai  NULL fly  end 
+Separation step:
+ [1] 4 0 5 3 4 2 3 4 0 1 4 0 3 0 0 4 0 2 3
+
+Available components:
+[1] "data"      "hasNA"     "order"     "variable"  "step"      "order.lab"
+[7] "call"     
+> ## Plot similar to Figure 10 in Struyf et al (1996)
+> plot(ma)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("bannerplot")
+> ### * bannerplot
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: bannerplot
+> ### Title: Plot Banner (of Hierarchical Clustering)
+> ### Aliases: bannerplot
+> ### Keywords: hplot cluster utilities
+> 
+> ### ** Examples
+> 
+> data(agriculture)
+> bannerplot(agnes(agriculture), main = "Bannerplot")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("chorSub")
+> ### * chorSub
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: chorSub
+> ### Title: Subset of C-horizon of Kola Data
+> ### Aliases: chorSub
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> data(chorSub)
+> summary(chorSub)
+       Al                 Ca                 Fe                K           
+ Min.   :-201.000   Min.   :-178.000   Min.   :-200.00   Min.   :-133.000  
+ 1st Qu.: -49.000   1st Qu.: -59.000   1st Qu.: -75.00   1st Qu.: -74.000  
+ Median :  -1.000   Median :   2.000   Median : -37.00   Median : -17.000  
+ Mean   :   0.541   Mean   :  -2.066   Mean   : -14.64   Mean   :  -4.295  
+ 3rd Qu.:  47.000   3rd Qu.:  59.000   3rd Qu.:  48.00   3rd Qu.:  51.000  
+ Max.   : 285.000   Max.   : 211.000   Max.   : 162.00   Max.   : 248.000  
+       Mg                Mn                Na                P           
+ Min.   :-155.00   Min.   :-139.00   Min.   :-242.00   Min.   :-102.000  
+ 1st Qu.: -75.00   1st Qu.: -66.00   1st Qu.: -25.00   1st Qu.: -61.000  
+ Median : -30.00   Median : -41.00   Median :  47.00   Median : -36.000  
+ Mean   : -13.05   Mean   : -13.92   Mean   :  17.97   Mean   :  -6.623  
+ 3rd Qu.:  31.00   3rd Qu.:   7.00   3rd Qu.:  81.00   3rd Qu.:   8.000  
+ Max.   : 254.00   Max.   : 354.00   Max.   : 187.00   Max.   : 406.000  
+       Si                 Ti          
+ Min.   :-223.000   Min.   :-190.000  
+ 1st Qu.: -46.000   1st Qu.: -73.000  
+ Median :  22.000   Median : -24.000  
+ Mean   :   8.328   Mean   :  -7.361  
+ 3rd Qu.:  60.000   3rd Qu.:  55.000  
+ Max.   : 177.000   Max.   : 351.000  
+> pairs(chorSub, gap= .1)# some outliers
+> 
+> 
+> 
+> cleanEx()
+> nameEx("clara")
+> ### * clara
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: clara
+> ### Title: Clustering Large Applications
+> ### Aliases: clara
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> ## generate 500 objects, divided into 2 clusters.
+> x <- rbind(cbind(rnorm(200,0,8), rnorm(200,0,8)),
++            cbind(rnorm(300,50,8), rnorm(300,50,8)))
+> clarax <- clara(x, 2, samples=50)
+> clarax
+Call:	 clara(x = x, k = 2, samples = 50) 
+Medoids:
+           [,1]        [,2]
+[1,] -0.2778082 -0.06647211
+[2,] 50.0903415 49.90510575
+Objective function:	 10.36158
+Clustering vector: 	 int [1:500] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ...
+Cluster sizes:	    	 200 300 
+Best sample:
+ [1]   8  22  31  39  40  80  92  97 106 111 114 119 125 144 146 152 164 171 175
+[20] 176 181 251 252 253 259 274 292 296 303 304 329 342 347 348 355 358 365 391
+[39] 446 488 493 497 498 499
+
+Available components:
+ [1] "sample"     "medoids"    "i.med"      "clustering" "objective" 
+ [6] "clusinfo"   "diss"       "call"       "silinfo"    "data"      
+> clarax$clusinfo
+     size max_diss   av_diss isolation
+[1,]  200 23.05132  9.622758 0.3248887
+[2,]  300 30.43784 10.854126 0.4289953
+> ## using pamLike=TRUE  gives the same (apart from the 'call'):
+> all.equal(clarax[-8],
++           clara(x, 2, samples=50, pamLike = TRUE)[-8])
+[1] TRUE
+> plot(clarax)
+> 
+> ## 'xclara' is an artificial data set with 3 clusters of 1000 bivariate
+> ## objects each.
+> data(xclara)
+> (clx3 <- clara(xclara, 3))
+Call:	 clara(x = xclara, k = 3) 
+Medoids:
+            V1        V2
+[1,]  5.553391 13.306260
+[2,] 43.198760 60.360720
+[3,] 74.591890 -6.969018
+Objective function:	 13.225
+Clustering vector: 	 int [1:3000] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ...
+Cluster sizes:	    	 900 1148 952 
+Best sample:
+ [1]   20   30   46   91   92  169  179  187  209  223  382  450  555  971 1004
+[16] 1025 1058 1277 1281 1302 1319 1361 1362 1513 1591 1623 1628 1729 1752 1791
+[31] 1907 1917 1946 2064 2089 2498 2527 2537 2545 2591 2672 2722 2729 2790 2797
+[46] 2852
+
+Available components:
+ [1] "sample"     "medoids"    "i.med"      "clustering" "objective" 
+ [6] "clusinfo"   "diss"       "call"       "silinfo"    "data"      
+> ## "better" number of samples
+> cl.3 <- clara(xclara, 3, samples=100)
+> ## but that did not change the result here:
+> stopifnot(cl.3$clustering == clx3$clustering)
+> ## Plot similar to Figure 5 in Struyf et al (1996)
+> ## Not run: plot(clx3, ask = TRUE)
+> ## Don't show: 
+> plot(clx3)
+> ## End(Don't show)
+> 
+> ## Try 100 times *different* random samples -- for reliability:
+> nSim <- 100
+> nCl <- 3 # = no.classes
+> set.seed(421)# (reproducibility)
+> cl <- matrix(NA,nrow(xclara), nSim)
+> for(i in 1:nSim)
++    cl[,i] <- clara(xclara, nCl, medoids.x = FALSE, rngR = TRUE)$cluster
+> tcl <- apply(cl,1, tabulate, nbins = nCl)
+> ## those that are not always in same cluster (5 out of 3000 for this seed):
+> (iDoubt <- which(apply(tcl,2, function(n) all(n < nSim))))
+ [1]   30  243  245  309  562  610  708  727  770 1038 1081 1120 1248 1289 1430
+[16] 1610 1644 1683 1922 2070 2380 2662 2821 2983
+> if(length(iDoubt)) { # (not for all seeds)
++   tabD <- tcl[,iDoubt, drop=FALSE]
++   dimnames(tabD) <- list(cluster = paste(1:nCl), obs = format(iDoubt))
++   t(tabD) # how many times in which clusters
++ }
+      cluster
+obs     1  2  3
+    30  4 96  0
+   243 99  0  1
+   245 91  0  9
+   309 99  0  1
+   562  4  0 96
+   610 82 18  0
+   708 87 13  0
+   727 92  0  8
+   770  2  1 97
+  1038 81 19  0
+  1081 44 56  0
+  1120 12 88  0
+  1248 22 78  0
+  1289  5 95  0
+  1430  1 99  0
+  1610 57 43  0
+  1644 24 76  0
+  1683  1 99  0
+  1922 13 87  0
+  2070  2  0 98
+  2380  4  0 96
+  2662  4  0 96
+  2821  8  0 92
+  2983  2  0 98
+> 
+> 
+> 
+> cleanEx()
+> nameEx("clusGap")
+> ### * clusGap
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: clusGap
+> ### Title: Gap Statistic for Estimating the Number of Clusters
+> ### Aliases: clusGap maxSE print.clusGap plot.clusGap
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> ### --- maxSE() methods -------------------------------------------
+> (mets <- eval(formals(maxSE)$method))
+[1] "firstSEmax"    "Tibs2001SEmax" "globalSEmax"   "firstmax"     
+[5] "globalmax"    
+> fk <- c(2,3,5,4,7,8,5,4)
+> sk <- c(1,1,2,1,1,3,1,1)/2
+> ## use plot.clusGap():
+> plot(structure(class="clusGap", list(Tab = cbind(gap=fk, SE.sim=sk))))
+> ## Note that 'firstmax' and 'globalmax' are always at 3 and 6 :
+> sapply(c(1/4, 1,2,4), function(SEf)
++         sapply(mets, function(M) maxSE(fk, sk, method = M, SE.factor = SEf)))
+              [,1] [,2] [,3] [,4]
+firstSEmax       3    3    2    1
+Tibs2001SEmax    3    3    1    1
+globalSEmax      6    5    3    1
+firstmax         3    3    3    3
+globalmax        6    6    6    6
+> 
+> ### --- clusGap() -------------------------------------------------
+> ## ridiculously nicely separated clusters in 3 D :
+> x <- rbind(matrix(rnorm(150,           sd = 0.1), ncol = 3),
++            matrix(rnorm(150, mean = 1, sd = 0.1), ncol = 3),
++            matrix(rnorm(150, mean = 2, sd = 0.1), ncol = 3),
++            matrix(rnorm(150, mean = 3, sd = 0.1), ncol = 3))
+> 
+> ## Slightly faster way to use pam (see below)
+> pam1 <- function(x,k) list(cluster = pam(x,k, cluster.only=TRUE))
+> 
+> ## We do not recommend using hier.clustering here, but if you want,
+> ## there is  factoextra::hcut () or a cheap version of it
+> hclusCut <- function(x, k, d.meth = "euclidean", ...)
++    list(cluster = cutree(hclust(dist(x, method=d.meth), ...), k=k))
+> 
+> ## You can manually set it before running this :    doExtras <- TRUE  # or  FALSE
+> if(!(exists("doExtras") && is.logical(doExtras)))
++   doExtras <- cluster:::doExtras()
+> 
+> if(doExtras) {
++   ## Note we use  B = 60 in the following examples to keep them "speedy".
++   ## ---- rather keep the default B = 500 for your analysis!
++ 
++   ## note we can  pass 'nstart = 20' to kmeans() :
++   gskmn <- clusGap(x, FUN = kmeans, nstart = 20, K.max = 8, B = 60)
++   gskmn #-> its print() method
++   plot(gskmn, main = "clusGap(., FUN = kmeans, n.start=20, B= 60)")
++   set.seed(12); system.time(
++     gsPam0 <- clusGap(x, FUN = pam, K.max = 8, B = 60)
++   )
++   set.seed(12); system.time(
++     gsPam1 <- clusGap(x, FUN = pam1, K.max = 8, B = 60)
++   )
++   ## and show that it gives the "same":
++   not.eq <- c("call", "FUNcluster"); n <- names(gsPam0)
++   eq <- n[!(n %in% not.eq)]
++   stopifnot(identical(gsPam1[eq], gsPam0[eq]))
++   print(gsPam1, method="globalSEmax")
++   print(gsPam1, method="globalmax")
++ 
++   print(gsHc <- clusGap(x, FUN = hclusCut, K.max = 8, B = 60))
++ 
++ }# end {doExtras}
+> 
+> gs.pam.RU <- clusGap(ruspini, FUN = pam1, K.max = 8, B = 60)
+> gs.pam.RU
+Clustering Gap statistic ["clusGap"] from call:
+clusGap(x = ruspini, FUNcluster = pam1, K.max = 8, B = 60)
+B=60 simulated reference sets, k = 1..8; spaceH0="scaledPCA"
+ --> Number of clusters (method 'firstSEmax', SE.factor=1): 4
+         logW   E.logW         gap     SE.sim
+[1,] 7.187997 7.146281 -0.04171618 0.03971882
+[2,] 6.628498 6.788642  0.16014359 0.04082437
+[3,] 6.261660 6.575968  0.31430802 0.04171208
+[4,] 5.692736 6.401317  0.70858066 0.04061632
+[5,] 5.580999 6.251943  0.67094456 0.04097730
+[6,] 5.500583 6.128216  0.62763306 0.03820503
+[7,] 5.394195 6.019559  0.62536365 0.04172949
+[8,] 5.320052 5.924806  0.60475408 0.04420072
+> plot(gs.pam.RU, main = "Gap statistic for the 'ruspini' data")
+> mtext("k = 4 is best .. and  k = 5  pretty close")
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("clusplot.default")
+> ### * clusplot.default
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: clusplot.default
+> ### Title: Bivariate Cluster Plot (clusplot) Default Method
+> ### Aliases: clusplot.default
+> ### Keywords: cluster hplot
+> 
+> ### ** Examples
+> 
+> ## plotting votes.diss(dissimilarity) in a bivariate plot and
+> ## partitioning into 2 clusters
+> data(votes.repub)
+> votes.diss <- daisy(votes.repub)
+> pamv <- pam(votes.diss, 2, diss = TRUE)
+> clusplot(pamv, shade = TRUE)
+> ## is the same as
+> votes.clus <- pamv$clustering
+> clusplot(votes.diss, votes.clus, diss = TRUE, shade = TRUE)
+> ## Now look at components 3 and 2 instead of 1 and 2:
+> str(cMDS <- cmdscale(votes.diss, k=3, add=TRUE))
+List of 5
+ $ points: num [1:50, 1:3] 249.98 1.03 14.44 173.01 -37.99 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:50] "Alabama" "Alaska" "Arizona" "Arkansas" ...
+  .. ..$ : NULL
+ $ eig   : NULL
+ $ x     : NULL
+ $ ac    : num 420
+ $ GOF   : num [1:2] 0.215 0.215
+> clusplot(pamv, s.x.2d = list(x=cMDS$points[, c(3,2)],
++                              labs=rownames(votes.repub), var.dec=NA),
++          shade = TRUE, col.p = votes.clus,
++          sub="", xlab = "Component 3", ylab = "Component 2")
+> 
+> clusplot(pamv, col.p = votes.clus, labels = 4)# color points and label ellipses
+> # "simple" cheap ellipses: larger than minimum volume:
+> # here they are *added* to the previous plot:
+> clusplot(pamv, span = FALSE, add = TRUE, col.clus = "midnightblue")
+> 
+> ## Setting a small *label* size:
+> clusplot(votes.diss, votes.clus, diss = TRUE, labels = 3, cex.txt = 0.6)
+> 
+> if(dev.interactive()) { #  uses identify() *interactively* :
++   clusplot(votes.diss, votes.clus, diss = TRUE, shade = TRUE, labels = 1)
++   clusplot(votes.diss, votes.clus, diss = TRUE, labels = 5)# ident. only points
++ }
+> 
+> ## plotting iris (data frame) in a 2-dimensional plot and partitioning
+> ## into 3 clusters.
+> data(iris)
+> iris.x <- iris[, 1:4]
+> cl3 <- pam(iris.x, 3)$clustering
+> op <- par(mfrow= c(2,2))
+> clusplot(iris.x, cl3, color = TRUE)
+> U <- par("usr")
+> ## zoom in :
+> rect(0,-1, 2,1, border = "orange", lwd=2)
+> clusplot(iris.x, cl3, color = TRUE, xlim = c(0,2), ylim = c(-1,1))
+> box(col="orange",lwd=2); mtext("sub region", font = 4, cex = 2)
+> ##  or zoom out :
+> clusplot(iris.x, cl3, color = TRUE, xlim = c(-4,4), ylim = c(-4,4))
+> mtext("'super' region", font = 4, cex = 2)
+> rect(U[1],U[3], U[2],U[4], lwd=2, lty = 3)
+> 
+> # reset graphics
+> par(op)
+> 
+> 
+> 
+> graphics::par(get("par.postscript", pos = 'CheckExEnv'))
+> cleanEx()
+> nameEx("clusplot.partition")
+> ### * clusplot.partition
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: clusplot
+> ### Title: Bivariate Cluster Plot (of a Partitioning Object)
+> ### Aliases: clusplot clusplot.partition
+> ### Keywords: cluster hplot
+> 
+> ### ** Examples
+>  ## For more, see ?clusplot.default
+> 
+> ## generate 25 objects, divided into 2 clusters.
+> x <- rbind(cbind(rnorm(10,0,0.5), rnorm(10,0,0.5)),
++            cbind(rnorm(15,5,0.5), rnorm(15,5,0.5)))
+> clusplot(pam(x, 2))
+> ## add noise, and try again :
+> x4 <- cbind(x, rnorm(25), rnorm(25))
+> clusplot(pam(x4, 2))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("coef.hclust")
+> ### * coef.hclust
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: coef.hclust
+> ### Title: Agglomerative / Divisive Coefficient for 'hclust' Objects
+> ### Aliases: coefHier coef.hclust coef.twins
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> data(agriculture)
+> aa <- agnes(agriculture)
+> coef(aa) # really just extracts aa$ac
+[1] 0.7818932
+> coef(as.hclust(aa))# recomputes
+[1] 0.7818932
+> coefHier(aa)       # ditto
+[1] 0.7818932
+> ## Don't show: 
+>  stopifnot(all.equal(coef(aa), coefHier(aa)))
+>  d.a <- dist(agriculture, "manhattan")
+>  for (m in c("average", "single", "complete"))
++     stopifnot(all.equal(coef(hclust(d.a, method=m)),
++                         coef(agnes (d.a, method=m)), tol=1e-13))
+> ## End(Don't show)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("daisy")
+> ### * daisy
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: daisy
+> ### Title: Dissimilarity Matrix Calculation
+> ### Aliases: daisy
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> data(agriculture)
+> ## Example 1 in ref:
+> ##  Dissimilarities using Euclidean metric and without standardization
+> d.agr <- daisy(agriculture, metric = "euclidean", stand = FALSE)
+> d.agr
+Dissimilarities :
+            B        DK         D        GR         E         F       IRL
+DK   5.408327                                                            
+D    2.061553  3.405877                                                  
+GR  22.339651 22.570113 22.661200                                        
+E    9.818350 11.182576 10.394710 12.567418                              
+F    3.448188  3.512834  2.657066 20.100995  8.060397                    
+IRL 12.747549 13.306014 13.080138  9.604166  3.140064 10.564563          
+I    5.803447  5.470832  5.423099 17.383325  5.727128  2.773085  7.920859
+L    4.275512  2.220360  2.300000 24.035391 12.121056  4.060788 14.569145
+NL   1.649242  5.096077  2.435159 20.752349  8.280097  2.202272 11.150785
+P   17.236299 17.864490 17.664088  5.162364  7.430343 15.164432  4.601087
+UK   2.828427  8.052950  4.850773 21.485344  8.984431  5.303772 12.103718
+            I         L        NL         P
+DK                                         
+D                                          
+GR                                         
+E                                          
+F                                          
+IRL                                        
+I                                          
+L    6.660330                              
+NL   4.204759  4.669047                    
+P   12.515990 19.168985 15.670673          
+UK   6.723095  7.102112  3.124100 16.323296
+
+Metric :  euclidean 
+Number of objects : 12
+> as.matrix(d.agr)[,"DK"] # via as.matrix.dist(.)
+        B        DK         D        GR         E         F       IRL         I 
+ 5.408327  0.000000  3.405877 22.570113 11.182576  3.512834 13.306014  5.470832 
+        L        NL         P        UK 
+ 2.220360  5.096077 17.864490  8.052950 
+> ## compare with
+> as.matrix(daisy(agriculture, metric = "gower"))
+             B         DK          D        GR          E          F        IRL
+B   0.00000000 0.22148078 0.08178881 0.8438459 0.38135483 0.11538211 0.47547804
+DK  0.22148078 0.00000000 0.13969197 0.9145729 0.45208184 0.12117405 0.54620505
+D   0.08178881 0.13969197 0.00000000 0.8854337 0.42294264 0.09203485 0.51706585
+GR  0.84384585 0.91457286 0.88543366 0.0000000 0.46249103 0.79339881 0.36836781
+E   0.38135483 0.45208184 0.42294264 0.4624910 0.00000000 0.33090779 0.09412321
+F   0.11538211 0.12117405 0.09203485 0.7933988 0.33090779 0.00000000 0.42503100
+IRL 0.47547804 0.54620505 0.51706585 0.3683678 0.09412321 0.42503100 0.00000000
+I   0.15222215 0.22294916 0.19380996 0.6916237 0.22913268 0.10177511 0.32325589
+L   0.15646414 0.06501664 0.07467532 0.9601090 0.49761796 0.16671017 0.59174117
+NL  0.05318802 0.19426679 0.09477583 0.7906578 0.32816681 0.08816811 0.42229002
+P   0.66155453 0.73228154 0.70314234 0.1822913 0.28019970 0.61110749 0.18607649
+UK  0.10095934 0.32244012 0.18274816 0.7629870 0.30049599 0.21634145 0.39461920
+            I          L         NL         P        UK
+B   0.1522221 0.15646414 0.05318802 0.6615545 0.1009593
+DK  0.2229492 0.06501664 0.19426679 0.7322815 0.3224401
+D   0.1938100 0.07467532 0.09477583 0.7031423 0.1827482
+GR  0.6916237 0.96010899 0.79065783 0.1822913 0.7629870
+E   0.2291327 0.49761796 0.32816681 0.2801997 0.3004960
+F   0.1017751 0.16671017 0.08816811 0.6111075 0.2163414
+IRL 0.3232559 0.59174117 0.42229002 0.1860765 0.3946192
+I   0.0000000 0.26848528 0.11202114 0.5093324 0.2401945
+L   0.2684853 0.00000000 0.16945115 0.7778177 0.2574235
+NL  0.1120211 0.16945115 0.00000000 0.6083665 0.1281733
+P   0.5093324 0.77781766 0.60836651 0.0000000 0.5806957
+UK  0.2401945 0.25742348 0.12817333 0.5806957 0.0000000
+> 
+> data(flower)
+> ## Example 2 in ref
+> summary(dfl1 <- daisy(flower, type = list(asymm = 3)))
+153 dissimilarities, summarized :
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.1418  0.4164  0.5101  0.5098  0.6051  0.8875 
+Metric :  mixed ;  Types = N, N, A, N, O, O, I, I 
+Number of objects : 18
+> summary(dfl2 <- daisy(flower, type = list(asymm = c(1, 3), ordratio = 7)))
+153 dissimilarities, summarized :
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.1647  0.4387  0.5265  0.5293  0.6252  0.9007 
+Metric :  mixed ;  Types = A, N, A, N, O, O, T, I 
+Number of objects : 18
+> ## this failed earlier:
+> summary(dfl3 <- daisy(flower,
++         type = list(asymm = c("V1", "V3"), symm= 2,
++                     ordratio= 7, logratio= 8)))
+153 dissimilarities, summarized :
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.1649  0.4378  0.5350  0.5288  0.6318  0.8972 
+Metric :  mixed ;  Types = A, S, A, N, O, O, T, I 
+Number of objects : 18
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("diana")
+> ### * diana
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: diana
+> ### Title: DIvisive ANAlysis Clustering
+> ### Aliases: diana diana.object
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> data(votes.repub)
+> dv <- diana(votes.repub, metric = "manhattan", stand = TRUE)
+> print(dv)
+Merge:
+      [,1] [,2]
+ [1,]   -7  -32
+ [2,]  -13  -35
+ [3,]  -12  -50
+ [4,]    1  -30
+ [5,]  -26  -28
+ [6,]   -5  -37
+ [7,]  -22  -38
+ [8,]  -21  -39
+ [9,]  -16  -27
+[10,]    4    2
+[11,]  -25  -48
+[12,]  -42  -46
+[13,]   -6  -14
+[14,]  -34  -41
+[15,]   -8  -20
+[16,]    5  -31
+[17,]   10    7
+[18,]  -17  -47
+[19,]   -3  -44
+[20,]  -33   12
+[21,]   15   18
+[22,]   17  -29
+[23,]   22  -49
+[24,]   21   11
+[25,]   23  -15
+[26,]  -11  -19
+[27,]    3    9
+[28,]    8  -23
+[29,]   19   16
+[30,]   27   14
+[31,]    6   25
+[32,]   -1  -10
+[33,]   31   13
+[34,]   29  -36
+[35,]   -2  -45
+[36,]   -9  -43
+[37,]   24   20
+[38,]   32   -4
+[39,]  -24  -40
+[40,]   38  -18
+[41,]   33   30
+[42,]   34   37
+[43,]   35   26
+[44,]   41   28
+[45,]   40   36
+[46,]   42   44
+[47,]   45   39
+[48,]   43   46
+[49,]   47   48
+Order of objects:
+ [1] Alabama        Georgia        Arkansas       Louisiana      Florida       
+ [6] Texas          Mississippi    South Carolina Alaska         Vermont       
+[11] Hawaii         Maine          Arizona        Utah           Montana       
+[16] Nevada         New Mexico     Oklahoma       Delaware       Maryland      
+[21] Kentucky       Washington     Missouri       West Virginia  North Carolina
+[26] Tennessee      Virginia       California     Oregon         Connecticut   
+[31] New York       New Jersey     Illinois       Ohio           Michigan      
+[36] Pennsylvania   New Hampshire  Wisconsin      Iowa           Colorado      
+[41] Indiana        Idaho          Wyoming        Kansas         Nebraska      
+[46] North Dakota   South Dakota   Massachusetts  Rhode Island   Minnesota     
+Height:
+ [1]  27.363453  33.969252  39.658259  48.534276  31.899654  72.598496
+ [7]  35.691518 167.580197  31.582223  43.846009  24.487963  85.552482
+[13]  18.393392  25.676314  11.493967  17.455521  28.625502  42.544800
+[19]  16.485096  20.044499  17.875161  21.983729  14.218077  33.610713
+[25]  18.397326  14.757619  56.556754  11.701321  27.058874   8.382005
+[31]  11.368197  13.252375   9.230040  17.834836  12.708189  20.667139
+[37]  21.039972  23.665856  28.605405  15.317027  40.339045  10.462936
+[43]  24.835249  12.804188  26.362915  16.251922  47.257725  12.791603
+[49]  24.872061
+Divisive coefficient:
+[1] 0.8869182
+
+Available components:
+[1] "order"     "height"    "dc"        "merge"     "diss"      "call"     
+[7] "order.lab" "data"     
+> plot(dv)
+> 
+> ## Cut into 2 groups:
+> dv2 <- cutree(as.hclust(dv), k = 2)
+> table(dv2) # 8 and 42 group members
+dv2
+ 1  2 
+ 8 42 
+> rownames(votes.repub)[dv2 == 1]
+[1] "Alabama"        "Arkansas"       "Florida"        "Georgia"       
+[5] "Louisiana"      "Mississippi"    "South Carolina" "Texas"         
+> 
+> ## For two groups, does the metric matter ?
+> dv0 <- diana(votes.repub, stand = TRUE) # default: Euclidean
+> dv.2 <- cutree(as.hclust(dv0), k = 2)
+> table(dv2 == dv.2)## identical group assignments
+
+TRUE 
+  50 
+> 
+> str(as.dendrogram(dv0)) # {via as.dendrogram.twins() method}
+--[dendrogram w/ 2 branches and 50 members at h = 31.1]
+  |--[dendrogram w/ 2 branches and 8 members at h = 15.3]
+  |  |--[dendrogram w/ 2 branches and 6 members at h = 10.5]
+  |  |  |--[dendrogram w/ 2 branches and 3 members at h = 8.46]
+  |  |  |  |--[dendrogram w/ 2 branches and 2 members at h = 6.28]
+  |  |  |  |  |--leaf "Alabama" 
+  |  |  |  |  `--leaf "Georgia" 
+  |  |  |  `--leaf "Louisiana" 
+  |  |  `--[dendrogram w/ 2 branches and 3 members at h = 7.68]
+  |  |     |--[dendrogram w/ 2 branches and 2 members at h = 7.1]
+  |  |     |  |--leaf "Arkansas" 
+  |  |     |  `--leaf "Florida" 
+  |  |     `--leaf "Texas" 
+  |  `--[dendrogram w/ 2 branches and 2 members at h = 9.55]
+  |     |--leaf "Mississippi" 
+  |     `--leaf "South Carolina" 
+  `--[dendrogram w/ 2 branches and 42 members at h = 17]
+     |--[dendrogram w/ 2 branches and 4 members at h = 9.43]
+     |  |--[dendrogram w/ 2 branches and 2 members at h = 6.45]
+     |  |  |--leaf "Alaska" 
+     |  |  `--leaf "Vermont" 
+     |  `--[dendrogram w/ 2 branches and 2 members at h = 5.23]
+     |     |--leaf "Hawaii" 
+     |     `--leaf "Maine" 
+     `--[dendrogram w/ 2 branches and 38 members at h = 12.5]
+        |--[dendrogram w/ 2 branches and 9 members at h = 7.98]
+        |  |--[dendrogram w/ 2 branches and 7 members at h = 6.12]
+        |  |  |--[dendrogram w/ 2 branches and 4 members at h = 5.03]
+        |  |  |  |--leaf "Arizona" 
+        |  |  |  `--[dendrogram w/ 2 branches and 3 members at h = 4.11]
+        |  |  |     |--leaf "Colorado" 
+        |  |  |     `--[dendrogram w/ 2 branches and 2 members at h = 3.11]
+        |  |  |        |--leaf "Montana" 
+        |  |  |        `--leaf "Nevada" 
+        |  |  `--[dendrogram w/ 2 branches and 3 members at h = 3.77]
+        |  |     |--[dendrogram w/ 2 branches and 2 members at h = 2.28]
+        |  |     |  |--leaf "Idaho" 
+        |  |     |  `--leaf "Wyoming" 
+        |  |     `--leaf "Utah" 
+        |  `--[dendrogram w/ 2 branches and 2 members at h = 3.06]
+        |     |--leaf "Kansas" 
+        |     `--leaf "Nebraska" 
+        `--[dendrogram w/ 2 branches and 29 members at h = 12.5]
+           |--[dendrogram w/ 2 branches and 3 members at h = 5.1]
+           |  |--[dendrogram w/ 2 branches and 2 members at h = 4.49]
+           |  |  |--leaf "Kentucky" 
+           |  |  `--leaf "Virginia" 
+           |  `--leaf "Oklahoma" 
+           `--[dendrogram w/ 2 branches and 26 members at h = 10.4]
+              |--[dendrogram w/ 2 branches and 18 members at h = 7.26]
+              |  |--[dendrogram w/ 2 branches and 14 members at h = 6.79]
+              |  |  |--[dendrogram w/ 2 branches and 3 members at h = 3.72]
+              |  |  |  |--leaf "California" 
+              |  |  |  `--[dendrogram w/ 2 branches and 2 members at h = 2.64]
+              |  |  |     |--leaf "Oregon" 
+              |  |  |     `--leaf "Washington" 
+              |  |  `--[dendrogram w/ 2 branches and 11 members at h = 5.82]
+              |  |     |--[dendrogram w/ 2 branches and 9 members at h = 4.93]
+              |  |     |  |--[dendrogram w/ 2 branches and 7 members at h = 4.13]
+              |  |     |  |  |--[dendrogram w/ 2 branches and 2 members at h = 2.97]
+              |  |     |  |  |  |--leaf "Connecticut" 
+              |  |     |  |  |  `--leaf "New Hampshire" 
+              |  |     |  |  `--[dendrogram w/ 2 branches and 5 members at h = 3.8]
+              |  |     |  |     |--[dendrogram w/ 2 branches and 3 members at h = 2.61]
+              |  |     |  |     |  |--[dendrogram w/ 2 branches and 2 members at h = 2.28]
+              |  |     |  |     |  |  |--leaf "Illinois" 
+              |  |     |  |     |  |  `--leaf "New Jersey" 
+              |  |     |  |     |  `--leaf "New York" 
+              |  |     |  |     `--[dendrogram w/ 2 branches and 2 members at h = 2.53]
+              |  |     |  |        |--leaf "Indiana" 
+              |  |     |  |        `--leaf "Ohio" 
+              |  |     |  `--[dendrogram w/ 2 branches and 2 members at h = 2.77]
+              |  |     |     |--leaf "Michigan" 
+              |  |     |     `--leaf "Pennsylvania" 
+              |  |     `--[dendrogram w/ 2 branches and 2 members at h = 3.61]
+              |  |        |--leaf "Delaware" 
+              |  |        `--leaf "New Mexico" 
+              |  `--[dendrogram w/ 2 branches and 4 members at h = 4.37]
+              |     |--[dendrogram w/ 2 branches and 3 members at h = 3.92]
+              |     |  |--[dendrogram w/ 2 branches and 2 members at h = 2.73]
+              |     |  |  |--leaf "Iowa" 
+              |     |  |  `--leaf "South Dakota" 
+              |     |  `--leaf "North Dakota" 
+              |     `--leaf "Wisconsin" 
+              `--[dendrogram w/ 2 branches and 8 members at h = 10.4]
+                 |--[dendrogram w/ 2 branches and 5 members at h = 6.21]
+                 |  |--leaf "Maryland" 
+                 |  `--[dendrogram w/ 2 branches and 4 members at h = 5.71]
+                 |     |--[dendrogram w/ 2 branches and 2 members at h = 3.17]
+                 |     |  |--leaf "Missouri" 
+                 |     |  `--leaf "West Virginia" 
+                 |     `--[dendrogram w/ 2 branches and 2 members at h = 3.7]
+                 |        |--leaf "North Carolina" 
+                 |        `--leaf "Tennessee" 
+                 `--[dendrogram w/ 2 branches and 3 members at h = 5.53]
+                    |--[dendrogram w/ 2 branches and 2 members at h = 3.21]
+                    |  |--leaf "Massachusetts" 
+                    |  `--leaf "Rhode Island" 
+                    `--leaf "Minnesota" 
+> 
+> data(agriculture)
+> ## Plot similar to Figure 8 in ref
+> ## Not run: plot(diana(agriculture), ask = TRUE)
+> ## Don't show: 
+> plot(diana(agriculture))
+> ## End(Don't show)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ellipsoidhull")
+> ### * ellipsoidhull
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ellipsoidhull
+> ### Title: Compute the Ellipsoid Hull or Spanning Ellipsoid of a Point Set
+> ### Aliases: ellipsoidhull print.ellipsoid
+> ### Keywords: dplot hplot
+> 
+> ### ** Examples
+> 
+> x <- rnorm(100)
+> xy <- unname(cbind(x, rnorm(100) + 2*x + 10))
+> exy. <- ellipsoidhull(xy)
+> exy. # >> calling print.ellipsoid()
+'ellipsoid' in 2 dimensions:
+ center = (  0.078962 10.332298 ); squared ave.radius d^2 =  2 
+ and shape matrix =
+       [,1]   [,2]
+[1,] 2.9544  6.053
+[2,] 6.0530 14.694
+  hence, area  =  16.351 
+> 
+> plot(xy, main = "ellipsoidhull(<Gauss data>) -- 'spanning points'")
+> lines(predict(exy.), col="blue")
+> points(rbind(exy.$loc), col = "red", cex = 3, pch = 13)
+> 
+> exy <- ellipsoidhull(xy, tol = 1e-7, ret.wt = TRUE, ret.sq = TRUE)
+> str(exy) # had small 'tol', hence many iterations
+List of 12
+ $ loc   : num [1:2] 0.0804 10.3548
+ $ cov   : num [1:2, 1:2] 3.01 6.14 6.14 14.79
+ $ d2    : num 2
+ $ wt    : num [1:100] 0 0 0 0 0 ...
+ $ sqdist: num [1:100] 0.4394 0.0143 0.7836 0.7663 0.3469 ...
+ $ prob  : NULL
+ $ tol   : num 1e-07
+ $ eps   : num 9.96e-08
+ $ it    : int 898
+ $ maxit : num 5000
+ $ ierr  : int 0
+ $ conv  : logi TRUE
+ - attr(*, "class")= chr "ellipsoid"
+> (ii <- which(zapsmall(exy $ wt) > 1e-6))
+[1] 14 56 71 84
+> ## --> only about 4 to 6  "spanning ellipsoid" points
+> round(exy$wt[ii],3); sum(exy$wt[ii]) # weights summing to 1
+[1] 0.333 0.333 0.333 0.000
+[1] 1
+> points(xy[ii,], pch = 21, cex = 2,
++        col="blue", bg = adjustcolor("blue",0.25))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("fanny")
+> ### * fanny
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: fanny
+> ### Title: Fuzzy Analysis Clustering
+> ### Aliases: fanny
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> ## generate 10+15 objects in two clusters, plus 3 objects lying
+> ## between those clusters.
+> x <- rbind(cbind(rnorm(10, 0, 0.5), rnorm(10, 0, 0.5)),
++            cbind(rnorm(15, 5, 0.5), rnorm(15, 5, 0.5)),
++            cbind(rnorm( 3,3.2,0.5), rnorm( 3,3.2,0.5)))
+> fannyx <- fanny(x, 2)
+> ## Note that observations 26:28 are "fuzzy" (closer to # 2):
+> fannyx
+Fuzzy Clustering object of class 'fanny' :                      
+m.ship.expon.        2
+objective     11.68201
+tolerance        1e-15
+iterations           9
+converged            1
+maxit              500
+n                   28
+Membership coefficients (in %, rounded):
+      [,1] [,2]
+ [1,]   93    7
+ [2,]   98    2
+ [3,]   93    7
+ [4,]   85   15
+ [5,]   96    4
+ [6,]   95    5
+ [7,]   96    4
+ [8,]   96    4
+ [9,]   97    3
+[10,]   97    3
+[11,]    5   95
+[12,]    5   95
+[13,]    2   98
+[14,]   11   89
+[15,]    5   95
+[16,]    2   98
+[17,]    3   97
+[18,]    7   93
+[19,]    4   96
+[20,]    5   95
+[21,]    8   92
+[22,]    3   97
+[23,]    5   95
+[24,]    2   98
+[25,]    7   93
+[26,]   39   61
+[27,]   30   70
+[28,]   22   78
+Fuzzyness coefficients:
+dunn_coeff normalized 
+ 0.8716708  0.7433417 
+Closest hard clustering:
+ [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+
+Available components:
+ [1] "membership"  "coeff"       "memb.exp"    "clustering"  "k.crisp"    
+ [6] "objective"   "convergence" "diss"        "call"        "silinfo"    
+[11] "data"       
+> summary(fannyx)
+Fuzzy Clustering object of class 'fanny' :                      
+m.ship.expon.        2
+objective     11.68201
+tolerance        1e-15
+iterations           9
+converged            1
+maxit              500
+n                   28
+Membership coefficients (in %, rounded):
+      [,1] [,2]
+ [1,]   93    7
+ [2,]   98    2
+ [3,]   93    7
+ [4,]   85   15
+ [5,]   96    4
+ [6,]   95    5
+ [7,]   96    4
+ [8,]   96    4
+ [9,]   97    3
+[10,]   97    3
+[11,]    5   95
+[12,]    5   95
+[13,]    2   98
+[14,]   11   89
+[15,]    5   95
+[16,]    2   98
+[17,]    3   97
+[18,]    7   93
+[19,]    4   96
+[20,]    5   95
+[21,]    8   92
+[22,]    3   97
+[23,]    5   95
+[24,]    2   98
+[25,]    7   93
+[26,]   39   61
+[27,]   30   70
+[28,]   22   78
+Fuzzyness coefficients:
+dunn_coeff normalized 
+ 0.8716708  0.7433417 
+Closest hard clustering:
+ [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+
+Silhouette plot information:
+   cluster neighbor sil_width
+2        1        2 0.9147541
+10       1        2 0.9089739
+7        1        2 0.9019637
+9        1        2 0.9005634
+5        1        2 0.8937646
+6        1        2 0.8916111
+8        1        2 0.8884142
+3        1        2 0.8760503
+1        1        2 0.8607046
+4        1        2 0.7706670
+24       2        1 0.8838163
+13       2        1 0.8833811
+16       2        1 0.8831467
+17       2        1 0.8802520
+22       2        1 0.8800870
+19       2        1 0.8718048
+23       2        1 0.8642724
+20       2        1 0.8617661
+12       2        1 0.8615450
+15       2        1 0.8585044
+11       2        1 0.8558417
+25       2        1 0.8379700
+18       2        1 0.8376989
+21       2        1 0.8277639
+14       2        1 0.8015885
+28       2        1 0.6610664
+27       2        1 0.5277651
+26       2        1 0.3412350
+Average silhouette width per cluster:
+[1] 0.8807467 0.8010836
+Average silhouette width of total data set:
+[1] 0.8295347
+
+378 dissimilarities, summarized :
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.02611 0.78564 2.91160 3.73420 6.79560 8.07520 
+Metric :  euclidean 
+Number of objects : 28
+
+Available components:
+ [1] "membership"  "coeff"       "memb.exp"    "clustering"  "k.crisp"    
+ [6] "objective"   "convergence" "diss"        "call"        "silinfo"    
+[11] "data"       
+> plot(fannyx)
+> 
+> (fan.x.15 <- fanny(x, 2, memb.exp = 1.5)) # 'crispier' for obs. 26:28
+Fuzzy Clustering object of class 'fanny' :                      
+m.ship.expon.      1.5
+objective     13.34143
+tolerance        1e-15
+iterations           8
+converged            1
+maxit              500
+n                   28
+Membership coefficients (in %, rounded):
+      [,1] [,2]
+ [1,]   99    1
+ [2,]  100    0
+ [3,]  100    0
+ [4,]   97    3
+ [5,]  100    0
+ [6,]  100    0
+ [7,]  100    0
+ [8,]  100    0
+ [9,]  100    0
+[10,]  100    0
+[11,]    0  100
+[12,]    0  100
+[13,]    0  100
+[14,]    1   99
+[15,]    0  100
+[16,]    0  100
+[17,]    0  100
+[18,]    1   99
+[19,]    0  100
+[20,]    0  100
+[21,]    1   99
+[22,]    0  100
+[23,]    0  100
+[24,]    0  100
+[25,]    1   99
+[26,]   25   75
+[27,]   13   87
+[28,]    6   94
+Fuzzyness coefficients:
+dunn_coeff normalized 
+ 0.9674349  0.9348699 
+Closest hard clustering:
+ [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+
+Available components:
+ [1] "membership"  "coeff"       "memb.exp"    "clustering"  "k.crisp"    
+ [6] "objective"   "convergence" "diss"        "call"        "silinfo"    
+[11] "data"       
+> (fanny(x, 2, memb.exp = 3))               # more fuzzy in general
+Fuzzy Clustering object of class 'fanny' :                      
+m.ship.expon.        3
+objective     7.346169
+tolerance        1e-15
+iterations           9
+converged            1
+maxit              500
+n                   28
+Membership coefficients (in %, rounded):
+      [,1] [,2]
+ [1,]   79   21
+ [2,]   87   13
+ [3,]   79   21
+ [4,]   70   30
+ [5,]   84   16
+ [6,]   81   19
+ [7,]   84   16
+ [8,]   83   17
+ [9,]   85   15
+[10,]   85   15
+[11,]   19   81
+[12,]   18   82
+[13,]   13   87
+[14,]   27   73
+[15,]   19   81
+[16,]   13   87
+[17,]   14   86
+[18,]   23   77
+[19,]   17   83
+[20,]   18   82
+[21,]   23   77
+[22,]   14   86
+[23,]   18   82
+[24,]   13   87
+[25,]   23   77
+[26,]   45   55
+[27,]   41   59
+[28,]   36   64
+Fuzzyness coefficients:
+dunn_coeff normalized 
+ 0.6875567  0.3751134 
+Closest hard clustering:
+ [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+
+Available components:
+ [1] "membership"  "coeff"       "memb.exp"    "clustering"  "k.crisp"    
+ [6] "objective"   "convergence" "diss"        "call"        "silinfo"    
+[11] "data"       
+> 
+> data(ruspini)
+> f4 <- fanny(ruspini, 4)
+> stopifnot(rle(f4$clustering)$lengths == c(20,23,17,15))
+> plot(f4, which = 1)
+> ## Plot similar to Figure 6 in Stryuf et al (1996)
+> plot(fanny(ruspini, 5))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("flower")
+> ### * flower
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: flower
+> ### Title: Flower Characteristics
+> ### Aliases: flower
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> data(flower)
+> ## Example 2 in ref
+> daisy(flower, type = list(asymm = 3))
+Dissimilarities :
+           1         2         3         4         5         6         7
+2  0.8875408                                                            
+3  0.5272467 0.5882353                                                  
+4  0.3517974 0.5504493 0.5651552                                        
+5  0.4115605 0.7115780 0.4258637 0.6383578                              
+6  0.2269199 0.7549953 0.3432306 0.4189951 0.3935574                    
+7  0.2876225 0.6856209 0.5595705 0.3435866 0.4797386 0.2163399          
+8  0.4234069 0.4641340 0.6038399 0.2960376 0.4673203 0.5714869 0.4107843
+9  0.5808824 0.4933240 0.5101307 0.8076797 0.3779178 0.5870682 0.6732493
+10 0.6094363 0.5178338 0.5346405 0.5570670 0.4357610 0.4707750 0.6703081
+11 0.3278595 0.7096814 0.5993873 0.6518791 0.3864788 0.4828840 0.5652369
+12 0.4267565 0.5857843 0.6004902 0.5132761 0.5000817 0.5248366 0.6391340
+13 0.5196487 0.5998133 0.6166200 0.7464461 0.3336134 0.5170868 0.6032680
+14 0.2926062 0.5949346 0.6096405 0.3680147 0.5203431 0.3656863 0.5049837
+15 0.6221814 0.4461251 0.6057890 0.5531454 0.5259570 0.5818861 0.3823529
+16 0.6935866 0.4085901 0.7111111 0.3417892 0.8344538 0.5837535 0.4975724
+17 0.7765114 0.2176471 0.6630252 0.4247141 0.7863679 0.6785247 0.5923436
+18 0.4610294 0.4515114 0.7162173 0.4378268 0.4755310 0.6438317 0.4692402
+           8         9        10        11        12        13        14
+2                                                                       
+3                                                                       
+4                                                                       
+5                                                                       
+6                                                                       
+7                                                                       
+8                                                                       
+9  0.6366422                                                            
+10 0.6639706 0.4864146                                                  
+11 0.4955474 0.4308007 0.3948121                                        
+12 0.4216503 0.4194036 0.3812092 0.2636029                              
+13 0.5754085 0.2493464 0.4164332 0.3445670 0.2331699                    
+14 0.4558007 0.4396650 0.3609477 0.2838644 0.1591503 0.3784314          
+15 0.4512255 0.2908964 0.4812325 0.4806781 0.4295752 0.3637722 0.4351307
+16 0.6378268 0.7422502 0.3986928 0.7436683 0.6050654 0.6722689 0.4598039
+17 0.4707516 0.6941643 0.3506069 0.7015931 0.5629902 0.6241830 0.5427288
+18 0.1417892 0.5198529 0.8057598 0.5359477 0.5495507 0.5733252 0.5698121
+          15        16        17
+2                               
+3                               
+4                               
+5                               
+6                               
+7                               
+8                               
+9                               
+10                              
+11                              
+12                              
+13                              
+14                              
+15                              
+16 0.4513539                    
+17 0.4032680 0.1909430          
+18 0.5096814 0.7796160 0.6125408
+
+Metric :  mixed ;  Types = N, N, A, N, O, O, I, I 
+Number of objects : 18
+> daisy(flower, type = list(asymm = c(1, 3), ordratio = 7))
+Dissimilarities :
+           1         2         3         4         5         6         7
+2  0.9007353                                                            
+3  0.6176471 0.5882353                                                  
+4  0.4226891 0.5455882 0.6403361                                        
+5  0.4806723 0.7369748 0.5264706 0.7605042                              
+6  0.2823529 0.7470588 0.3911765 0.4764706 0.4980392                    
+7  0.3310924 0.6983193 0.6676471 0.4109244 0.5745098 0.2764706          
+8  0.5100840 0.4544118 0.6789916 0.3327731 0.5705882 0.6563025 0.4932773
+9  0.5808824 0.5084034 0.5252101 0.8257353 0.3882353 0.6100840 0.6756303
+10 0.6323529 0.5067227 0.5235294 0.5522059 0.4722689 0.4739496 0.6941176
+11 0.3389706 0.7117647 0.6014706 0.6588235 0.4066176 0.4919118 0.5742647
+12 0.4441176 0.5816176 0.5963235 0.5139706 0.5264706 0.5220588 0.6544118
+13 0.5286765 0.6252101 0.6420168 0.7735294 0.3336134 0.5504202 0.6159664
+14 0.3044118 0.5963235 0.6110294 0.3742647 0.5411765 0.3573529 0.5147059
+15 0.6242647 0.4588235 0.6184874 0.5691176 0.5386555 0.6025210 0.3823529
+16 0.6845588 0.3831933 0.6857143 0.3147059 0.8344538 0.5504202 0.4848739
+17 0.7897059 0.2176471 0.6630252 0.4198529 0.8117647 0.6705882 0.6050420
+18 0.5268908 0.4647059 0.8336134 0.5210084 0.5537815 0.7588235 0.5386555
+           8         9        10        11        12        13        14
+2                                                                       
+3                                                                       
+4                                                                       
+5                                                                       
+6                                                                       
+7                                                                       
+8                                                                       
+9  0.6595588                                                            
+10 0.6639706 0.5126050                                                  
+11 0.5073529 0.4419118 0.4066176                                        
+12 0.4272059 0.4367647 0.3867647 0.2698529                              
+13 0.6073529 0.2596639 0.4529412 0.3647059 0.2595588                    
+14 0.4669118 0.4514706 0.3720588 0.2845588 0.1647059 0.3992647          
+15 0.4720588 0.2932773 0.5050420 0.4897059 0.4448529 0.3764706 0.4448529
+16 0.6058824 0.7319328 0.3621849 0.7235294 0.5786765 0.6722689 0.4389706
+17 0.4610294 0.7092437 0.3394958 0.7036765 0.5588235 0.6495798 0.5441176
+18 0.1882353 0.5198529 0.8286765 0.5470588 0.5669118 0.5823529 0.5816176
+          15        16        17
+2                               
+3                               
+4                               
+5                               
+6                               
+7                               
+8                               
+9                               
+10                              
+11                              
+12                              
+13                              
+14                              
+15                              
+16 0.4386555                    
+17 0.4159664 0.1655462          
+18 0.5117647 0.7705882 0.6257353
+
+Metric :  mixed ;  Types = A, N, A, N, O, O, T, I 
+Number of objects : 18
+> 
+> 
+> 
+> cleanEx()
+> nameEx("lower.to.upper.tri.inds")
+> ### * lower.to.upper.tri.inds
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: lower.to.upper.tri.inds
+> ### Title: Permute Indices for Triangular Matrices
+> ### Aliases: lower.to.upper.tri.inds upper.to.lower.tri.inds
+> ### Keywords: array utilities
+> 
+> ### ** Examples
+> 
+> m5 <- matrix(NA,5,5)
+> m <- m5; m[lower.tri(m)] <- upper.to.lower.tri.inds(5); m
+     [,1] [,2] [,3] [,4] [,5]
+[1,]   NA   NA   NA   NA   NA
+[2,]    1   NA   NA   NA   NA
+[3,]    2    3   NA   NA   NA
+[4,]    4    5    6   NA   NA
+[5,]    7    8    9   10   NA
+> m <- m5; m[upper.tri(m)] <- lower.to.upper.tri.inds(5); m
+     [,1] [,2] [,3] [,4] [,5]
+[1,]   NA    1    2    3    4
+[2,]   NA   NA    5    6    7
+[3,]   NA   NA   NA    8    9
+[4,]   NA   NA   NA   NA   10
+[5,]   NA   NA   NA   NA   NA
+> 
+> stopifnot(lower.to.upper.tri.inds(2) == 1,
++           lower.to.upper.tri.inds(3) == 1:3,
++           upper.to.lower.tri.inds(3) == 1:3,
++      sort(upper.to.lower.tri.inds(5)) == 1:10,
++      sort(lower.to.upper.tri.inds(6)) == 1:15)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("mona")
+> ### * mona
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: mona
+> ### Title: MONothetic Analysis Clustering of Binary Variables
+> ### Aliases: mona
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> data(animals)
+> ma <- mona(animals)
+> ma
+mona(x, ..) fit;  x of dimension 20x6
+Because of NA's, revised data:
+    war fly ver end gro hai
+ant   0   0   0   0   1   0
+bee   0   1   0   0   1   1
+cat   1   0   1   0   0   1
+cpl   0   0   0   0   0   1
+chi   1   0   1   1   1   1
+cow   1   0   1   0   1   1
+duc   1   1   1   0   1   0
+eag   1   1   1   1   0   0
+ele   1   0   1   1   1   0
+fly   0   1   0   0   0   0
+fro   0   0   1   1   0   0
+her   0   0   1   0   1   0
+lio   1   0   1   1   1   1
+liz   0   0   1   0   0   0
+lob   0   0   0   0   0   0
+man   1   0   1   1   1   1
+rab   1   0   1   0   1   1
+sal   0   0   1   0   0   0
+spi   0   0   0   0   0   1
+wha   1   0   1   1   1   0
+Order of objects:
+ [1] ant cpl spi lob bee fly fro her liz sal cat cow rab chi lio man ele wha duc
+[20] eag
+Variable used:
+ [1] gro  NULL hai  fly  gro  ver  end  gro  NULL war  gro  NULL end  NULL NULL
+[16] hai  NULL fly  end 
+Separation step:
+ [1] 4 0 5 3 4 2 3 4 0 1 4 0 3 0 0 4 0 2 3
+
+Available components:
+[1] "data"      "hasNA"     "order"     "variable"  "step"      "order.lab"
+[7] "call"     
+> ## Plot similar to Figure 10 in Struyf et al (1996)
+> plot(ma)
+> 
+> ## One place to see if/how error messages are *translated* (to 'de' / 'pl'):
+> ani.NA   <- animals; ani.NA[4,] <- NA
+> aniNA    <- within(animals, { end[2:9] <- NA })
+> aniN2    <- animals; aniN2[cbind(1:6, c(3, 1, 4:6, 2))] <- NA
+> ani.non2 <- within(animals, end[7] <- 3 )
+> ani.idNA <- within(animals, end[!is.na(end)] <- 1 )
+> try( mona(ani.NA)   ) ## error: .. object with all values missing
+Error in mona(ani.NA) : 
+  No clustering performed, an object was found with all values missing.
+> try( mona(aniNA)    ) ## error: .. more than half missing values
+Error in mona(aniNA) : 
+  No clustering performed, found variable with more than half values missing.
+> try( mona(aniN2)    ) ## error: all have at least one missing
+Error in mona(aniN2) : 
+  No clustering performed, all variables have at least one missing value.
+> try( mona(ani.non2) ) ## error: all must be binary
+Error in mona(ani.non2) : 
+  All variables must be binary (e.g., a factor with 2 levels, both present).
+> try( mona(ani.idNA) ) ## error:  ditto
+Error in mona(ani.idNA) : 
+  All variables must be binary (e.g., a factor with 2 levels, both present).
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pam")
+> ### * pam
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pam
+> ### Title: Partitioning Around Medoids
+> ### Aliases: pam
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> ## generate 25 objects, divided into 2 clusters.
+> x <- rbind(cbind(rnorm(10,0,0.5), rnorm(10,0,0.5)),
++            cbind(rnorm(15,5,0.5), rnorm(15,5,0.5)))
+> pamx <- pam(x, 2)
+> pamx # Medoids: '7' and '25' ...
+Medoids:
+     ID                     
+[1,]  2 0.09182166 0.1949216
+[2,] 13 5.03728249 4.9703433
+Clustering vector:
+ [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+Objective function:
+    build      swap 
+0.4894259 0.4693662 
+
+Available components:
+ [1] "medoids"    "id.med"     "clustering" "objective"  "isolation" 
+ [6] "clusinfo"   "silinfo"    "diss"       "call"       "data"      
+> summary(pamx)
+Medoids:
+     ID                     
+[1,]  2 0.09182166 0.1949216
+[2,] 13 5.03728249 4.9703433
+Clustering vector:
+ [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+Objective function:
+    build      swap 
+0.4894259 0.4693662 
+
+Numerical information per cluster:
+     size max_diss   av_diss diameter separation
+[1,]   10 1.481247 0.5014780 2.169261   6.241434
+[2,]   15 1.183619 0.4479583 1.902396   6.241434
+
+Isolated clusters:
+ L-clusters: character(0)
+ L*-clusters: [1] 1 2
+
+Silhouette plot information:
+   cluster neighbor sil_width
+2        1        2 0.9194159
+10       1        2 0.9138890
+7        1        2 0.9072728
+9        1        2 0.9062359
+5        1        2 0.8998508
+6        1        2 0.8971476
+8        1        2 0.8948746
+3        1        2 0.8822026
+1        1        2 0.8684134
+4        1        2 0.7818001
+13       2        1 0.9310511
+24       2        1 0.9302167
+16       2        1 0.9291161
+22       2        1 0.9279516
+17       2        1 0.9242755
+19       2        1 0.9163756
+23       2        1 0.9146443
+12       2        1 0.9093133
+15       2        1 0.9092520
+20       2        1 0.9052904
+11       2        1 0.9035327
+21       2        1 0.8726245
+25       2        1 0.8723229
+18       2        1 0.8698124
+14       2        1 0.8276451
+Average silhouette width per cluster:
+[1] 0.8871103 0.9028950
+Average silhouette width of total data set:
+[1] 0.8965811
+
+300 dissimilarities, summarized :
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.02611 0.63298 4.20530 3.85730 6.95550 8.07520 
+Metric :  euclidean 
+Number of objects : 25
+
+Available components:
+ [1] "medoids"    "id.med"     "clustering" "objective"  "isolation" 
+ [6] "clusinfo"   "silinfo"    "diss"       "call"       "data"      
+> plot(pamx)
+> ## use obs. 1 & 16 as starting medoids -- same result (typically)
+> (p2m <- pam(x, 2, medoids = c(1,16)))
+Medoids:
+     ID                     
+[1,]  2 0.09182166 0.1949216
+[2,] 13 5.03728249 4.9703433
+Clustering vector:
+ [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+Objective function:
+    build      swap 
+0.5968837 0.4693662 
+
+Available components:
+ [1] "medoids"    "id.med"     "clustering" "objective"  "isolation" 
+ [6] "clusinfo"   "silinfo"    "diss"       "call"       "data"      
+> ## no _build_ *and* no _swap_ phase: just cluster all obs. around (1, 16):
+> p2.s <- pam(x, 2, medoids = c(1,16), do.swap = FALSE)
+> p2.s
+Medoids:
+     ID                     
+[1,]  1 -0.3132269 0.7558906
+[2,] 16  4.9719356 4.9177382
+Clustering vector:
+ [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+Objective function:
+    build      swap 
+0.5968837 0.5968837 
+
+Available components:
+ [1] "medoids"    "id.med"     "clustering" "objective"  "isolation" 
+ [6] "clusinfo"   "silinfo"    "diss"       "call"       "data"      
+> 
+> p3m <- pam(x, 3, trace = 2)
+C pam(): computing 301 dissimilarities from  25 x 2  matrix: [Ok]
+pam()'s bswap(*, s=8.07515, pamonce=0): build 3 medoids:
+    new repr. 17
+    new repr. 2
+    new repr. 25
+  after build: medoids are  2 17 25
+   swp new 13 <-> 17 old; decreasing diss. 9.87996 by -0.62603
+end{bswap()}, end{cstat()}
+> ## rather stupid initial medoids:
+> (p3m. <- pam(x, 3, medoids = 3:1, trace = 1))
+C pam(): computing 301 dissimilarities from  25 x 2  matrix: [Ok]
+pam()'s bswap(*, s=8.07515, pamonce=0): medoids given
+  after build: medoids are  1  2  3
+end{bswap()}, end{cstat()}
+Medoids:
+     ID                     
+[1,]  2 0.09182166 0.1949216
+[2,] 13 5.03728249 4.9703433
+[3,] 25 4.31147022 5.4405539
+Clustering vector:
+ [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 3 2 2 2 3 2 2 2 2 2 2 3
+Objective function:
+   build     swap 
+4.234844 0.370157 
+
+Available components:
+ [1] "medoids"    "id.med"     "clustering" "objective"  "isolation" 
+ [6] "clusinfo"   "silinfo"    "diss"       "call"       "data"      
+> 
+> ## Don't show: 
+>  ii <- pmatch(c("obj","call"), names(pamx))
+>  stopifnot(all.equal(pamx [-ii],  p2m [-ii],  tolerance=1e-14),
++            all.equal(pamx$objective[2], p2m$objective[2], tolerance=1e-14))
+> ## End(Don't show)
+> pam(daisy(x, metric = "manhattan"), 2, diss = TRUE)
+Medoids:
+     ID   
+[1,]  2  2
+[2,] 24 24
+Clustering vector:
+ [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+Objective function:
+    build      swap 
+0.6550249 0.6348637 
+
+Available components:
+[1] "medoids"    "id.med"     "clustering" "objective"  "isolation" 
+[6] "clusinfo"   "silinfo"    "diss"       "call"      
+> 
+> data(ruspini)
+> ## Plot similar to Figure 4 in Stryuf et al (1996)
+> ## Not run: plot(pam(ruspini, 4), ask = TRUE)
+> ## Don't show: 
+> plot(pam(ruspini, 4))
+> ## End(Don't show)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pam.object")
+> ### * pam.object
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pam.object
+> ### Title: Partitioning Around Medoids (PAM) Object
+> ### Aliases: pam.object
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> ## Use the silhouette widths for assessing the best number of clusters,
+> ## following a one-dimensional example from Christian Hennig :
+> ##
+> x <- c(rnorm(50), rnorm(50,mean=5), rnorm(30,mean=15))
+> asw <- numeric(20)
+> ## Note that "k=1" won't work!
+> for (k in 2:20)
++   asw[k] <- pam(x, k) $ silinfo $ avg.width
+> k.best <- which.max(asw)
+> cat("silhouette-optimal number of clusters:", k.best, "\n")
+silhouette-optimal number of clusters: 3 
+> 
+> plot(1:20, asw, type= "h", main = "pam() clustering assessment",
++      xlab= "k  (# clusters)", ylab = "average silhouette width")
+> axis(1, k.best, paste("best",k.best,sep="\n"), col = "red", col.axis = "red")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("plantTraits")
+> ### * plantTraits
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plantTraits
+> ### Title: Plant Species Traits Data
+> ### Aliases: plantTraits
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> data(plantTraits)
+> 
+> ## Calculation of a dissimilarity matrix
+> library(cluster)
+> dai.b <- daisy(plantTraits,
++                type = list(ordratio = 4:11, symm = 12:13, asymm = 14:31))
+> 
+> ## Hierarchical classification
+> agn.trts <- agnes(dai.b, method="ward")
+> plot(agn.trts, which.plots = 2, cex= 0.6)
+> plot(agn.trts, which.plots = 1)
+> cutree6 <- cutree(agn.trts, k=6)
+> cutree6
+  [1] 1 1 2 2 3 4 4 2 3 5 5 2 2 1 5 4 6 2 6 1 5 4 3 2 2 3 2 1 4 6 6 6 6 2 5 6 3
+ [38] 5 4 3 5 2 2 6 1 6 1 1 3 4 4 3 3 3 6 2 5 2 2 2 6 5 5 4 4 6 2 6 2 6 3 6 2 2
+ [75] 4 2 4 2 5 4 5 4 5 5 5 4 2 2 1 2 3 3 6 6 6 6 2 6 6 3 3 6 6 6 6 6 6 5 5 4 5
+[112] 6 6 2 6 4 6 6 2 3 4 6 6 3 6 2 3 6 1 5 2 4 2 3 3 3
+> 
+> ## Principal Coordinate Analysis
+> cmdsdai.b <- cmdscale(dai.b, k=6)
+> plot(cmdsdai.b[, 1:2], asp = 1, col = cutree6)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("plot.agnes")
+> ### * plot.agnes
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plot.agnes
+> ### Title: Plots of an Agglomerative Hierarchical Clustering
+> ### Aliases: plot.agnes
+> ### Keywords: cluster hplot
+> 
+> ### ** Examples
+> 
+> ## Can also pass 'labels' to pltree() and bannerplot():
+> data(iris)
+> cS <- as.character(Sp <- iris$Species)
+> cS[Sp == "setosa"] <- "S"
+> cS[Sp == "versicolor"] <- "V"
+> cS[Sp == "virginica"] <- "g"
+> ai <- agnes(iris[, 1:4])
+> plot(ai, labels = cS, nmax = 150)# bannerplot labels are mess
+> 
+> 
+> 
+> cleanEx()
+> nameEx("plot.diana")
+> ### * plot.diana
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plot.diana
+> ### Title: Plots of a Divisive Hierarchical Clustering
+> ### Aliases: plot.diana
+> ### Keywords: cluster hplot
+> 
+> ### ** Examples
+> 
+> example(diana)# -> dv <- diana(....)
+
+diana> data(votes.repub)
+
+diana> dv <- diana(votes.repub, metric = "manhattan", stand = TRUE)
+
+diana> print(dv)
+Merge:
+      [,1] [,2]
+ [1,]   -7  -32
+ [2,]  -13  -35
+ [3,]  -12  -50
+ [4,]    1  -30
+ [5,]  -26  -28
+ [6,]   -5  -37
+ [7,]  -22  -38
+ [8,]  -21  -39
+ [9,]  -16  -27
+[10,]    4    2
+[11,]  -25  -48
+[12,]  -42  -46
+[13,]   -6  -14
+[14,]  -34  -41
+[15,]   -8  -20
+[16,]    5  -31
+[17,]   10    7
+[18,]  -17  -47
+[19,]   -3  -44
+[20,]  -33   12
+[21,]   15   18
+[22,]   17  -29
+[23,]   22  -49
+[24,]   21   11
+[25,]   23  -15
+[26,]  -11  -19
+[27,]    3    9
+[28,]    8  -23
+[29,]   19   16
+[30,]   27   14
+[31,]    6   25
+[32,]   -1  -10
+[33,]   31   13
+[34,]   29  -36
+[35,]   -2  -45
+[36,]   -9  -43
+[37,]   24   20
+[38,]   32   -4
+[39,]  -24  -40
+[40,]   38  -18
+[41,]   33   30
+[42,]   34   37
+[43,]   35   26
+[44,]   41   28
+[45,]   40   36
+[46,]   42   44
+[47,]   45   39
+[48,]   43   46
+[49,]   47   48
+Order of objects:
+ [1] Alabama        Georgia        Arkansas       Louisiana      Florida       
+ [6] Texas          Mississippi    South Carolina Alaska         Vermont       
+[11] Hawaii         Maine          Arizona        Utah           Montana       
+[16] Nevada         New Mexico     Oklahoma       Delaware       Maryland      
+[21] Kentucky       Washington     Missouri       West Virginia  North Carolina
+[26] Tennessee      Virginia       California     Oregon         Connecticut   
+[31] New York       New Jersey     Illinois       Ohio           Michigan      
+[36] Pennsylvania   New Hampshire  Wisconsin      Iowa           Colorado      
+[41] Indiana        Idaho          Wyoming        Kansas         Nebraska      
+[46] North Dakota   South Dakota   Massachusetts  Rhode Island   Minnesota     
+Height:
+ [1]  27.363453  33.969252  39.658259  48.534276  31.899654  72.598496
+ [7]  35.691518 167.580197  31.582223  43.846009  24.487963  85.552482
+[13]  18.393392  25.676314  11.493967  17.455521  28.625502  42.544800
+[19]  16.485096  20.044499  17.875161  21.983729  14.218077  33.610713
+[25]  18.397326  14.757619  56.556754  11.701321  27.058874   8.382005
+[31]  11.368197  13.252375   9.230040  17.834836  12.708189  20.667139
+[37]  21.039972  23.665856  28.605405  15.317027  40.339045  10.462936
+[43]  24.835249  12.804188  26.362915  16.251922  47.257725  12.791603
+[49]  24.872061
+Divisive coefficient:
+[1] 0.8869182
+
+Available components:
+[1] "order"     "height"    "dc"        "merge"     "diss"      "call"     
+[7] "order.lab" "data"     
+
+diana> plot(dv)
+
+diana> ## Cut into 2 groups:
+diana> dv2 <- cutree(as.hclust(dv), k = 2)
+
+diana> table(dv2) # 8 and 42 group members
+dv2
+ 1  2 
+ 8 42 
+
+diana> rownames(votes.repub)[dv2 == 1]
+[1] "Alabama"        "Arkansas"       "Florida"        "Georgia"       
+[5] "Louisiana"      "Mississippi"    "South Carolina" "Texas"         
+
+diana> ## For two groups, does the metric matter ?
+diana> dv0 <- diana(votes.repub, stand = TRUE) # default: Euclidean
+
+diana> dv.2 <- cutree(as.hclust(dv0), k = 2)
+
+diana> table(dv2 == dv.2)## identical group assignments
+
+TRUE 
+  50 
+
+diana> str(as.dendrogram(dv0)) # {via as.dendrogram.twins() method}
+--[dendrogram w/ 2 branches and 50 members at h = 31.1]
+  |--[dendrogram w/ 2 branches and 8 members at h = 15.3]
+  |  |--[dendrogram w/ 2 branches and 6 members at h = 10.5]
+  |  |  |--[dendrogram w/ 2 branches and 3 members at h = 8.46]
+  |  |  |  |--[dendrogram w/ 2 branches and 2 members at h = 6.28]
+  |  |  |  |  |--leaf "Alabama" 
+  |  |  |  |  `--leaf "Georgia" 
+  |  |  |  `--leaf "Louisiana" 
+  |  |  `--[dendrogram w/ 2 branches and 3 members at h = 7.68]
+  |  |     |--[dendrogram w/ 2 branches and 2 members at h = 7.1]
+  |  |     |  |--leaf "Arkansas" 
+  |  |     |  `--leaf "Florida" 
+  |  |     `--leaf "Texas" 
+  |  `--[dendrogram w/ 2 branches and 2 members at h = 9.55]
+  |     |--leaf "Mississippi" 
+  |     `--leaf "South Carolina" 
+  `--[dendrogram w/ 2 branches and 42 members at h = 17]
+     |--[dendrogram w/ 2 branches and 4 members at h = 9.43]
+     |  |--[dendrogram w/ 2 branches and 2 members at h = 6.45]
+     |  |  |--leaf "Alaska" 
+     |  |  `--leaf "Vermont" 
+     |  `--[dendrogram w/ 2 branches and 2 members at h = 5.23]
+     |     |--leaf "Hawaii" 
+     |     `--leaf "Maine" 
+     `--[dendrogram w/ 2 branches and 38 members at h = 12.5]
+        |--[dendrogram w/ 2 branches and 9 members at h = 7.98]
+        |  |--[dendrogram w/ 2 branches and 7 members at h = 6.12]
+        |  |  |--[dendrogram w/ 2 branches and 4 members at h = 5.03]
+        |  |  |  |--leaf "Arizona" 
+        |  |  |  `--[dendrogram w/ 2 branches and 3 members at h = 4.11]
+        |  |  |     |--leaf "Colorado" 
+        |  |  |     `--[dendrogram w/ 2 branches and 2 members at h = 3.11]
+        |  |  |        |--leaf "Montana" 
+        |  |  |        `--leaf "Nevada" 
+        |  |  `--[dendrogram w/ 2 branches and 3 members at h = 3.77]
+        |  |     |--[dendrogram w/ 2 branches and 2 members at h = 2.28]
+        |  |     |  |--leaf "Idaho" 
+        |  |     |  `--leaf "Wyoming" 
+        |  |     `--leaf "Utah" 
+        |  `--[dendrogram w/ 2 branches and 2 members at h = 3.06]
+        |     |--leaf "Kansas" 
+        |     `--leaf "Nebraska" 
+        `--[dendrogram w/ 2 branches and 29 members at h = 12.5]
+           |--[dendrogram w/ 2 branches and 3 members at h = 5.1]
+           |  |--[dendrogram w/ 2 branches and 2 members at h = 4.49]
+           |  |  |--leaf "Kentucky" 
+           |  |  `--leaf "Virginia" 
+           |  `--leaf "Oklahoma" 
+           `--[dendrogram w/ 2 branches and 26 members at h = 10.4]
+              |--[dendrogram w/ 2 branches and 18 members at h = 7.26]
+              |  |--[dendrogram w/ 2 branches and 14 members at h = 6.79]
+              |  |  |--[dendrogram w/ 2 branches and 3 members at h = 3.72]
+              |  |  |  |--leaf "California" 
+              |  |  |  `--[dendrogram w/ 2 branches and 2 members at h = 2.64]
+              |  |  |     |--leaf "Oregon" 
+              |  |  |     `--leaf "Washington" 
+              |  |  `--[dendrogram w/ 2 branches and 11 members at h = 5.82]
+              |  |     |--[dendrogram w/ 2 branches and 9 members at h = 4.93]
+              |  |     |  |--[dendrogram w/ 2 branches and 7 members at h = 4.13]
+              |  |     |  |  |--[dendrogram w/ 2 branches and 2 members at h = 2.97]
+              |  |     |  |  |  |--leaf "Connecticut" 
+              |  |     |  |  |  `--leaf "New Hampshire" 
+              |  |     |  |  `--[dendrogram w/ 2 branches and 5 members at h = 3.8]
+              |  |     |  |     |--[dendrogram w/ 2 branches and 3 members at h = 2.61]
+              |  |     |  |     |  |--[dendrogram w/ 2 branches and 2 members at h = 2.28]
+              |  |     |  |     |  |  |--leaf "Illinois" 
+              |  |     |  |     |  |  `--leaf "New Jersey" 
+              |  |     |  |     |  `--leaf "New York" 
+              |  |     |  |     `--[dendrogram w/ 2 branches and 2 members at h = 2.53]
+              |  |     |  |        |--leaf "Indiana" 
+              |  |     |  |        `--leaf "Ohio" 
+              |  |     |  `--[dendrogram w/ 2 branches and 2 members at h = 2.77]
+              |  |     |     |--leaf "Michigan" 
+              |  |     |     `--leaf "Pennsylvania" 
+              |  |     `--[dendrogram w/ 2 branches and 2 members at h = 3.61]
+              |  |        |--leaf "Delaware" 
+              |  |        `--leaf "New Mexico" 
+              |  `--[dendrogram w/ 2 branches and 4 members at h = 4.37]
+              |     |--[dendrogram w/ 2 branches and 3 members at h = 3.92]
+              |     |  |--[dendrogram w/ 2 branches and 2 members at h = 2.73]
+              |     |  |  |--leaf "Iowa" 
+              |     |  |  `--leaf "South Dakota" 
+              |     |  `--leaf "North Dakota" 
+              |     `--leaf "Wisconsin" 
+              `--[dendrogram w/ 2 branches and 8 members at h = 10.4]
+                 |--[dendrogram w/ 2 branches and 5 members at h = 6.21]
+                 |  |--leaf "Maryland" 
+                 |  `--[dendrogram w/ 2 branches and 4 members at h = 5.71]
+                 |     |--[dendrogram w/ 2 branches and 2 members at h = 3.17]
+                 |     |  |--leaf "Missouri" 
+                 |     |  `--leaf "West Virginia" 
+                 |     `--[dendrogram w/ 2 branches and 2 members at h = 3.7]
+                 |        |--leaf "North Carolina" 
+                 |        `--leaf "Tennessee" 
+                 `--[dendrogram w/ 2 branches and 3 members at h = 5.53]
+                    |--[dendrogram w/ 2 branches and 2 members at h = 3.21]
+                    |  |--leaf "Massachusetts" 
+                    |  `--leaf "Rhode Island" 
+                    `--leaf "Minnesota" 
+
+diana> data(agriculture)
+
+diana> ## Plot similar to Figure 8 in ref
+diana> ## Not run: plot(diana(agriculture), ask = TRUE)
+diana> ## Don't show: 
+diana> plot(diana(agriculture))
+
+diana> ## End(Don't show)
+diana> 
+diana> 
+diana> 
+> 
+> plot(dv, which = 1, nmax.lab = 100)
+> 
+> ## wider labels :
+> op <- par(mar = par("mar") + c(0, 2, 0,0))
+> plot(dv, which = 1, nmax.lab = 100, max.strlen = 12)
+> par(op)
+> 
+> 
+> 
+> graphics::par(get("par.postscript", pos = 'CheckExEnv'))
+> cleanEx()
+> nameEx("plot.partition")
+> ### * plot.partition
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plot.partition
+> ### Title: Plot of a Partition of the Data Set
+> ### Aliases: plot.partition
+> ### Keywords: cluster hplot
+> 
+> ### ** Examples
+> 
+> ## generate 25 objects, divided into 2 clusters.
+> x <- rbind(cbind(rnorm(10,0,0.5), rnorm(10,0,0.5)),
++            cbind(rnorm(15,5,0.5), rnorm(15,5,0.5)))
+> plot(pam(x, 2))
+> 
+> ## Save space not keeping data in clus.object, and still clusplot() it:
+> data(xclara)
+> cx <- clara(xclara, 3, keep.data = FALSE)
+> cx$data # is NULL
+NULL
+> plot(cx, data = xclara)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("pltree")
+> ### * pltree
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pltree
+> ### Title: Plot Clustering Tree of a Hierarchical Clustering
+> ### Aliases: pltree pltree.twins
+> ### Keywords: cluster hplot
+> 
+> ### ** Examples
+> 
+> data(votes.repub)
+> agn <- agnes(votes.repub)
+> pltree(agn)
+> 
+> dagn  <- as.dendrogram(as.hclust(agn))
+> dagn2 <- as.dendrogram(as.hclust(agn), hang = 0.2)
+> op <- par(mar = par("mar") + c(0,0,0, 2)) # more space to the right
+> plot(dagn2, horiz = TRUE)
+> plot(dagn, horiz = TRUE, center = TRUE,
++      nodePar = list(lab.cex = 0.6, lab.col = "forest green", pch = NA),
++      main = deparse(agn$call))
+> par(op)
+> 
+> 
+> 
+> graphics::par(get("par.postscript", pos = 'CheckExEnv'))
+> cleanEx()
+> nameEx("pluton")
+> ### * pluton
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: pluton
+> ### Title: Isotopic Composition Plutonium Batches
+> ### Aliases: pluton
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> data(pluton)
+> 
+> hist(apply(pluton,1,sum), col = "gray") # between 94% and 100%
+> pu5 <- pluton
+> pu5$Pu242 <- 100 - apply(pluton,1,sum) # the remaining isotope.
+> pairs(pu5)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("predict.ellipsoid")
+> ### * predict.ellipsoid
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: predict.ellipsoid
+> ### Title: Predict Method for Ellipsoid Objects
+> ### Aliases: predict.ellipsoid ellipsoidPoints
+> ### Keywords: dplot utilities
+> 
+> ### ** Examples
+> 
+>  ## see also  example(ellipsoidhull)
+> 
+> ## Robust vs. L.S. covariance matrix
+> set.seed(143)
+> x <- rt(200, df=3)
+> y <- 3*x + rt(200, df=2)
+> plot(x,y, main="non-normal data (N=200)")
+> mtext("with classical and robust cov.matrix ellipsoids")
+> X <- cbind(x,y)
+> C.ls <- cov(X) ; m.ls <- colMeans(X)
+> d2.99 <- qchisq(0.99, df = 2)
+> lines(ellipsoidPoints(C.ls, d2.99, loc=m.ls), col="green")
+> if(require(MASS)) {
++   Cxy <- cov.rob(cbind(x,y))
++   lines(ellipsoidPoints(Cxy$cov, d2 = d2.99, loc=Cxy$center), col="red")
++ }# MASS
+Loading required package: MASS
+> 
+> 
+> 
+> cleanEx()
+
+detaching ‘package:MASS’
+
+> nameEx("print.dissimilarity")
+> ### * print.dissimilarity
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: print.dissimilarity
+> ### Title: Print and Summary Methods for Dissimilarity Objects
+> ### Aliases: print.dissimilarity summary.dissimilarity
+> ###   print.summary.dissimilarity
+> ### Keywords: cluster print
+> 
+> ### ** Examples
+> 
+>  ## See  example(daisy)
+> 
+>  sd <- summary(daisy(matrix(rnorm(100), 20,5)))
+>  sd # -> print.summary.dissimilarity(.)
+190 dissimilarities, summarized :
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.5265  2.0428  2.7941  2.7519  3.2688  5.3757 
+Metric :  euclidean 
+Number of objects : 20
+>  str(sd)
+List of 4
+ $ summ  : 'summaryDefault' Named num [1:6] 0.526 2.043 2.794 2.752 3.269 ...
+  ..- attr(*, "names")= chr [1:6] "Min." "1st Qu." "Median" "Mean" ...
+ $ n     : int 190
+ $ Size  : int 20
+ $ Metric: chr "euclidean"
+ - attr(*, "class")= chr "summary.dissimilarity"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ruspini")
+> ### * ruspini
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ruspini
+> ### Title: Ruspini Data
+> ### Aliases: ruspini
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> data(ruspini)
+> 
+> ## Plot similar to Figure 4 in Stryuf et al (1996)
+> ## Not run: plot(pam(ruspini, 4), ask = TRUE)
+> ## Don't show: 
+> plot(pam(ruspini, 4))
+> ## End(Don't show)
+> 
+> ## Plot similar to Figure 6 in Stryuf et al (1996)
+> plot(fanny(ruspini, 5))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("silhouette")
+> ### * silhouette
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: silhouette
+> ### Title: Compute or Extract Silhouette Information from Clustering
+> ### Aliases: silhouette silhouette.clara silhouette.default
+> ###   silhouette.partition sortSilhouette summary.silhouette
+> ###   print.summary.silhouette plot.silhouette
+> ### Keywords: cluster
+> 
+> ### ** Examples
+> 
+> data(ruspini)
+> pr4 <- pam(ruspini, 4)
+> str(si <- silhouette(pr4))
+ 'silhouette' num [1:75, 1:3] 1 1 1 1 1 1 1 1 1 1 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:75] "10" "6" "9" "11" ...
+  ..$ : chr [1:3] "cluster" "neighbor" "sil_width"
+ - attr(*, "Ordered")= logi TRUE
+ - attr(*, "call")= language pam(x = ruspini, k = 4)
+> (ssi <- summary(si))
+Silhouette of 75 units in 4 clusters from pam(x = ruspini, k = 4) :
+ Cluster sizes and average silhouette widths:
+       20        23        17        15 
+0.7262347 0.7548344 0.6691154 0.8042285 
+Individual silhouette widths:
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.4196  0.7145  0.7642  0.7377  0.7984  0.8549 
+> plot(si) # silhouette plot
+> plot(si, col = c("red", "green", "blue", "purple"))# with cluster-wise coloring
+> 
+> si2 <- silhouette(pr4$clustering, dist(ruspini, "canberra"))
+> summary(si2) # has small values: "canberra"'s fault
+Silhouette of 75 units in 4 clusters from silhouette.default(x = pr4$clustering, dist = dist(ruspini, "canberra")) :
+ Cluster sizes and average silhouette widths:
+       20        23        17        15 
+0.4704136 0.6699338 0.7339873 0.6623204 
+Individual silhouette widths:
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.07951 0.55135 0.67585 0.62972 0.75332 0.82071 
+> plot(si2, nmax= 80, cex.names=0.6)
+> 
+> op <- par(mfrow= c(3,2), oma= c(0,0, 3, 0),
++           mgp= c(1.6,.8,0), mar= .1+c(4,2,2,2))
+> for(k in 2:6)
++    plot(silhouette(pam(ruspini, k=k)), main = paste("k = ",k), do.n.k=FALSE)
+> mtext("PAM(Ruspini) as in Kaufman & Rousseeuw, p.101",
++       outer = TRUE, font = par("font.main"), cex = par("cex.main")); frame()
+> 
+> ## the same with cluster-wise colours:
+> c6 <- c("tomato", "forest green", "dark blue", "purple2", "goldenrod4", "gray20")
+> for(k in 2:6)
++    plot(silhouette(pam(ruspini, k=k)), main = paste("k = ",k), do.n.k=FALSE,
++         col = c6[1:k])
+> par(op)
+> 
+> ## clara(): standard silhouette is just for the best random subset
+> data(xclara)
+> set.seed(7)
+> str(xc1k <- xclara[ sample(nrow(xclara), size = 1000) ,]) # rownames == indices
+'data.frame':	1000 obs. of  2 variables:
+ $ V1: num  44.6 11.2 71.6 17.6 77.5 ...
+ $ V2: num  78.78 27.96 -26.88 69.15 -7.26 ...
+> cl3 <- clara(xc1k, 3)
+> plot(silhouette(cl3))# only of the "best" subset of 46
+> ## The full silhouette: internally needs large (36 MB) dist object:
+> sf <- silhouette(cl3, full = TRUE) ## this is the same as
+> s.full <- silhouette(cl3$clustering, daisy(xc1k))
+> stopifnot(all.equal(sf, s.full, check.attributes = FALSE, tolerance = 0))
+> ## color dependent on original "3 groups of each 1000": % __FIXME ??__
+> plot(sf, col = 2+ as.integer(names(cl3$clustering) ) %/% 1000,
++      main ="plot(silhouette(clara(.), full = TRUE))")
+> 
+> ## Silhouette for a hierarchical clustering:
+> ar <- agnes(ruspini)
+> si3 <- silhouette(cutree(ar, k = 5), # k = 4 gave the same as pam() above
++     	           daisy(ruspini))
+> plot(si3, nmax = 80, cex.names = 0.5)
+> ## 2 groups: Agnes() wasn't too good:
+> si4 <- silhouette(cutree(ar, k = 2), daisy(ruspini))
+> plot(si4, nmax = 80, cex.names = 0.5)
+> 
+> 
+> 
+> graphics::par(get("par.postscript", pos = 'CheckExEnv'))
+> cleanEx()
+> nameEx("sizeDiss")
+> ### * sizeDiss
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: sizeDiss
+> ### Title: Sample Size of Dissimilarity Like Object
+> ### Aliases: sizeDiss
+> ### Keywords: utilities arith
+> 
+> ### ** Examples
+> 
+> sizeDiss(1:10)# 5, since 10 == 5 * (5 - 1) / 2
+[1] 5
+> sizeDiss(1:9) # NA
+[1] NA
+> 
+> n <- 1:100
+> stopifnot(n == sapply( n*(n-1)/2, function(n) sizeDiss(logical(n))))
+> 
+> 
+> 
+> cleanEx()
+> nameEx("summary.agnes")
+> ### * summary.agnes
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: summary.agnes
+> ### Title: Summary Method for 'agnes' Objects
+> ### Aliases: summary.agnes print.summary.agnes
+> ### Keywords: cluster print
+> 
+> ### ** Examples
+> 
+> data(agriculture)
+> summary(agnes(agriculture))
+Object of class 'agnes' from call:
+ agnes(x = agriculture) 
+Agglomerative coefficient:  0.7818932 
+Order of objects:
+ [1] B   NL  D   F   UK  DK  L   I   GR  P   E   IRL
+Merge:
+      [,1] [,2]
+ [1,]   -1  -10
+ [2,]   -2   -9
+ [3,]    1   -3
+ [4,]    3   -6
+ [5,]   -5   -7
+ [6,]    4  -12
+ [7,]    6    2
+ [8,]   -4  -11
+ [9,]    7   -8
+[10,]    8    5
+[11,]    9   10
+Height:
+ [1]  1.649242  2.248356  2.769175  4.026768  4.788352  2.220360  5.294092
+ [8] 14.779629  5.162364  8.550753  3.140064
+
+66 dissimilarities, summarized :
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.649   4.357   7.987   9.594  13.250  24.035 
+Metric :  euclidean 
+Number of objects : 12
+
+Available components:
+[1] "order"     "height"    "ac"        "merge"     "diss"      "call"     
+[7] "method"    "order.lab" "data"     
+> 
+> 
+> 
+> cleanEx()
+> nameEx("summary.clara")
+> ### * summary.clara
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: summary.clara
+> ### Title: Summary Method for 'clara' Objects
+> ### Aliases: summary.clara print.summary.clara
+> ### Keywords: cluster print
+> 
+> ### ** Examples
+> 
+> ## generate 2000 objects, divided into 5 clusters.
+> set.seed(47)
+> x <- rbind(cbind(rnorm(400, 0,4), rnorm(400, 0,4)),
++            cbind(rnorm(400,10,8), rnorm(400,40,6)),
++            cbind(rnorm(400,30,4), rnorm(400, 0,4)),
++            cbind(rnorm(400,40,4), rnorm(400,20,2)),
++            cbind(rnorm(400,50,4), rnorm(400,50,4))
++ )
+> clx5 <- clara(x, 5)
+> ## Mis'classification' table:
+> table(rep(1:5, rep(400,5)), clx5$clust) # -> 1 "error"
+   
+      1   2   3   4   5
+  1 400   0   0   0   0
+  2   1 397   2   0   0
+  3   0   0   2 398   0
+  4   0   0 400   0   0
+  5   0   0   0   0 400
+> summary(clx5)
+Object of class 'clara' from call:
+ clara(x = x, k = 5) 
+Medoids:
+           [,1]      [,2]
+[1,] -0.1035906  1.171950
+[2,]  9.9499760 39.951186
+[3,] 39.4474719 19.039427
+[4,] 29.4759812  1.358166
+[5,] 51.6823589 50.852512
+Objective function:	  5.718409 
+Numerical information per cluster:
+     size max_diss  av_diss isolation
+[1,]  401 19.97700 5.386022 0.6753513
+[2,]  397 22.69885 8.906811 0.6277678
+[3,]  404 18.31257 4.074241 0.9021325
+[4,]  398 13.60096 4.858041 0.6700241
+[5,]  400 13.90904 5.403812 0.4080733
+Average silhouette width per cluster:
+[1] 0.7072538 0.5300758 0.7454078 0.6335300 0.7723767
+Average silhouette width of best sample: 0.6724871 
+
+Best sample:
+ [1]   10   50  186  300  322  349  376  378  382  415  450  484  523  615  638
+[16]  673  683  763  780  799  820  841  864  873  874  887  926 1011 1017 1032
+[31] 1056 1093 1214 1225 1272 1467 1494 1554 1570 1602 1713 1729 1753 1768 1818
+[46] 1857 1895 1907 1934 1984
+Clustering vector:
+   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+  [38] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+  [75] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [112] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [149] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [186] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [223] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [260] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [297] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [334] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [371] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2
+ [408] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ [445] 2 2 2 2 2 2 2 2 2 2 2 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ [482] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ [519] 2 2 2 2 2 2 2 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ [556] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ [593] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ [630] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ [667] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ [704] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ [741] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+ [778] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ [815] 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ [852] 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 3 4
+ [889] 4 4 4 4 4 4 4 4 4 4 4 4 4 3 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ [926] 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+ [963] 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+[1000] 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+[1037] 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+[1074] 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+[1111] 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+[1148] 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+[1185] 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1222] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1259] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1296] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1333] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1370] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1407] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1444] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1481] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1518] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1555] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[1592] 3 3 3 3 3 3 3 3 3 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1629] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1666] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1703] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1740] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1777] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1814] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1851] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1888] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1925] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1962] 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+[1999] 5 5
+
+Silhouette plot information for best sample:
+     cluster neighbor  sil_width
+186        1        4 0.79556048
+376        1        4 0.79536776
+382        1        4 0.77049836
+322        1        4 0.72622987
+378        1        4 0.71528949
+300        1        4 0.71457724
+10         1        4 0.70035557
+50         1        4 0.69376464
+349        1        4 0.45364060
+638        2        3 0.68460064
+799        2        1 0.67412068
+615        2        1 0.67411646
+780        2        1 0.64309460
+450        2        3 0.63739841
+763        2        1 0.60137941
+484        2        5 0.58470680
+673        2        1 0.46544761
+415        2        3 0.44374622
+683        2        5 0.32679127
+523        2        3 0.09543198
+1214       3        4 0.83525228
+1225       3        4 0.82861718
+1494       3        4 0.82594085
+1467       3        4 0.79812526
+1570       3        4 0.78556940
+1554       3        4 0.72597072
+1272       3        4 0.71036496
+887        3        4 0.45342176
+864        4        3 0.71911350
+1093       4        3 0.70970985
+1011       4        3 0.67477005
+874        4        3 0.66351496
+1056       4        3 0.64502727
+820        4        3 0.64288797
+873        4        3 0.63456421
+1017       4        1 0.62532035
+926        4        1 0.61762610
+841        4        1 0.55247046
+1032       4        3 0.48382581
+1984       5        3 0.83811926
+1895       5        3 0.83276945
+1934       5        3 0.82244446
+1818       5        3 0.82210143
+1857       5        3 0.79188309
+1713       5        3 0.78758559
+1729       5        3 0.78583419
+1768       5        3 0.75181843
+1602       5        2 0.74495873
+1753       5        3 0.71331435
+1907       5        3 0.60531502
+
+1225 dissimilarities, summarized :
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.2376 23.0540 36.8570 36.2280 48.8530 82.1740 
+Metric :  euclidean 
+Number of objects : 50
+
+Available components:
+ [1] "sample"     "medoids"    "i.med"      "clustering" "objective" 
+ [6] "clusinfo"   "diss"       "call"       "silinfo"    "data"      
+> 
+> ## Graphically:
+> par(mfrow = c(3,1), mgp = c(1.5, 0.6, 0), mar = par("mar") - c(0,0,2,0))
+> plot(x, col = rep(2:6, rep(400,5)))
+> plot(clx5)
+> 
+> 
+> 
+> graphics::par(get("par.postscript", pos = 'CheckExEnv'))
+> cleanEx()
+> nameEx("volume.ellipsoid")
+> ### * volume.ellipsoid
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: volume.ellipsoid
+> ### Title: Compute the Volume (of an Ellipsoid)
+> ### Aliases: volume volume.ellipsoid
+> ### Keywords: utilities
+> 
+> ### ** Examples
+> 
+> ## example(ellipsoidhull) # which defines 'ellipsoid' object <namefoo>
+> 
+> myEl <- structure(list(cov = rbind(c(3,1),1:2), loc = c(0,0), d2 = 10),
++                    class = "ellipsoid")
+> volume(myEl)# i.e. "area" here (d = 2)
+[1] 70.24815
+> myEl # also mentions the "volume"
+'ellipsoid' in 2 dimensions:
+ center = ( 0 0 ); squared ave.radius d^2 =  10 
+ and shape matrix =
+     [,1] [,2]
+[1,]    3    1
+[2,]    1    2
+  hence, area  =  70.248 
+> 
+> set.seed(1)
+> d5 <- matrix(rt(500, df=3), 100,5)
+> e5 <- ellipsoidhull(d5)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("xclara")
+> ### * xclara
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: xclara
+> ### Title: Bivariate Data Set with 3 Clusters
+> ### Aliases: xclara
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> ## Visualization: Assuming groups are defined as {1:1000}, {1001:2000}, {2001:3000}
+> plot(xclara, cex = 3/4, col = rep(1:3, each=1000))
+> p.ID <- c(78, 1411, 2535) ## PAM's medoid indices  == pam(xclara, 3)$id.med
+> text(xclara[p.ID,], labels = 1:3, cex=2, col=1:3)
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  3.747 1.066 3.311 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

@@ -1,0 +1,2169 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "vctrs"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('vctrs')
+Warning: package ‘vctrs’ was built under R version 4.0.4
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("data_frame")
+> ### * data_frame
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: data_frame
+> ### Title: Construct a data frame
+> ### Aliases: data_frame
+> 
+> ### ** Examples
+> 
+> data_frame(x = 1, y = 2)
+  x y
+1 1 2
+> 
+> # Inputs are recycled using tidyverse recycling rules
+> data_frame(x = 1, y = 1:3)
+  x y
+1 1 1
+2 1 2
+3 1 3
+> 
+> # Strings are never converted to factors
+> class(data_frame(x = "foo")$x)
+[1] "character"
+> 
+> # List columns can be easily created
+> df <- data_frame(x = list(1:2, 2, 3:4), y = 3:1)
+> 
+> # However, the base print method is suboptimal for displaying them,
+> # so it is recommended to convert them to tibble
+> if (rlang::is_installed("tibble")) {
++   tibble::as_tibble(df)
++ }
+# A tibble: 3 × 2
+  x             y
+  <list>    <int>
+1 <int [2]>     3
+2 <dbl [1]>     2
+3 <int [2]>     1
+> 
+> # Named data frame inputs create data frame columns
+> df <- data_frame(x = data_frame(y = 1:2, z = "a"))
+> 
+> # The `x` column itself is another data frame
+> df$x
+  y z
+1 1 a
+2 2 a
+> 
+> # Again, it is recommended to convert these to tibbles for a better
+> # print method
+> if (rlang::is_installed("tibble")) {
++   tibble::as_tibble(df)
++ }
+# A tibble: 2 × 1
+    x$y $z   
+  <int> <chr>
+1     1 a    
+2     2 a    
+> 
+> # Unnamed data frame input is automatically spliced
+> data_frame(x = 1, data_frame(y = 1:2, z = "a"))
+  x y z
+1 1 1 a
+2 1 2 a
+> 
+> 
+> 
+> cleanEx()
+> nameEx("df_list")
+> ### * df_list
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: df_list
+> ### Title: Collect columns for data frame construction
+> ### Aliases: df_list
+> 
+> ### ** Examples
+> 
+> # `new_data_frame()` can be used to create custom data frame constructors
+> new_fancy_df <- function(x = list(), n = NULL, ..., class = NULL) {
++   new_data_frame(x, n = n, ..., class = c(class, "fancy_df"))
++ }
+> 
+> # Combine this constructor with `df_list()` to create a safe,
+> # consistent helper function for your data frame subclass
+> fancy_df <- function(...) {
++   data <- df_list(...)
++   new_fancy_df(data)
++ }
+> 
+> df <- fancy_df(x = 1)
+> class(df)
+[1] "fancy_df"   "data.frame"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("fields")
+> ### * fields
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: fields
+> ### Title: Tools for accessing the fields of a record.
+> ### Aliases: fields n_fields field field<-
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> x <- new_rcrd(list(x = 1:3, y = 3:1, z = letters[1:3]))
+> n_fields(x)
+[1] 3
+> fields(x)
+[1] "x" "y" "z"
+> 
+> field(x, "y")
+[1] 3 2 1
+> field(x, "y") <- runif(3)
+> field(x, "y")
+[1] 0.2655087 0.3721239 0.5728534
+> 
+> 
+> 
+> cleanEx()
+> nameEx("list_of")
+> ### * list_of
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: list_of
+> ### Title: 'list_of' S3 class for homogenous lists
+> ### Aliases: list_of as_list_of validate_list_of is_list_of
+> ###   vec_ptype2.vctrs_list_of vec_cast.vctrs_list_of
+> 
+> ### ** Examples
+> 
+> x <- list_of(1:3, 5:6, 10:15)
+> if (requireNamespace("tibble", quietly = TRUE)) {
++   tibble::tibble(x = x)
++ }
+# A tibble: 3 × 1
+            x
+  <list<int>>
+1         [3]
+2         [2]
+3         [6]
+> 
+> vec_c(list_of(1, 2), list_of(FALSE, TRUE))
+<list_of<double>[4]>
+[[1]]
+[1] 1
+
+[[2]]
+[1] 2
+
+[[3]]
+[1] 0
+
+[[4]]
+[1] 1
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("name_spec")
+> ### * name_spec
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: name_spec
+> ### Title: Name specifications
+> ### Aliases: name_spec
+> 
+> ### ** Examples
+> 
+> # By default, named inputs must be length 1:
+> vec_c(name = 1)         # ok
+name 
+   1 
+> try(vec_c(name = 1:3))  # bad
+Error : Can't merge the outer name `name` with a vector of length > 1.
+Please supply a `.name_spec` specification.
+> 
+> # They also can't have internal names, even if scalar:
+> try(vec_c(name = c(internal = 1)))  # bad
+Error : Can't merge the outer name `name` with a vector of length > 1.
+Please supply a `.name_spec` specification.
+> 
+> # Pass a name specification to work around this. A specification
+> # can be a glue string referring to `outer` and `inner`:
+> vec_c(name = 1:3, other = 4:5, .name_spec = "{outer}")
+ name  name  name other other 
+    1     2     3     4     5 
+> vec_c(name = 1:3, other = 4:5, .name_spec = "{outer}_{inner}")
+ name_1  name_2  name_3 other_1 other_2 
+      1       2       3       4       5 
+> 
+> # They can also be functions:
+> my_spec <- function(outer, inner) paste(outer, inner, sep = "_")
+> vec_c(name = 1:3, other = 4:5, .name_spec = my_spec)
+ name_1  name_2  name_3 other_1 other_2 
+      1       2       3       4       5 
+> 
+> # Or purrr-style formulas for anonymous functions:
+> vec_c(name = 1:3, other = 4:5, .name_spec = ~ paste0(.x, .y))
+ name1  name2  name3 other1 other2 
+     1      2      3      4      5 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("new_data_frame")
+> ### * new_data_frame
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: new_data_frame
+> ### Title: Assemble attributes for data frame construction
+> ### Aliases: new_data_frame
+> 
+> ### ** Examples
+> 
+> new_data_frame(list(x = 1:10, y = 10:1))
+    x  y
+1   1 10
+2   2  9
+3   3  8
+4   4  7
+5   5  6
+6   6  5
+7   7  4
+8   8  3
+9   9  2
+10 10  1
+> 
+> 
+> 
+> cleanEx()
+> nameEx("new_date")
+> ### * new_date
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: new_date
+> ### Title: Date, date-time, and duration S3 classes
+> ### Aliases: new_date new_datetime new_duration vec_ptype2.Date
+> ###   vec_ptype2.POSIXct vec_ptype2.POSIXlt vec_ptype2.difftime
+> ###   vec_cast.Date vec_cast.POSIXct vec_cast.POSIXlt vec_cast.difftime
+> ###   vec_arith.Date vec_arith.POSIXct vec_arith.POSIXlt vec_arith.difftime
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> new_date(0)
+[1] "1970-01-01"
+> new_datetime(0, tzone = "UTC")
+[1] "1970-01-01 UTC"
+> new_duration(1, "hours")
+Time difference of 1 hours
+> 
+> 
+> 
+> cleanEx()
+> nameEx("op-empty-default")
+> ### * op-empty-default
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: %0%
+> ### Title: Default value for empty vectors
+> ### Aliases: %0%
+> 
+> ### ** Examples
+> 
+> 1:10 %0% 5
+ [1]  1  2  3  4  5  6  7  8  9 10
+> integer() %0% 5
+[1] 5
+> 
+> 
+> 
+> cleanEx()
+> nameEx("partial_factor")
+> ### * partial_factor
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: partial_factor
+> ### Title: Partially specify a factor
+> ### Aliases: partial_factor
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Assert that `x` is a factor
+> vec_assert(factor("x"), partial_factor())
+> 
+> # Testing with `factor()` is too strict,
+> # because it tries to match the levels exactly
+> # rather than learning them from the data.
+> try(vec_assert(factor("x"), factor()))
+Error : `factor("x")` must be a vector with type <factor<>>.
+Instead, it has type <factor<bf275>>.
+> 
+> # You can also enforce a minimum set of levels
+> try(vec_assert(factor("x"), partial_factor("y")))
+Error : `factor("x")` must be a vector with type:
+
+  <partial_factor<
+    fd1ad {partial}
+  >>
+
+Instead, it has type <factor<bf275>>.
+> 
+> vec_assert(factor(c("x", "y")), partial_factor("y"))
+> 
+> pf <- partial_factor(levels = c("x", "y"))
+> pf
+partial_factor<
+  5ec15 {partial}
+>
+> 
+> vec_ptype_common(factor("v"), factor("w"), .ptype = pf)
+factor(0)
+Levels: v w x y
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("partial_frame")
+> ### * partial_frame
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: partial_frame
+> ### Title: Partially specify columns of a data frame
+> ### Aliases: partial_frame
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> pf <- partial_frame(x = double())
+> pf
+partial_frame<
+  x: double {partial}
+>
+> 
+> vec_rbind(
++   data.frame(x = 1L, y = "a"),
++   data.frame(x = FALSE, z = 10),
++   .ptype = partial_frame(x = double(), a = character())
++ )
+  x    y  z    a
+1 1    a NA <NA>
+2 0 <NA> 10 <NA>
+> 
+> 
+> 
+> cleanEx()
+> nameEx("s3_register")
+> ### * s3_register
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: s3_register
+> ### Title: Register a method for a suggested dependency
+> ### Aliases: s3_register
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # A typical use case is to dynamically register tibble/pillar methods
+> # for your class. That way you avoid creating a hard dependency on packages
+> # that are not essential, while still providing finer control over
+> # printing when they are used.
+> 
+> .onLoad <- function(...) {
++   s3_register("pillar::pillar_shaft", "vctrs_vctr")
++   s3_register("tibble::type_sum", "vctrs_vctr")
++ }
+> 
+> 
+> 
+> cleanEx()
+> nameEx("unspecified")
+> ### * unspecified
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: unspecified
+> ### Title: A 1d vector of unspecified type
+> ### Aliases: unspecified
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> vec_ptype_show()
+Prototype: NULL
+> vec_ptype_show(NA)
+Prototype: logical
+> 
+> vec_c(NA, factor("x"))
+[1] <NA> x   
+Levels: x
+> vec_c(NA, Sys.Date())
+[1] NA           "2021-08-31"
+> vec_c(NA, Sys.time())
+[1] NA                        "2021-08-31 15:35:16 UTC"
+> vec_c(NA, list(1:3, 4:5))
+[[1]]
+NULL
+
+[[2]]
+[1] 1 2 3
+
+[[3]]
+[1] 4 5
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vctrs-conditions")
+> ### * vctrs-conditions
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vctrs-conditions
+> ### Title: Custom conditions for vctrs package
+> ### Aliases: vctrs-conditions stop_incompatible_type stop_incompatible_cast
+> ###   stop_incompatible_op stop_incompatible_size allow_lossy_cast
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> 
+> # Most of the time, `maybe_lossy_cast()` returns its input normally:
+> maybe_lossy_cast(
++   c("foo", "bar"),
++   NULL,
++   "",
++   lossy = c(FALSE, FALSE),
++   x_arg = "",
++   to_arg = ""
++ )
+[1] "foo" "bar"
+> 
+> # If `lossy` has any `TRUE`, an error is thrown:
+> try(maybe_lossy_cast(
++   c("foo", "bar"),
++   NULL,
++   "",
++   lossy = c(FALSE, TRUE),
++   x_arg = "",
++   to_arg = ""
++ ))
+Error : Can't convert from <NULL> to <character> due to loss of precision.
+* Locations: 2
+> 
+> # Unless lossy casts are allowed:
+> allow_lossy_cast(
++   maybe_lossy_cast(
++     c("foo", "bar"),
++     NULL,
++     "",
++     lossy = c(FALSE, TRUE),
++     x_arg = "",
++     to_arg = ""
++   )
++ )
+[1] "foo" "bar"
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec-rep")
+> ### * vec-rep
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec-rep
+> ### Title: Repeat a vector
+> ### Aliases: vec-rep vec_rep vec_rep_each vec_unrep
+> 
+> ### ** Examples
+> 
+> # Repeat the entire vector
+> vec_rep(1:2, 3)
+[1] 1 2 1 2 1 2
+> 
+> # Repeat within each vector
+> vec_rep_each(1:2, 3)
+[1] 1 1 1 2 2 2
+> x <- vec_rep_each(1:2, c(3, 4))
+> x
+[1] 1 1 1 2 2 2 2
+> 
+> # After using `vec_rep_each()`, you can recover the original vector
+> # with `vec_unrep()`
+> vec_unrep(x)
+  key times
+1   1     3
+2   2     4
+> 
+> df <- data.frame(x = 1:2, y = 3:4)
+> 
+> # `rep()` repeats columns of data frames, and returns lists
+> rep(df, each = 2)
+$x
+[1] 1 2
+
+$x
+[1] 1 2
+
+$y
+[1] 3 4
+
+$y
+[1] 3 4
+
+> 
+> # `vec_rep()` and `vec_rep_each()` repeat rows, and return data frames
+> vec_rep(df, 2)
+  x y
+1 1 3
+2 2 4
+3 1 3
+4 2 4
+> vec_rep_each(df, 2)
+  x y
+1 1 3
+2 1 3
+3 2 4
+4 2 4
+> 
+> # `rle()` treats adjacent missing values as different
+> y <- c(1, NA, NA, 2)
+> rle(y)
+Run Length Encoding
+  lengths: int [1:4] 1 1 1 1
+  values : num [1:4] 1 NA NA 2
+> 
+> # `vec_unrep()` treats them as equivalent
+> vec_unrep(y)
+  key times
+1   1     1
+2  NA     2
+3   2     1
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_arith")
+> ### * vec_arith
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_arith
+> ### Title: Arithmetic operations
+> ### Aliases: vec_arith vec_arith.default vec_arith.logical
+> ###   vec_arith.numeric vec_arith_base MISSING
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> d <- as.Date("2018-01-01")
+> dt <- as.POSIXct("2018-01-02 12:00")
+> t <- as.difftime(12, unit = "hours")
+> 
+> vec_arith("-", dt, 1)
+[1] "2018-01-02 11:59:59 UTC"
+> vec_arith("-", dt, t)
+[1] "2018-01-02 UTC"
+> vec_arith("-", dt, d)
+Time difference of 129600 secs
+> 
+> vec_arith("+", dt, 86400)
+[1] "2018-01-03 12:00:00 UTC"
+> vec_arith("+", dt, t)
+[1] "2018-01-03 UTC"
+> vec_arith("+", t, t)
+Time difference of 24 hours
+> 
+> vec_arith("/", t, t)
+[1] 1
+> vec_arith("/", t, 2)
+Time difference of 6 hours
+> 
+> vec_arith("*", t, 2)
+Time difference of 24 hours
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_as_location")
+> ### * vec_as_location
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_as_location
+> ### Title: Create a vector of locations
+> ### Aliases: vec_as_location num_as_location vec_as_location2
+> ###   num_as_location2
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> x <- array(1:6, c(2, 3))
+> dimnames(x) <- list(c("r1", "r2"), c("c1", "c2", "c3"))
+> 
+> # The most common use case validates row indices
+> vec_as_location(1, vec_size(x))
+[1] 1
+> 
+> # Negative indices can be used to index from the back
+> vec_as_location(-1, vec_size(x))
+[1] 2
+> 
+> # Character vectors can be used if `names` are provided
+> vec_as_location("r2", vec_size(x), rownames(x))
+[1] 2
+> 
+> # You can also construct an index for dimensions other than the first
+> vec_as_location(c("c2", "c1"), ncol(x), colnames(x))
+[1] 2 1
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_as_names")
+> ### * vec_as_names
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_as_names
+> ### Title: Retrieve and repair names
+> ### Aliases: vec_as_names
+> 
+> ### ** Examples
+> 
+> # By default, `vec_as_names()` returns minimal names:
+> vec_as_names(c(NA, NA, "foo"))
+[1] ""    ""    "foo"
+> 
+> # You can make them unique:
+> vec_as_names(c(NA, NA, "foo"), repair = "unique")
+New names:
+* NA -> ...1
+* NA -> ...2
+[1] "...1" "...2" "foo" 
+> 
+> # Universal repairing fixes any non-syntactic name:
+> vec_as_names(c("_foo", "+"), repair = "universal")
+New names:
+* `_foo` -> ._foo
+* `+` -> .
+[1] "._foo" "."    
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_as_names_legacy")
+> ### * vec_as_names_legacy
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_as_names_legacy
+> ### Title: Repair names with legacy method
+> ### Aliases: vec_as_names_legacy
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> if (rlang::is_installed("tibble")) {
++ 
++ library(tibble)
++ 
++ # Names repair is turned off by default in tibble:
++ try(tibble(a = 1, a = 2))
++ 
++ # You can turn it on by supplying a repair method:
++ tibble(a = 1, a = 2, .name_repair = "universal")
++ 
++ # If you prefer the legacy method, use `vec_as_names_legacy()`:
++ tibble(a = 1, a = 2, .name_repair = vec_as_names_legacy)
++ 
++ }
+Warning: package ‘tibble’ was built under R version 4.0.5
+
+Attaching package: ‘tibble’
+
+The following object is masked from ‘package:vctrs’:
+
+    data_frame
+
+Error : Column name `a` must not be duplicated.
+Use .name_repair to specify repair.
+New names:
+* a -> a...1
+* a -> a...2
+# A tibble: 1 × 2
+      a    a1
+  <dbl> <dbl>
+1     1     2
+> 
+> 
+> 
+> cleanEx()
+
+detaching ‘package:tibble’
+
+> nameEx("vec_bind")
+> ### * vec_bind
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_bind
+> ### Title: Combine many data frames into one data frame
+> ### Aliases: vec_bind vec_rbind vec_cbind
+> 
+> ### ** Examples
+> 
+> # row binding -----------------------------------------
+> 
+> # common columns are coerced to common class
+> vec_rbind(
++   data.frame(x = 1),
++   data.frame(x = FALSE)
++ )
+  x
+1 1
+2 0
+> 
+> # unique columns are filled with NAs
+> vec_rbind(
++   data.frame(x = 1),
++   data.frame(y = "x")
++ )
+   x    y
+1  1 <NA>
+2 NA    x
+> 
+> # null inputs are ignored
+> vec_rbind(
++   data.frame(x = 1),
++   NULL,
++   data.frame(x = 2)
++ )
+  x
+1 1
+2 2
+> 
+> # bare vectors are treated as rows
+> vec_rbind(
++   c(x = 1, y = 2),
++   c(x = 3)
++ )
+  x  y
+1 1  2
+2 3 NA
+> 
+> # default names will be supplied if arguments are not named
+> vec_rbind(
++   1:2,
++   1:3,
++   1:4
++ )
+New names:
+* `` -> ...1
+* `` -> ...2
+New names:
+* `` -> ...1
+* `` -> ...2
+* `` -> ...3
+New names:
+* `` -> ...1
+* `` -> ...2
+* `` -> ...3
+* `` -> ...4
+  ...1 ...2 ...3 ...4
+1    1    2   NA   NA
+2    1    2    3   NA
+3    1    2    3    4
+> 
+> # column binding --------------------------------------
+> 
+> # each input is recycled to have common length
+> vec_cbind(
++   data.frame(x = 1),
++   data.frame(y = 1:3)
++ )
+  x y
+1 1 1
+2 1 2
+3 1 3
+> 
+> # bare vectors are treated as columns
+> vec_cbind(
++   data.frame(x = 1),
++   y = letters[1:3]
++ )
+  x y
+1 1 a
+2 1 b
+3 1 c
+> 
+> # if you supply a named data frame, it is packed in a single column
+> data <- vec_cbind(
++   x = data.frame(a = 1, b = 2),
++   y = 1
++ )
+> data
+  x.a x.b y
+1   1   2 1
+> 
+> # Packed data frames are nested in a single column. This makes it
+> # possible to access it through a single name:
+> data$x
+  a b
+1 1 2
+> 
+> # since the base print method is suboptimal with packed data
+> # frames, it is recommended to use tibble to work with these:
+> if (rlang::is_installed("tibble")) {
++   vec_cbind(x = tibble::tibble(a = 1, b = 2), y = 1)
++ }
+# A tibble: 1 × 2
+    x$a    $b     y
+  <dbl> <dbl> <dbl>
+1     1     2     1
+> 
+> # duplicate names are flagged
+> vec_cbind(x = 1, x = 2)
+New names:
+* x -> x...1
+* x -> x...2
+  x...1 x...2
+1     1     2
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_c")
+> ### * vec_c
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_c
+> ### Title: Combine many vectors into one vector
+> ### Aliases: vec_c
+> 
+> ### ** Examples
+> 
+> vec_c(FALSE, 1L, 1.5)
+[1] 0.0 1.0 1.5
+> 
+> # Date/times --------------------------
+> c(Sys.Date(), Sys.time())
+[1] "2021-08-31" "2021-08-31"
+> c(Sys.time(), Sys.Date())
+[1] "2021-08-31 15:35:16 UTC" "2021-08-31 00:00:00 UTC"
+> 
+> vec_c(Sys.Date(), Sys.time())
+[1] "2021-08-31 00:00:00 UTC" "2021-08-31 15:35:16 UTC"
+> vec_c(Sys.time(), Sys.Date())
+[1] "2021-08-31 15:35:16 UTC" "2021-08-31 00:00:00 UTC"
+> 
+> # Factors -----------------------------
+> c(factor("a"), factor("b"))
+[1] 1 1
+> vec_c(factor("a"), factor("b"))
+[1] a b
+Levels: a b
+> 
+> 
+> # By default, named inputs must be length 1:
+> vec_c(name = 1)
+name 
+   1 
+> try(vec_c(name = 1:3))
+Error : Can't merge the outer name `name` with a vector of length > 1.
+Please supply a `.name_spec` specification.
+> 
+> # Pass a name specification to work around this:
+> vec_c(name = 1:3, .name_spec = "{outer}_{inner}")
+name_1 name_2 name_3 
+     1      2      3 
+> 
+> # See `?name_spec` for more examples of name specifications.
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_cast")
+> ### * vec_cast
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_cast
+> ### Title: Cast a vector to a specified type
+> ### Aliases: vec_cast vec_cast_common vec_cast.logical vec_cast.integer
+> ###   vec_cast.double vec_cast.complex vec_cast.raw vec_cast.character
+> ###   vec_cast.list
+> 
+> ### ** Examples
+> 
+> # x is a double, but no information is lost
+> vec_cast(1, integer())
+[1] 1
+> 
+> # When information is lost the cast fails
+> try(vec_cast(c(1, 1.5), integer()))
+Error : Can't convert from <double> to <integer> due to loss of precision.
+* Locations: 2
+> try(vec_cast(c(1, 2), logical()))
+Error : Can't convert from <double> to <logical> due to loss of precision.
+* Locations: 2
+> 
+> # You can suppress this error and get the partial results
+> allow_lossy_cast(vec_cast(c(1, 1.5), integer()))
+[1] 1 1
+> allow_lossy_cast(vec_cast(c(1, 2), logical()))
+[1] TRUE TRUE
+> 
+> # By default this suppress all lossy cast errors without
+> # distinction, but you can be specific about what cast is allowed
+> # by supplying prototypes
+> allow_lossy_cast(vec_cast(c(1, 1.5), integer()), to_ptype = integer())
+[1] 1 1
+> try(allow_lossy_cast(vec_cast(c(1, 2), logical()), to_ptype = integer()))
+Error : Can't convert from <double> to <logical> due to loss of precision.
+* Locations: 2
+> 
+> # No sensible coercion is possible so an error is generated
+> try(vec_cast(1.5, factor("a")))
+Error : Can't convert <double> to <factor<4d52a>>.
+> 
+> # Cast to common type
+> vec_cast_common(factor("a"), factor(c("a", "b")))
+[[1]]
+[1] a
+Levels: a b
+
+[[2]]
+[1] a b
+Levels: a b
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_chop")
+> ### * vec_chop
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_chop
+> ### Title: Chopping
+> ### Aliases: vec_chop vec_unchop
+> 
+> ### ** Examples
+> 
+> vec_chop(1:5)
+[[1]]
+[1] 1
+
+[[2]]
+[1] 2
+
+[[3]]
+[1] 3
+
+[[4]]
+[1] 4
+
+[[5]]
+[1] 5
+
+> vec_chop(1:5, list(1, 1:2))
+[[1]]
+[1] 1
+
+[[2]]
+[1] 1 2
+
+> vec_chop(mtcars, list(1:3, 4:6))
+[[1]]
+               mpg cyl disp  hp drat    wt  qsec vs am gear carb
+Mazda RX4     21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+Mazda RX4 Wag 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+Datsun 710    22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+
+[[2]]
+                   mpg cyl disp  hp drat    wt  qsec vs am gear carb
+Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
+Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1
+
+> 
+> # If `indices` selects every value in `x` exactly once,
+> # in any order, then `vec_unchop()` inverts `vec_chop()`
+> x <- c("a", "b", "c", "d")
+> indices <- list(2, c(3, 1), 4)
+> vec_chop(x, indices)
+[[1]]
+[1] "b"
+
+[[2]]
+[1] "c" "a"
+
+[[3]]
+[1] "d"
+
+> vec_unchop(vec_chop(x, indices), indices)
+[1] "a" "b" "c" "d"
+> 
+> # When unchopping, size 1 elements of `x` are recycled
+> # to the size of the corresponding index
+> vec_unchop(list(1, 2:3), list(c(1, 3, 5), c(2, 4)))
+[1] 1 2 1 3 1
+> 
+> # Names are retained, and outer names can be combined with inner
+> # names through the use of a `name_spec`
+> lst <- list(x = c(a = 1, b = 2), y = 1)
+> vec_unchop(lst, list(c(3, 2), c(1, 4)), name_spec = "{outer}_{inner}")
+y_1 x_b x_a y_2 
+  1   2   1   1 
+> 
+> # An alternative implementation of `ave()` can be constructed using
+> # `vec_chop()` and `vec_unchop()` in combination with `vec_group_loc()`
+> ave2 <- function(.x, .by, .f, ...) {
++   indices <- vec_group_loc(.by)$loc
++   chopped <- vec_chop(.x, indices)
++   out <- lapply(chopped, .f, ...)
++   vec_unchop(out, indices)
++ }
+> 
+> breaks <- warpbreaks$breaks
+> wool <- warpbreaks$wool
+> 
+> ave2(breaks, wool, mean)
+ [1] 31.03704 31.03704 31.03704 31.03704 31.03704 31.03704 31.03704 31.03704
+ [9] 31.03704 31.03704 31.03704 31.03704 31.03704 31.03704 31.03704 31.03704
+[17] 31.03704 31.03704 31.03704 31.03704 31.03704 31.03704 31.03704 31.03704
+[25] 31.03704 31.03704 31.03704 25.25926 25.25926 25.25926 25.25926 25.25926
+[33] 25.25926 25.25926 25.25926 25.25926 25.25926 25.25926 25.25926 25.25926
+[41] 25.25926 25.25926 25.25926 25.25926 25.25926 25.25926 25.25926 25.25926
+[49] 25.25926 25.25926 25.25926 25.25926 25.25926 25.25926
+> 
+> identical(
++   ave2(breaks, wool, mean),
++   ave(breaks, wool, FUN = mean)
++ )
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_compare")
+> ### * vec_compare
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_compare
+> ### Title: Compare two vectors
+> ### Aliases: vec_compare
+> 
+> ### ** Examples
+> 
+> vec_compare(c(TRUE, FALSE, NA), FALSE)
+[1]  1  0 NA
+> vec_compare(c(TRUE, FALSE, NA), FALSE, na_equal = TRUE)
+[1]  1  0 -1
+> 
+> vec_compare(1:10, 5)
+ [1] -1 -1 -1 -1  0  1  1  1  1  1
+> vec_compare(runif(10), 0.5)
+ [1] -1 -1  1  1 -1  1  1  1  1 -1
+> vec_compare(letters[1:10], "d")
+ [1] -1 -1 -1  0  1  1  1  1  1  1
+> 
+> df <- data.frame(x = c(1, 1, 1, 2), y = c(0, 1, 2, 1))
+> vec_compare(df, data.frame(x = 1, y = 1))
+[1] -1  0  1  1
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_count")
+> ### * vec_count
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_count
+> ### Title: Count unique values in a vector
+> ### Aliases: vec_count
+> 
+> ### ** Examples
+> 
+> vec_count(mtcars$vs)
+  key count
+1   0    18
+2   1    14
+> vec_count(iris$Species)
+         key count
+1     setosa    50
+2 versicolor    50
+3  virginica    50
+> 
+> # If you count a data frame you'll get a data frame
+> # column in the output
+> str(vec_count(mtcars[c("vs", "am")]))
+'data.frame':	4 obs. of  2 variables:
+ $ key  :'data.frame':	4 obs. of  2 variables:
+  ..$ vs: num  0 1 1 0
+  ..$ am: num  0 1 0 1
+ $ count: int  12 7 7 6
+> 
+> # Sorting ---------------------------------------
+> 
+> x <- letters[rpois(100, 6)]
+> # default is to sort by frequency
+> vec_count(x)
+   key count
+1    e    20
+2    g    15
+3    f    15
+4    h    14
+5    d    12
+6    i     9
+7    c     7
+8    b     3
+9    j     2
+10   m     1
+11   k     1
+12   a     1
+> 
+> # by can sort by key
+> vec_count(x, sort = "key")
+   key count
+1    a     1
+2    b     3
+3    c     7
+4    d    12
+5    e    20
+6    f    15
+7    g    15
+8    h    14
+9    i     9
+10   j     2
+11   k     1
+12   m     1
+> 
+> # or location of first value
+> vec_count(x, sort = "location")
+   key count
+1    d    12
+2    e    20
+3    f    15
+4    i     9
+5    j     2
+6    g    15
+7    b     3
+8    h    14
+9    m     1
+10   c     7
+11   a     1
+12   k     1
+> head(x)
+[1] "d" "e" "f" "i" "d" "i"
+> 
+> # or not at all
+> vec_count(x, sort = "none")
+   key count
+1    d    12
+2    m     1
+3    e    20
+4    g    15
+5    b     3
+6    f    15
+7    c     7
+8    k     1
+9    a     1
+10   h    14
+11   j     2
+12   i     9
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_detect_complete")
+> ### * vec_detect_complete
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_detect_complete
+> ### Title: Complete
+> ### Aliases: vec_detect_complete
+> 
+> ### ** Examples
+> 
+> x <- c(1, 2, NA, 4, NA)
+> 
+> # For most vectors, this is identical to `!vec_equal_na(x)`
+> vec_detect_complete(x)
+[1]  TRUE  TRUE FALSE  TRUE FALSE
+> !vec_equal_na(x)
+[1]  TRUE  TRUE FALSE  TRUE FALSE
+> 
+> df <- data_frame(
++   x = x,
++   y = c("a", "b", NA, "d", "e")
++ )
+> 
+> # This returns `TRUE` where all elements of the row are non-missing.
+> # Compare that with `!vec_equal_na()`, which detects rows that have at
+> # least one non-missing value.
+> df2 <- df
+> df2$all_non_missing <- vec_detect_complete(df)
+> df2$any_non_missing <- !vec_equal_na(df)
+> df2
+   x    y all_non_missing any_non_missing
+1  1    a            TRUE            TRUE
+2  2    b            TRUE            TRUE
+3 NA <NA>           FALSE           FALSE
+4  4    d            TRUE            TRUE
+5 NA    e           FALSE            TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_duplicate")
+> ### * vec_duplicate
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_duplicate
+> ### Title: Find duplicated values
+> ### Aliases: vec_duplicate vec_duplicate_any vec_duplicate_detect
+> ###   vec_duplicate_id
+> 
+> ### ** Examples
+> 
+> vec_duplicate_any(1:10)
+[1] FALSE
+> vec_duplicate_any(c(1, 1:10))
+[1] TRUE
+> 
+> x <- c(10, 10, 20, 30, 30, 40)
+> vec_duplicate_detect(x)
+[1]  TRUE  TRUE FALSE  TRUE  TRUE FALSE
+> # Note that `duplicated()` doesn't consider the first instance to
+> # be a duplicate
+> duplicated(x)
+[1] FALSE  TRUE FALSE FALSE  TRUE FALSE
+> 
+> # Identify elements of a vector by the location of the first element that
+> # they're equal to:
+> vec_duplicate_id(x)
+[1] 1 1 3 4 4 6
+> # Location of the unique values:
+> vec_unique_loc(x)
+[1] 1 3 4 6
+> # Equivalent to `duplicated()`:
+> vec_duplicate_id(x) == seq_along(x)
+[1]  TRUE FALSE  TRUE  TRUE FALSE  TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_equal")
+> ### * vec_equal
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_equal
+> ### Title: Test if two vectors are equal
+> ### Aliases: vec_equal vec_equal_na
+> 
+> ### ** Examples
+> 
+> vec_equal(c(TRUE, FALSE, NA), FALSE)
+[1] FALSE  TRUE    NA
+> vec_equal(c(TRUE, FALSE, NA), FALSE, na_equal = TRUE)
+[1] FALSE  TRUE FALSE
+> vec_equal_na(c(TRUE, FALSE, NA))
+[1] FALSE FALSE  TRUE
+> 
+> vec_equal(5, 1:10)
+ [1] FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+> vec_equal("d", letters[1:10])
+ [1] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE
+> 
+> df <- data.frame(x = c(1, 1, 2, 1, NA), y = c(1, 2, 1, NA, NA))
+> vec_equal(df, data.frame(x = 1, y = 2))
+[1] FALSE  TRUE FALSE    NA    NA
+> vec_equal_na(df)
+[1] FALSE FALSE FALSE FALSE  TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_fill_missing")
+> ### * vec_fill_missing
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_fill_missing
+> ### Title: Fill in missing values with the previous or following value
+> ### Aliases: vec_fill_missing
+> 
+> ### ** Examples
+> 
+> x <- c(NA, NA, 1, NA, NA, NA, 3, NA, NA)
+> 
+> # Filling down replaces missing values with the previous non-missing value
+> vec_fill_missing(x, direction = "down")
+[1] NA NA  1  1  1  1  3  3  3
+> 
+> # To also fill leading missing values, use `"downup"`
+> vec_fill_missing(x, direction = "downup")
+[1] 1 1 1 1 1 1 3 3 3
+> 
+> # Limit the number of sequential missing values to fill with `max_fill`
+> vec_fill_missing(x, max_fill = 1)
+[1] NA NA  1  1 NA NA  3  3 NA
+> 
+> # Data frames are filled rowwise. Rows are only considered missing
+> # if all elements of that row are missing.
+> y <- c(1, NA, 2, NA, NA, 3, 4, NA, 5)
+> df <- data_frame(x = x, y = y)
+> df
+   x  y
+1 NA  1
+2 NA NA
+3  1  2
+4 NA NA
+5 NA NA
+6 NA  3
+7  3  4
+8 NA NA
+9 NA  5
+> 
+> vec_fill_missing(df)
+   x y
+1 NA 1
+2 NA 1
+3  1 2
+4  1 2
+5  1 2
+6 NA 3
+7  3 4
+8  3 4
+9 NA 5
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_group")
+> ### * vec_group
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_group
+> ### Title: Identify groups
+> ### Aliases: vec_group vec_group_id vec_group_loc vec_group_rle
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> purrr <- c("p", "u", "r", "r", "r")
+> vec_group_id(purrr)
+[1] 1 2 3 3 3
+attr(,"n")
+[1] 3
+> vec_group_rle(purrr)
+<vctrs_group_rle[3][n = 3]>
+[1] 1x1 2x1 3x3
+> 
+> groups <- mtcars[c("vs", "am")]
+> vec_group_id(groups)
+ [1] 1 1 2 3 4 3 4 3 3 3 3 4 4 4 4 4 4 2 2 2 3 4 4 4 4 2 1 2 1 1 1 2
+attr(,"n")
+[1] 4
+> 
+> group_rle <- vec_group_rle(groups)
+> group_rle
+<vctrs_group_rle[16][n = 4]>
+ [1] 1x2 2x1 3x1 4x1 3x1 4x1 3x4 4x6 2x3 3x1 4x4 2x1 1x1 2x1 1x3 2x1
+> 
+> # Access fields with `field()`
+> field(group_rle, "group")
+ [1] 1 2 3 4 3 4 3 4 2 3 4 2 1 2 1 2
+> field(group_rle, "length")
+ [1] 2 1 1 1 1 1 4 6 3 1 4 1 1 1 3 1
+> 
+> # `vec_group_id()` is equivalent to
+> vec_match(groups, vec_unique(groups))
+ [1] 1 1 2 3 4 3 4 3 3 3 3 4 4 4 4 4 4 2 2 2 3 4 4 4 4 2 1 2 1 1 1 2
+> 
+> vec_group_loc(mtcars$vs)
+  key                                                                loc
+1   0 1, 2, 5, 7, 12, 13, 14, 15, 16, 17, 22, 23, 24, 25, 27, 29, 30, 31
+2   1                  3, 4, 6, 8, 9, 10, 11, 18, 19, 20, 21, 26, 28, 32
+> vec_group_loc(mtcars[c("vs", "am")])
+  key.vs key.am                                          loc
+1      0      1                         1, 2, 27, 29, 30, 31
+2      1      1                    3, 18, 19, 20, 26, 28, 32
+3      1      0                       4, 6, 8, 9, 10, 11, 21
+4      0      0 5, 7, 12, 13, 14, 15, 16, 17, 22, 23, 24, 25
+> 
+> if (require("tibble")) {
++   as_tibble(vec_group_loc(mtcars[c("vs", "am")]))
++ }
+Loading required package: tibble
+Warning: package ‘tibble’ was built under R version 4.0.5
+
+Attaching package: ‘tibble’
+
+The following object is masked from ‘package:vctrs’:
+
+    data_frame
+
+# A tibble: 4 × 2
+  key$vs   $am loc       
+   <dbl> <dbl> <list>    
+1      0     1 <int [6]> 
+2      1     1 <int [7]> 
+3      1     0 <int [7]> 
+4      0     0 <int [12]>
+> 
+> 
+> 
+> cleanEx()
+
+detaching ‘package:tibble’
+
+> nameEx("vec_identify_runs")
+> ### * vec_identify_runs
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_identify_runs
+> ### Title: Runs
+> ### Aliases: vec_identify_runs
+> 
+> ### ** Examples
+> 
+> x <- c("a", "z", "z", "c", "a", "a")
+> 
+> vec_identify_runs(x)
+[1] 1 2 2 3 4 4
+attr(,"n")
+[1] 4
+> 
+> y <- c(1, 1, 1, 2, 2, 3)
+> 
+> # With multiple columns, the runs are constructed rowwise
+> df <- data_frame(
++   x = x,
++   y = y
++ )
+> 
+> vec_identify_runs(df)
+[1] 1 2 2 3 4 5
+attr(,"n")
+[1] 5
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_init")
+> ### * vec_init
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_init
+> ### Title: Initialize a vector
+> ### Aliases: vec_init
+> 
+> ### ** Examples
+> 
+> vec_init(1:10, 3)
+[1] NA NA NA
+> vec_init(Sys.Date(), 5)
+[1] NA NA NA NA NA
+> vec_init(mtcars, 2)
+     mpg cyl disp hp drat wt qsec vs am gear carb
+...1  NA  NA   NA NA   NA NA   NA NA NA   NA   NA
+...2  NA  NA   NA NA   NA NA   NA NA NA   NA   NA
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_is_list")
+> ### * vec_is_list
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_is_list
+> ### Title: Is the object a list?
+> ### Aliases: vec_is_list
+> 
+> ### ** Examples
+> 
+> vec_is_list(list())
+[1] TRUE
+> vec_is_list(list_of(1))
+[1] TRUE
+> 
+> vec_is_list(data.frame())
+[1] FALSE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_match")
+> ### * vec_match
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_match
+> ### Title: Find matching observations across vectors
+> ### Aliases: vec_match vec_in
+> 
+> ### ** Examples
+> 
+> hadley <- strsplit("hadley", "")[[1]]
+> vec_match(hadley, letters)
+[1]  8  1  4 12  5 25
+> 
+> vowels <- c("a", "e", "i", "o", "u")
+> vec_match(hadley, vowels)
+[1] NA  1 NA NA  2 NA
+> vec_in(hadley, vowels)
+[1] FALSE  TRUE FALSE FALSE  TRUE FALSE
+> 
+> # Only the first index of duplicates is returned
+> vec_match(c("a", "b"), c("a", "b", "a", "b"))
+[1] 1 2
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_math")
+> ### * vec_math
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_math
+> ### Title: Mathematical operations
+> ### Aliases: vec_math vec_math_base
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> x <- new_vctr(c(1, 2.5, 10))
+> x
+<vctrs_vctr[3]>
+[1]  1.0  2.5 10.0
+> 
+> abs(x)
+<vctrs_vctr[3]>
+[1]  1.0  2.5 10.0
+> sum(x)
+<vctrs_vctr[1]>
+[1] 13.5
+> cumsum(x)
+<vctrs_vctr[3]>
+[1]  1.0  3.5 13.5
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_names")
+> ### * vec_names
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_names
+> ### Title: Get or set the names of a vector
+> ### Aliases: vec_names vec_names2 vec_set_names
+> 
+> ### ** Examples
+> 
+> vec_names2(1:3)
+[1] "" "" ""
+> vec_names2(1:3, repair = "unique")
+New names:
+* `` -> ...1
+* `` -> ...2
+* `` -> ...3
+[1] "...1" "...2" "...3"
+> vec_names2(c(a = 1, b = 2))
+[1] "a" "b"
+> 
+> # `vec_names()` consistently returns the rowwise names of data frames and arrays:
+> vec_names(data.frame(a = 1, b = 2))
+NULL
+> names(data.frame(a = 1, b = 2))
+[1] "a" "b"
+> vec_names(mtcars)
+ [1] "Mazda RX4"           "Mazda RX4 Wag"       "Datsun 710"         
+ [4] "Hornet 4 Drive"      "Hornet Sportabout"   "Valiant"            
+ [7] "Duster 360"          "Merc 240D"           "Merc 230"           
+[10] "Merc 280"            "Merc 280C"           "Merc 450SE"         
+[13] "Merc 450SL"          "Merc 450SLC"         "Cadillac Fleetwood" 
+[16] "Lincoln Continental" "Chrysler Imperial"   "Fiat 128"           
+[19] "Honda Civic"         "Toyota Corolla"      "Toyota Corona"      
+[22] "Dodge Challenger"    "AMC Javelin"         "Camaro Z28"         
+[25] "Pontiac Firebird"    "Fiat X1-9"           "Porsche 914-2"      
+[28] "Lotus Europa"        "Ford Pantera L"      "Ferrari Dino"       
+[31] "Maserati Bora"       "Volvo 142E"         
+> names(mtcars)
+ [1] "mpg"  "cyl"  "disp" "hp"   "drat" "wt"   "qsec" "vs"   "am"   "gear"
+[11] "carb"
+> vec_names(Titanic)
+[1] "1st"  "2nd"  "3rd"  "Crew"
+> names(Titanic)
+NULL
+> 
+> vec_set_names(1:3, letters[1:3])
+a b c 
+1 2 3 
+> vec_set_names(data.frame(a = 1:3), letters[1:3])
+  a
+a 1
+b 2
+c 3
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_order")
+> ### * vec_order
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_order
+> ### Title: Order and sort vectors
+> ### Aliases: vec_order vec_sort
+> 
+> ### ** Examples
+> 
+> x <- round(c(runif(9), NA), 3)
+> vec_order(x)
+ [1]  5  1  2  3  9  8  6  4  7 10
+> vec_sort(x)
+ [1] 0.202 0.266 0.372 0.573 0.629 0.661 0.898 0.908 0.945    NA
+> vec_sort(x, "desc")
+ [1]    NA 0.945 0.908 0.898 0.661 0.629 0.573 0.372 0.266 0.202
+> 
+> # Can also handle data frames
+> df <- data.frame(g = sample(2, 10, replace = TRUE), x = x)
+> vec_order(df)
+ [1]  5  2  3  6  4  1  9  8  7 10
+> vec_sort(df)
+   g     x
+1  1 0.202
+2  1 0.372
+3  1 0.573
+4  1 0.898
+5  1 0.908
+6  2 0.266
+7  2 0.629
+8  2 0.661
+9  2 0.945
+10 2    NA
+> vec_sort(df, "desc")
+   g     x
+1  2    NA
+2  2 0.945
+3  2 0.661
+4  2 0.629
+5  2 0.266
+6  1 0.908
+7  1 0.898
+8  1 0.573
+9  1 0.372
+10 1 0.202
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_proxy_compare")
+> ### * vec_proxy_compare
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_proxy_compare
+> ### Title: Comparison and order proxy
+> ### Aliases: vec_proxy_compare vec_proxy_order
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> # Lists are not comparable
+> x <- list(1:2, 1, 1:2, 3)
+> try(vec_compare(x, x))
+Error : `vec_proxy_compare.list()` not supported.
+> 
+> # But lists are orderable by first appearance to allow for
+> # ordering data frames with list-cols
+> df <- new_data_frame(list(x = x))
+> vec_sort(df)
+     x
+1 1, 2
+2 1, 2
+3    1
+4    3
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_ptype")
+> ### * vec_ptype
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_ptype
+> ### Title: Find the prototype of a set of vectors
+> ### Aliases: vec_ptype vec_ptype_common vec_ptype_show
+> 
+> ### ** Examples
+> 
+> # Unknown types ------------------------------------------
+> vec_ptype_show()
+Prototype: NULL
+> vec_ptype_show(NA)
+Prototype: logical
+> vec_ptype_show(NULL)
+Prototype: NULL
+> 
+> # Vectors ------------------------------------------------
+> vec_ptype_show(1:10)
+Prototype: integer
+> vec_ptype_show(letters)
+Prototype: character
+> vec_ptype_show(TRUE)
+Prototype: logical
+> 
+> vec_ptype_show(Sys.Date())
+Prototype: date
+> vec_ptype_show(Sys.time())
+Prototype: datetime<local>
+> vec_ptype_show(factor("a"))
+Prototype: factor<4d52a>
+> vec_ptype_show(ordered("a"))
+Prototype: ordered<4d52a>
+> 
+> # Matrices -----------------------------------------------
+> # The prototype of a matrix includes the number of columns
+> vec_ptype_show(array(1, dim = c(1, 2)))
+Prototype: double[,2]
+> vec_ptype_show(array("x", dim = c(1, 2)))
+Prototype: character[,2]
+> 
+> # Data frames --------------------------------------------
+> # The prototype of a data frame includes the prototype of
+> # every column
+> vec_ptype_show(iris)
+Prototype: data.frame<
+  Sepal.Length: double
+  Sepal.Width : double
+  Petal.Length: double
+  Petal.Width : double
+  Species     : factor<fb977>
+>
+> 
+> # The prototype of multiple data frames includes the prototype
+> # of every column that in any data frame
+> vec_ptype_show(
++   data.frame(x = TRUE),
++   data.frame(y = 2),
++   data.frame(z = "a")
++ )
+Prototype: <data.frame<
+  x: logical
+  y: double
+  z: character
+>>
+0. (                         , <data.frame<x:logical>>   ) = <data.frame<x:logical>>
+1. ┌ <data.frame<x:logical>> , <data.frame<y:double>>    ┐ = <data.frame<           
+   │                                                     │     x: logical           
+   │                                                     │     y: double            
+   └                                                     ┘   >>                     
+2. ┌ <data.frame<            , <data.frame<z:character>> ┐ = <data.frame<           
+   │   x: logical                                        │     x: logical           
+   │   y: double                                         │     y: double            
+   │ >>                                                  │     z: character         
+   └                                                     ┘   >>                     
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_ptype_full")
+> ### * vec_ptype_full
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_ptype_full
+> ### Title: Vector type as a string
+> ### Aliases: vec_ptype_full vec_ptype_abbr
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> cat(vec_ptype_full(1:10))
+integer> cat(vec_ptype_full(iris))
+data.frame<
+  Sepal.Length: double
+  Sepal.Width : double
+  Petal.Length: double
+  Petal.Width : double
+  Species     : factor<fb977>
+>> 
+> cat(vec_ptype_abbr(1:10))
+int> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_recycle")
+> ### * vec_recycle
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_recycle
+> ### Title: Vector recycling
+> ### Aliases: vec_recycle vec_recycle_common
+> 
+> ### ** Examples
+> 
+> # Inputs with 1 observation are recycled
+> vec_recycle_common(1:5, 5)
+[[1]]
+[1] 1 2 3 4 5
+
+[[2]]
+[1] 5 5 5 5 5
+
+> vec_recycle_common(integer(), 5)
+[[1]]
+integer(0)
+
+[[2]]
+numeric(0)
+
+> ## Not run: 
+> ##D vec_recycle_common(1:5, 1:2)
+> ## End(Not run)
+> 
+> # Data frames and matrices are recycled along their rows
+> vec_recycle_common(data.frame(x = 1), 1:5)
+[[1]]
+  x
+1 1
+2 1
+3 1
+4 1
+5 1
+
+[[2]]
+[1] 1 2 3 4 5
+
+> vec_recycle_common(array(1:2, c(1, 2)), 1:5)
+[[1]]
+     [,1] [,2]
+[1,]    1    2
+[2,]    1    2
+[3,]    1    2
+[4,]    1    2
+[5,]    1    2
+
+[[2]]
+[1] 1 2 3 4 5
+
+> vec_recycle_common(array(1:3, c(1, 3, 1)), 1:5)
+[[1]]
+, , 1
+
+     [,1] [,2] [,3]
+[1,]    1    2    3
+[2,]    1    2    3
+[3,]    1    2    3
+[4,]    1    2    3
+[5,]    1    2    3
+
+
+[[2]]
+[1] 1 2 3 4 5
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_seq_along")
+> ### * vec_seq_along
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_seq_along
+> ### Title: Useful sequences
+> ### Aliases: vec_seq_along vec_init_along
+> 
+> ### ** Examples
+> 
+> vec_seq_along(mtcars)
+ [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+[26] 26 27 28 29 30 31 32
+> vec_init_along(head(mtcars))
+     mpg cyl disp hp drat wt qsec vs am gear carb
+...1  NA  NA   NA NA   NA NA   NA NA NA   NA   NA
+...2  NA  NA   NA NA   NA NA   NA NA NA   NA   NA
+...3  NA  NA   NA NA   NA NA   NA NA NA   NA   NA
+...4  NA  NA   NA NA   NA NA   NA NA NA   NA   NA
+...5  NA  NA   NA NA   NA NA   NA NA NA   NA   NA
+...6  NA  NA   NA NA   NA NA   NA NA NA   NA   NA
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_size")
+> ### * vec_size
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_size
+> ### Title: Number of observations
+> ### Aliases: vec_size vec_size_common list_sizes vec_is_empty
+> 
+> ### ** Examples
+> 
+> vec_size(1:100)
+[1] 100
+> vec_size(mtcars)
+[1] 32
+> vec_size(array(dim = c(3, 5, 10)))
+[1] 3
+> 
+> vec_size_common(1:10, 1:10)
+[1] 10
+> vec_size_common(1:10, 1)
+[1] 10
+> vec_size_common(integer(), 1)
+[1] 0
+> 
+> list_sizes(list("a", 1:5, letters))
+[1]  1  5 26
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_slice")
+> ### * vec_slice
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_slice
+> ### Title: Get or set observations in a vector
+> ### Aliases: vec_slice vec_slice<- vec_assign
+> ### Keywords: internal
+> 
+> ### ** Examples
+> 
+> x <- sample(10)
+> x
+ [1]  9  4  7  1  2  5  3 10  6  8
+> vec_slice(x, 1:3)
+[1] 9 4 7
+> 
+> # You can assign with the infix variant:
+> vec_slice(x, 2) <- 100
+> x
+ [1]   9 100   7   1   2   5   3  10   6   8
+> 
+> # Or with the regular variant that doesn't modify the original input:
+> y <- vec_assign(x, 3, 500)
+> y
+ [1]   9 100 500   1   2   5   3  10   6   8
+> x
+ [1]   9 100   7   1   2   5   3  10   6   8
+> 
+> 
+> # Slicing objects of higher dimension:
+> vec_slice(mtcars, 1:3)
+               mpg cyl disp  hp drat    wt  qsec vs am gear carb
+Mazda RX4     21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+Mazda RX4 Wag 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+Datsun 710    22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+> 
+> # Type stability --------------------------------------------------
+> 
+> # The assign variant is type stable. It always returns the same
+> # type as the input.
+> x <- 1:5
+> vec_slice(x, 2) <- 20.0
+> 
+> # `x` is still an integer vector because the RHS was cast to the
+> # type of the LHS:
+> vec_ptype(x)
+integer(0)
+> 
+> # Compare to `[<-`:
+> x[2] <- 20.0
+> vec_ptype(x)
+numeric(0)
+> 
+> 
+> # Note that the types must be coercible for the cast to happen.
+> # For instance, you can cast a double vector of whole numbers to an
+> # integer vector:
+> vec_cast(1, integer())
+[1] 1
+> 
+> # But not fractional doubles:
+> try(vec_cast(1.5, integer()))
+Error : Can't convert from <double> to <integer> due to loss of precision.
+* Locations: 1
+> 
+> # For this reason you can't assign fractional values in an integer
+> # vector:
+> x <- 1:3
+> try(vec_slice(x, 2) <- 1.5)
+Error : Can't convert from <double> to <integer> due to loss of precision.
+* Locations: 1
+> 
+> 
+> 
+> cleanEx()
+> nameEx("vec_split")
+> ### * vec_split
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_split
+> ### Title: Split a vector into groups
+> ### Aliases: vec_split
+> 
+> ### ** Examples
+> 
+> vec_split(mtcars$cyl, mtcars$vs)
+  key                                                  val
+1   0 6, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 8, 6, 8
+2   1             4, 6, 6, 4, 4, 6, 6, 4, 4, 4, 4, 4, 4, 4
+> vec_split(mtcars$cyl, mtcars[c("vs", "am")])
+  key.vs key.am                                val
+1      0      1                   6, 6, 4, 8, 6, 8
+2      1      1                4, 4, 4, 4, 4, 4, 4
+3      1      0                6, 6, 4, 4, 6, 6, 4
+4      0      0 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8
+> 
+> if (require("tibble")) {
++   as_tibble(vec_split(mtcars$cyl, mtcars[c("vs", "am")]))
++   as_tibble(vec_split(mtcars, mtcars[c("vs", "am")]))
++ }
+Loading required package: tibble
+Warning: package ‘tibble’ was built under R version 4.0.5
+
+Attaching package: ‘tibble’
+
+The following object is masked from ‘package:vctrs’:
+
+    data_frame
+
+# A tibble: 4 × 2
+  key$vs   $am val           
+   <dbl> <dbl> <list>        
+1      0     1 <df [6 × 11]> 
+2      1     1 <df [7 × 11]> 
+3      1     0 <df [7 × 11]> 
+4      0     0 <df [12 × 11]>
+> 
+> 
+> 
+> cleanEx()
+
+detaching ‘package:tibble’
+
+> nameEx("vec_unique")
+> ### * vec_unique
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: vec_unique
+> ### Title: Find and count unique values
+> ### Aliases: vec_unique vec_unique_loc vec_unique_count
+> 
+> ### ** Examples
+> 
+> x <- rpois(100, 8)
+> vec_unique(x)
+ [1]  6  7  8 12 13  9  4  5 10 16  2 11  3
+> vec_unique_loc(x)
+ [1]  1  2  3  4  7  8 10 12 15 18 27 29 47
+> vec_unique_count(x)
+[1] 13
+> 
+> # `vec_unique()` returns values in the order that encounters them
+> # use sort = "location" to match to the result of `vec_count()`
+> head(vec_unique(x))
+[1]  6  7  8 12 13  9
+> head(vec_count(x, sort = "location"))
+  key count
+1   6    11
+2   7    19
+3   8    13
+4  12     5
+5  13     2
+6   9    14
+> 
+> # Normally missing values are not considered to be equal
+> NA == NA
+[1] NA
+> 
+> # But they are for the purposes of considering uniqueness
+> vec_unique(c(NA, NA, NA, NA, 1, 2, 1))
+[1] NA  1  2
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.668 0.076 0.744 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

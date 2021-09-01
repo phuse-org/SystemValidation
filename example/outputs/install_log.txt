@@ -1,0 +1,281 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> test_installed_packages <- function() {
++   ips <- installed.packages()
++   
++   save(ips, file = "/home/val/outputs/ips")
++   
++   ips2 <- ips[is.na(ips[,"Priority"]), "Package"]
++   
++   df <- data.frame()
++   
++   for(i in seq_along(ips2)){
++     pack <- ips2[i]
++     
++     testDir <- paste0("outputs/", pack)
++     resDir <- paste0("results/", pack)
++     dir.create(testDir, recursive = TRUE, showWarnings = FALSE)
++     dir.create(resDir, showWarnings = FALSE)
++     
++     try(writeLines(as.character(tools::testInstalledPackage(pack, outDir = testDir, types = "examples")), con = paste0(resDir, "/examples.txt")), outFile = paste0(testDir, "/examples.txt"))
++     
++     try(writeLines(as.character(tools::testInstalledPackage(pack, outDir = testDir, types = "tests")), con = paste0(resDir, "/tests.txt")), outFile = paste0(testDir, "/tests.txt"))
++     
++     try(writeLines(as.character(tools::testInstalledPackage(pack, outDir = testDir, types = "vignettes")), con = paste0(resDir, "/vignettes.txt")), outFile = paste0(testDir, "/vignettes.txt"))
++     
++ 
++     
++   }
++ 
++ }
+> 
+> test_installed_packages()
+Testing examples for package ‘base64enc’
+Testing examples for package ‘cli’
+Testing examples for package ‘crayon’
+Testing examples for package ‘digest’
+Running vignettes for package ‘digest’
+  Running ‘sha1.Rmd’
+Testing examples for package ‘dplyr’
+Running vignettes for package ‘dplyr’
+  Running ‘base.Rmd’
+  Running ‘colwise.Rmd’
+  Running ‘compatibility.Rmd’
+  Running ‘dplyr.Rmd’
+  Running ‘grouping.Rmd’
+  Running ‘programming.Rmd’
+  Running ‘rowwise.Rmd’
+  Running ‘two-table.Rmd’
+  Running ‘window-functions.Rmd’
+
+*** Source Errors ***
+
+File rowwise.R:
+Problem with `mutate()` column `y2`.
+ℹ `y2 = y`.
+ℹ `y2` must be size 1, not 3.
+ℹ Did you mean: `y2 = list(y)` ?
+ℹ The error occurred in row 1.
+File two-table.R:
+there is no package called ‘nycflights13’
+File window-functions.R:
+there is no package called ‘Lahman’
+
+*** Weave Errors ***
+
+File rowwise.Rmd:
+Problem with `summarise()` input `..1`.
+ℹ `..1 = broom::glance(mod)`.
+✖ there is no package called 'broom'
+ℹ The error occurred in row 1.
+File two-table.Rmd:
+there is no package called 'nycflights13'
+Testing examples for package ‘ellipsis’
+Testing examples for package ‘evaluate’
+Testing examples for package ‘fansi’
+Running vignettes for package ‘fansi’
+  Running ‘sgr-in-rmd.Rmd’
+Testing examples for package ‘fastmap’
+Testing examples for package ‘generics’
+Testing examples for package ‘glue’
+Running vignettes for package ‘glue’
+  Running ‘speed.Rmd’
+  Running ‘transformers.Rmd’
+hello!
+hello!
+
+*** Source Errors ***
+
+File speed.R:
+there is no package called ‘microbenchmark’
+Testing examples for package ‘highr’
+Running vignettes for package ‘highr’
+  Running ‘highr-custom.Rmd’
+  Running ‘highr-internals.Rmd’
+Testing examples for package ‘htmltools’
+Testing examples for package ‘jsonlite’
+Running vignettes for package ‘jsonlite’
+In addition: There were 15 warnings (use warnings() to see them)
+Testing examples for package ‘knitr’
+Running vignettes for package ‘knitr’
+  Running ‘knit_print.Rmd’
+  Running ‘knitr-intro.Rmd’
+  Running ‘knitr-refcard.Rmd’
+  Running ‘datatables.Rmd’
+  Running ‘knit_expand.Rmd’
+  Running ‘knitr-html.Rhtml’
+  Running ‘knitr-markdown.Rmd’
+  Running ‘docco-classic.Rmd’
+  Running ‘docco-linear.Rmd’
+
+*** Source Errors ***
+
+File docco-classic.R:
+cannot open the connection
+Testing examples for package ‘lifecycle’
+Running vignettes for package ‘lifecycle’
+  Running ‘communicate.Rmd’
+  Running ‘manage.Rmd’
+  Running ‘stages.Rmd’
+
+*** Source Errors ***
+
+File manage.R:
+`data_frame()` was deprecated in tibble 1.1.0.
+Please use `tibble()` instead.
+Testing examples for package ‘magrittr’
+Running vignettes for package ‘magrittr’
+  Running ‘magrittr.Rmd’
+  Running ‘tradeoffs.Rmd’
+
+*** Source Errors ***
+
+File tradeoffs.R:
+could not find function "bar"
+Testing examples for package ‘markdown’
+Running vignettes for package ‘markdown’
+  Running ‘markdown-examples.Rmd’
+  Running ‘markdown-output.Rmd’
+
+*** Source Errors ***
+
+File markdown-output.R:
+cannot open the connection
+
+*** Weave Errors ***
+
+File markdown-output.Rmd:
+cannot open the connection
+Testing examples for package ‘mime’
+Testing examples for package ‘pillar’
+Running vignettes for package ‘pillar’
+  Running ‘debugme.Rmd’
+  Running ‘digits.Rmd’
+  Running ‘extending.Rmd’
+  Running ‘numbers.Rmd’
+  Running ‘printing.Rmd’
+
+*** Source Errors ***
+
+File debugme.R:
+cannot open the connection
+File numbers.R:
+there is no package called ‘units’
+File printing.R:
+there is no package called ‘DiagrammeR’
+
+*** Weave Errors ***
+
+File debugme.Rmd:
+cannot open the connection
+File numbers.Rmd:
+there is no package called 'units'
+Testing examples for package ‘pkgconfig’
+Testing examples for package ‘purrr’
+Running vignettes for package ‘purrr’
+  Running ‘other-langs.Rmd’
+Testing examples for package ‘R6’
+Testing examples for package ‘rlang’
+Testing examples for package ‘rmarkdown’
+Running vignettes for package ‘rmarkdown’
+  Running ‘lua-filters.Rmd’
+  Running ‘rmarkdown.Rmd’
+Testing examples for package ‘stringi’
+Testing examples for package ‘stringr’
+Running vignettes for package ‘stringr’
+  Running ‘regular-expressions.Rmd’
+  Running ‘stringr.Rmd’
+Testing examples for package ‘tibble’
+Running vignettes for package ‘tibble’
+  Running ‘digits.Rmd’
+  Running ‘extending.Rmd’
+  Running ‘formats.Rmd’
+  Running ‘invariants.Rmd’
+  Running ‘numbers.Rmd’
+  Running ‘tibble.Rmd’
+  Running ‘types.Rmd’
+
+*** Source Errors ***
+
+File formats.R:
+there is no package called ‘formattable’
+File invariants.R:
+subscript out of bounds
+File tibble.R:
+cannot open the connection
+File types.R:
+there is no package called ‘tidyr’
+
+*** Weave Errors ***
+
+File tibble.Rmd:
+cannot open the connection
+File types.Rmd:
+there is no package called 'tidyr'
+Testing examples for package ‘tidyselect’
+Running vignettes for package ‘tidyselect’
+  Running ‘syntax.Rmd’
+  Running ‘tidyselect.Rmd’
+
+*** Source Errors ***
+
+File syntax.R:
+Can't subset columns that don't exist.
+[31m✖[39m Column `cyl_pos` doesn't exist.
+File tidyselect.R:
+All renaming inputs must be named.
+Testing examples for package ‘tinytex’
+Testing examples for package ‘utf8’
+Running vignettes for package ‘utf8’
+  Running ‘utf8.Rmd’
+Testing examples for package ‘vctrs’
+Running vignettes for package ‘vctrs’
+  Running ‘pillar.Rmd’
+  Running ‘s3-vector.Rmd’
+  Running ‘stability.Rmd’
+  Running ‘type-size.Rmd’
+
+*** Source Errors ***
+
+File s3-vector.R:
+there is no package called ‘zeallot’
+File stability.R:
+there is no package called ‘zeallot’
+File type-size.R:
+Can't combine <logical> and <character>.
+
+*** Weave Errors ***
+
+File s3-vector.Rmd:
+there is no package called 'zeallot'
+File stability.Rmd:
+there is no package called 'zeallot'
+File type-size.Rmd:
+Cannot find the file(s): "../man/figures/sizes-recycling.png"
+Testing examples for package ‘xfun’
+Running vignettes for package ‘xfun’
+  Running ‘xfun.Rmd’
+Testing examples for package ‘yaml’
+Running specific tests for package ‘yaml’
+  Running ‘test_as_yaml.R’
+  Running ‘test_read_yaml.R’
+  Running ‘test_write_yaml.R’
+  Running ‘test_yaml_load_file.R’
+  Running ‘test_yaml_load.R’
+There were 13 warnings (use warnings() to see them)
+> 

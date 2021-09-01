@@ -1,0 +1,47 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ### Moved from reg-tests-1c.R
+> 
+> ## envRefClass prototypes are a bit special -- broke all.equal() for baseenv()
+> rc <- getClass("refClass")
+> rp <- rc@prototype
+> str(rp) ## failed
+Prototypical reference class 'envRefClass' [package "methods"]
+> rp ## show() failed ..
+Prototypical reference class object
+> (ner <- new("envRefClass")) # show() failed
+Reference class object of class "envRefClass"
+> stopifnot(all.equal(rp,rp), all.equal(ner,ner))
+> be <- baseenv()
+> system.time(stopifnot(all.equal(be,be)))## <- takes a few sec's
+   user  system elapsed 
+  4.290   0.048   4.339 
+> stopifnot(
++     grepl("not identical.*character", print(all.equal(rp, ner))),
++     grepl("not identical.*character", print(all.equal(ner, rp))))
+[1] "Class definitions are not identical: target is character, current is refClassRepresentation"
+[1] "Class definitions are not identical: Modes: S4, character"
+> system.time(stopifnot(all.equal(globalenv(), globalenv())))
+   user  system elapsed 
+  3.682   0.012   3.693 
+> ## Much of the above failed in  R <= 3.2.0
+> 
+> proc.time()
+   user  system elapsed 
+  8.417   0.364   8.383 
+> 

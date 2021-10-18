@@ -4,7 +4,9 @@
 # R -e 'file_test("scripts/OQ.R")'
 # R -e 'file_test("scripts/test_installed_packages.R")'
 
-  
+dir.create("outputs", showWarnings = FALSE)
+dir.create("results", showWarnings = FALSE)
+
 CMD1 <- paste(shQuote(file.path(R.home("bin"), "R")), 
             "CMD BATCH --vanilla --no-timing", "scripts/IQ.R", "outputs/IQ_log.txt")
 CMD2 <- paste(shQuote(file.path(R.home("bin"), "R")), 

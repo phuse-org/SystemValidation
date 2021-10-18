@@ -1,0 +1,4 @@
+Name: Quality Environment
+Description: Qualify R, installed packages, and environment
+Binding: run_val
+Interactive: false

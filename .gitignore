@@ -29,3 +29,4 @@ vignettes/*.pdf
 .Rproj.user
 .here
 SystemValidation.Rproj
+.DS_Store
